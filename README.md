@@ -14,7 +14,7 @@ the consuming application's to set — it is not a theme with the colour left
 out, it is a style whose argument is that the values are enough.
 
 ```ruby
-gem "its-swiss"
+gem "its-swiss", "~> 0.1"
 ```
 
 ```sh
