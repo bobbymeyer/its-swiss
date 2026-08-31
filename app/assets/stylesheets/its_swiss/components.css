@@ -1,0 +1,403 @@
+/* Components.
+ *
+ * Separation is done with hairlines and whitespace. There are no cards, no
+ * rounded corners and no shadows in this file, and nothing is set in
+ * capitals. A component here says only how it differs from the registers and
+ * the two arrangements already declared in type.css and grid.css.
+ *
+ * Every one of these is laid out on its own, in flex, and never on the page's
+ * field. The field is the application's — a component that placed itself on
+ * it would be a component that broke the moment the application decided its
+ * problem had eight fields rather than six.
+ */
+
+@layer its-swiss.components {
+  /* --- Masthead and navigation -------------------------------------------
+     A band, a mark at one end, the destinations at the other, and a hairline
+     underneath. The mark is the application's to fill; the library only knows
+     that it does not break and that the nav sits beside it. */
+
+  .masthead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-2) var(--space-4);
+    padding-block: var(--space-3);
+    border-bottom: var(--rule-hair) solid var(--rule);
+  }
+
+  /* A wordmark is not free text and may not be broken, either inside itself
+     or away from whatever leads it. */
+  .masthead__mark {
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    white-space: nowrap;
+  }
+
+  .masthead__mark a { text-decoration: none; }
+
+  .masthead__mark a:hover { text-decoration: underline; text-underline-offset: 0.2em; }
+
+  /* Off the left edge rather than pushed to the right: the asymmetry is the
+     point, and it lines the nav up with the body column below it. An
+     application that wants it flush right sets margin-inline-start: auto,
+     which is one line in its own stylesheet. */
+  .nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-3);
+  }
+
+  .nav a { text-decoration: none; }
+
+  .nav a:hover { color: var(--ink); }
+
+  /* Where you are, said twice. Colour alone is not a signal — a reader who
+     cannot separate the accent from the quiet gray would have no current
+     state at all — so the weight says it as well. */
+  .nav [aria-current="page"] {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  /* --- Footer -------------------------------------------------------------
+     A hairline, the micro register, and whatever the application has to say
+     after the page. It carries no links of its own: what belongs down there
+     is not something a library can know. */
+
+  .footer {
+    margin-top: var(--space-13);
+    padding-block: var(--space-3);
+    border-top: var(--rule-hair) solid var(--rule);
+    font-size: var(--size-1);
+    line-height: var(--space-3);
+  }
+
+  /* --- Rules --------------------------------------------------------------
+     The one horizontal mark in the style, at the two weights tokens.css
+     declares. */
+
+  hr {
+    height: 0;
+    border: 0;
+    border-top: var(--rule-hair) solid var(--rule);
+    margin-block: var(--space-3);
+  }
+
+  hr.rule--heavy { border-top-width: var(--rule-heavy); border-color: var(--ink); }
+
+  /* --- Table --------------------------------------------------------------
+     A grid of values, ruled horizontally and not vertically: the columns are
+     already held apart by the type, and a vertical rule between them draws a
+     box, which this style does not do. No zebra striping for the same reason
+     — a filled row is a filled area, and filled areas are the accent's alone.
+
+     Figures are tabular, because a column of numbers is read down. */
+
+  .table { width: 100%; }
+
+  .table caption {
+    color: var(--ink-quiet);
+    margin-bottom: var(--space-1);
+  }
+
+  .table th,
+  .table td {
+    padding-block: var(--space-1);
+    padding-inline-end: var(--space-3);
+    border-bottom: var(--rule-hair) solid var(--rule);
+    vertical-align: baseline;
+  }
+
+  .table th {
+    color: var(--ink-quiet);
+    font-weight: 700;
+  }
+
+  .table thead th { border-bottom-color: var(--ink); }
+
+  .table td:last-child,
+  .table th:last-child { padding-inline-end: 0; }
+
+  /* A column of numbers reads right-aligned against its own heading. */
+  .table .numeric { text-align: right; padding-inline: var(--space-3) 0; }
+
+  /* --- Definition list ----------------------------------------------------
+     Term and value in two columns, the term set in the quiet register and the
+     value in ink. The weight tells them apart at a glance rather than making
+     a reader count characters. */
+
+  .pairs {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    column-gap: var(--space-3);
+    row-gap: var(--space-1);
+  }
+
+  .pairs dt { font-weight: 700; }
+
+  /* When the terms are long enough that a two-column set leaves the values
+     stranded across the page. */
+  .pairs--stacked {
+    grid-template-columns: 1fr;
+    row-gap: 0;
+  }
+
+  .pairs--stacked dt { margin-top: var(--space-2); }
+
+  .pairs--stacked dt:first-child { margin-top: 0; }
+
+  /* --- Forms --------------------------------------------------------------
+     A field is a label, a control and, when there is something to say, a
+     hint or the reason it was refused. The control is a rule under the text
+     rather than a box around it: the box is a border drawn for its own sake,
+     and this style does not draw them. */
+
+  .form {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+    max-width: var(--measure);
+  }
+
+  .form--inline {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--space-2);
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    width: 100%;
+  }
+
+  .field--inline {
+    flex-direction: row;
+    align-items: baseline;
+    gap: var(--space-2);
+  }
+
+  .field input,
+  .field select,
+  .field textarea {
+    width: 100%;
+    border: 0;
+    border-bottom: var(--rule-hair) solid var(--ink);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    /* No padding above it: the rule belongs under the text, not a line's
+       height below it, or the label reads as belonging to nothing. */
+    padding-block: 0 var(--space-1);
+  }
+
+  .field textarea { resize: vertical; }
+
+  /* A checkbox or a radio is the one control whose label sits beside it. */
+  .choice {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--space-1);
+  }
+
+  .choice input { width: auto; border: revert; }
+
+  /* Refused. The accent is the whole signal here and it is a rule, not a
+     fill: the field is still the field. */
+  .field--invalid input,
+  .field--invalid select,
+  .field--invalid textarea { border-bottom-color: var(--accent); }
+
+  .field__error {
+    color: var(--accent);
+    font-size: var(--size-1);
+    line-height: var(--space-2);
+  }
+
+  /* --- Buttons ------------------------------------------------------------
+     A button is a block; a link is underlined text. Both at once leaves the
+     page saying "follow me" and "press me" in the same breath.
+
+     Every one of them is the same box, so a row of them sits on one line and
+     the only difference between them is what fills it. No radius, no shadow,
+     and the keyline is the hairline drawn everywhere else. */
+
+  .button {
+    display: inline-block;
+    border: var(--rule-hair) solid var(--rule);
+    background: transparent;
+    color: var(--ink);
+    font-family: inherit;
+    padding: var(--space-1) var(--space-2);
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .button:hover { border-color: var(--ink); }
+
+  /* A solid block, the way a Swiss poster sets a call to action. Ink rather
+     than the accent: the primary action is the one you were going to take,
+     and the accent is for the one you have to be told about. */
+  .button--primary {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  .button--primary:hover { border-color: var(--ink-quiet); background: var(--ink-quiet); }
+
+  /* The one filled area the accent gets, for the action a page exists to
+     offer. Used once per page or not at all. */
+  .button--accent {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--accent-ink);
+  }
+
+  .button--quiet:hover { color: var(--ink); }
+
+  /* Destroying and reordering are one shape apart from each other otherwise.
+     The page stays monochrome at rest; the accent arrives at the moment you
+     reach for the one thing that cannot be undone. Focus as well as hover,
+     because a keyboard reaches this button and touch never hovers at all. */
+  .button--danger:hover,
+  .button--danger:focus-visible {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* Set apart before it is coloured: in a row of actions, destroying and
+     reordering are the same gray word otherwise, and a gap is read before a
+     word is.
+
+     A step on the ladder rather than an auto margin. Auto puts the gap at
+     whatever is left over, which in a narrow row is right and across a whole
+     page is most of a page — and an action a page away from the actions it
+     belongs with reads as a different control, not a separated one.
+
+     :has, because button_to wraps its button in a form, so the flex child is
+     the form and the margin belongs to the child. */
+  .run > :has(> .button--danger),
+  .run > .button--danger { margin-inline-start: var(--space-6); }
+
+  form.button_to { display: inline; }
+
+  .link-quiet { text-underline-offset: 0.25em; }
+
+  .link-quiet:hover { color: var(--ink); }
+
+  /* --- Copy ---------------------------------------------------------------
+     A value on screen to be taken somewhere else is a button that copies
+     itself. The value stays visible text inside it, which is what keeps it
+     usable when the clipboard is not available. */
+
+  .copy {
+    border: 0;
+    padding: 0;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .copy::after {
+    content: "";
+    color: var(--ink-quiet);
+    font-weight: 400;
+    letter-spacing: 0;
+  }
+
+  .copy:hover::after,
+  .copy:focus-visible::after { content: " copy"; }
+
+  /* Says it worked, in the one place you are already looking. */
+  .copy[data-copied]::after,
+  .copy[data-copied]:hover::after { content: " copied"; color: var(--accent); }
+
+  /* --- Pagination ---------------------------------------------------------
+     A run of numbers under a hairline. The current page carries weight as
+     well as the accent, for the same reason the current nav item does. */
+
+  .pagination {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-1) var(--space-2);
+    margin-top: var(--space-5);
+    padding-top: var(--space-2);
+    border-top: var(--rule-hair) solid var(--rule);
+  }
+
+  /* inline-block so the line box is the tap target: an inline box takes its
+     height from the font's metrics and ignores the leading set for it. */
+  .pagination a,
+  .pagination [aria-current] { display: inline-block; }
+
+  .pagination a { color: var(--ink-quiet); text-underline-offset: 0.25em; }
+
+  .pagination a:hover { color: var(--ink); }
+
+  .pagination [aria-current] {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .pagination__gap { color: var(--ink-quiet); }
+
+  /* --- What a page has to say --------------------------------------------
+     Three registers: it worked, it was refused, there is nothing here. The
+     refusal is the only one that interrupts, and it interrupts with a rule
+     rather than a filled panel. */
+
+  .errors {
+    width: 100%;
+    padding-top: var(--space-2);
+    border-top: var(--rule-heavy) solid var(--accent);
+  }
+
+  .errors__title { font-weight: 700; }
+
+  .errors ul {
+    color: var(--ink-quiet);
+    margin-top: var(--space-1);
+  }
+
+  .empty { color: var(--ink-quiet); }
+
+  /* --- Off screen ---------------------------------------------------------
+     For text that has to exist without being seen. Clipped rather than hidden
+     with display or visibility, because both of those take the element out of
+     the accessibility tree as well as off the page, which is the one thing
+     this must not do. */
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* The way past the masthead for a keyboard. Off screen until it is focused,
+     at which point it has to be somewhere you can read it. */
+  .skip-link {
+    position: absolute;
+    left: var(--space-2);
+    top: var(--space-2);
+    z-index: 1;
+    padding: var(--space-1) var(--space-2);
+    background: var(--paper);
+    border: var(--rule-hair) solid var(--ink);
+    transform: translateY(calc(-100% - var(--space-4)));
+  }
+
+  .skip-link:focus { transform: none; }
+}

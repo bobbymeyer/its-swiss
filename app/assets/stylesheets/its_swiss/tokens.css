@@ -1,0 +1,142 @@
+/* Tokens.
+ *
+ * Every measurement and every value in the library is declared here and
+ * nowhere else. The four blocks below are the whole system: a value scale, an
+ * accent slot, a type scale, and one ladder for everything vertical.
+ *
+ * A consuming application fills three slots — the accent, the typeface, and
+ * how many fields its grid has. Everything else it inherits, and everything
+ * else it can still override, because these are unlayered properties read
+ * from inside a layer: setting --baseline in the application's own stylesheet
+ * reproportions the library without touching it.
+ */
+
+@layer its-swiss.tokens {
+  :root {
+    /* --- The value scale ---------------------------------------------------
+       Six steps of OKLCH lightness from paper to ink. OKLCH because the steps
+       have to be perceptually even to be read as a scale at all: the same
+       arithmetic in sRGB puts four of the six inside the top quarter of the
+       range and leaves the interface with two grays and a cliff.
+
+       The ladder is not evenly spaced, and that is the point. A hairline has
+       to be barely there, so the top of the scale is dense; the middle only
+       has to hold secondary text away from primary, so it is sparse. An even
+       ladder gives a usable mid-gray and no usable rule.
+
+       Neutral, because hue is the application's. Warmth arrives through the
+       two slots beneath: a consumer that wants Pandatone's warm grays sets
+       --value-chroma: 0.006 and --value-hue: 95 once, and the whole scale
+       turns together. */
+    --value-chroma: 0;
+    --value-hue: 0;
+
+    --value-0: oklch(98% var(--value-chroma) var(--value-hue));  /* paper */
+    --value-1: oklch(94% var(--value-chroma) var(--value-hue));  /* a shaded ground */
+    --value-2: oklch(89% var(--value-chroma) var(--value-hue));  /* a hairline */
+    --value-3: oklch(72% var(--value-chroma) var(--value-hue));  /* a rule that has to be seen */
+    --value-4: oklch(54% var(--value-chroma) var(--value-hue));  /* secondary text: 4.7:1 on paper */
+    --value-5: oklch(18% var(--value-chroma) var(--value-hue));  /* ink */
+
+    /* The names the rest of the library uses. Aliases rather than values of
+       their own, so the day the ground is darkened the ladder still describes
+       the page. */
+    --paper: var(--value-0);
+    --paper-shaded: var(--value-1);
+    --rule: var(--value-2);
+    --rule-strong: var(--value-3);
+    --ink-quiet: var(--value-4);
+    --ink: var(--value-5);
+
+    /* --- The accent --------------------------------------------------------
+       State and emphasis only: the current item, focus, a link, the one
+       primary action, the moment before something cannot be undone. Never a
+       filled area for its own sake.
+
+       Unset, it is ink. That is the library's argument in one line — if a
+       page reads correctly with the accent collapsed onto the value scale,
+       the values were doing the work. The specimen renders both ways for
+       exactly this reason. */
+    --accent: var(--ink);
+    /* What is legible on top of the accent when it is filled. */
+    --accent-ink: var(--paper);
+
+    /* --- Rules -------------------------------------------------------------
+       Two weights. A hairline separates; a heavier one interrupts, and is
+       kept for the two or three places a page has something to insist on. */
+    --rule-hair: 1px;
+    --rule-heavy: 2px;
+
+    /* --- Type --------------------------------------------------------------
+       Five sizes on an alternating 1.33 / 1.5 ratio, every one a multiple of
+       four. Five is the count an interface actually uses: labels, body, a
+       section, a subhead, a page title. A sixth gets chosen for a page and
+       then used nowhere else.
+
+       The family is the application's, for the same reason the accent is. A
+       library that ships a typeface ships a voice, and ships a binary with
+       it. The fallback stack below is what an application gets until it says
+       otherwise, and it is a grotesque, which is the tradition. */
+    --font-family: ui-sans-serif, system-ui, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+    --size-1: 0.75rem;   /* 12 — labels and metadata */
+    --size-2: 1rem;      /* 16 — body */
+    --size-3: 1.5rem;    /* 24 — section */
+    --size-4: 2rem;      /* 32 — subhead, large values */
+    --size-5: 3rem;      /* 48 — page title */
+
+    /* --- The vertical ladder -----------------------------------------------
+       One ladder, numbered in baselines, used for leading as much as for
+       space. Two ladders — a set for space and another for line boxes — agree
+       at three values and diverge everywhere else, which is how a heading
+       ends up impossible to separate from the block beneath it by the height
+       of its own line: the value simply does not exist.
+
+       Changing --baseline reproportions everything. */
+    --baseline: 0.5rem;
+
+    --space-1: calc(var(--baseline) * 1);    /* 8 */
+    --space-2: calc(var(--baseline) * 2);    /* 16 */
+    --space-3: calc(var(--baseline) * 3);    /* 24 */
+    --space-4: calc(var(--baseline) * 4);    /* 32 */
+    --space-5: calc(var(--baseline) * 5);    /* 40 */
+    --space-6: calc(var(--baseline) * 6);    /* 48 */
+    --space-8: calc(var(--baseline) * 8);    /* 64 */
+    --space-13: calc(var(--baseline) * 13);  /* 104 */
+
+    /* --- The grid ----------------------------------------------------------
+       Primitives, not a grid. Six fields divide into halves and thirds and is
+       where an application starts; the point of declaring it here is that it
+       is one number to change, in the application's own stylesheet, once the
+       problem has said how many fields it has.
+
+       A field's width is derived rather than measured, and every width helper
+       in the library is built from it — which is what keeps a block of prose
+       stopping on a field line instead of three pixels short of one. */
+    --columns: 6;
+    --gutter: 1.5rem;
+    --page-max: 82rem;
+    --page-inset: var(--space-3);
+
+    /* The page's own margin comes out before the fields are divided. Left in,
+       every helper built on --field is a gutter and a half too wide, and prose
+       that is supposed to stop on the third field line stops past it — which
+       is invisible on a page with nothing beside the prose and glaring on one
+       with a column next to it. */
+    --field: calc(
+      (var(--page-max) - var(--page-inset) * 2 - var(--gutter) * (var(--columns) - 1)) / var(--columns)
+    );
+    --measure: calc(var(--field) * 3 + var(--gutter) * 2);
+
+    /* --- Transitions -------------------------------------------------------
+       The page crossfade is short enough to read as a replacement rather than
+       an animation. A morph runs longer, because the thing travelling has to
+       stay readable while it does. */
+    --transition-page: 180ms;
+    --transition-morph: 240ms;
+    --transition-ease: cubic-bezier(0.2, 0, 0.2, 1);
+
+    color-scheme: light;
+  }
+}

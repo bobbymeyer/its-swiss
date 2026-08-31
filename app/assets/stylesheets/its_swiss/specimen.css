@@ -1,0 +1,37 @@
+/* The specimen's own furniture: the blocks of value, the field diagram, and
+ * the spacing between sections. Not part of the library — nothing here is a
+ * component an application should reach for. Loaded only by the specimen
+ * page, which is why it is not in ItsSwiss::STYLESHEETS.
+ */
+
+@layer its-swiss.specimen {
+  [data-specimen-take] { margin-top: var(--space-13); }
+
+  [data-specimen] { margin-top: var(--space-6); }
+
+  [data-specimen] > h3 { margin-bottom: var(--space-2); }
+
+  [data-specimen] > * + * { margin-top: var(--space-2); }
+
+  /* A block of value, the height of a line box so it sits on the baseline
+     beside the token that names it. */
+  .specimen__value {
+    display: block;
+    width: var(--space-13);
+    height: var(--space-3);
+    box-shadow: inset 0 0 0 var(--rule-hair) color-mix(in oklch, var(--ink) 12%, transparent);
+  }
+
+  /* The field, drawn. Each child is one span, and the bar inside it shows
+     where that span starts and stops against the page. */
+  .specimen__grid { row-gap: var(--space-1); }
+
+  .specimen__field {
+    display: block;
+    height: var(--space-2);
+    background: var(--value-2);
+  }
+
+  .specimen__grid > [style*="--span: 2"] .specimen__field,
+  .specimen__grid > [style*="--span: 4"] .specimen__field { background: var(--value-3); }
+}

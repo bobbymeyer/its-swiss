@@ -1,0 +1,14 @@
+<%# Why a record was refused, above the form that was refused. The field-level
+    messages the builder writes say it again beside each control; this says
+    how many there were, which is the thing you want before you start looking.
+%>
+<% if record.errors.any? %>
+  <div class="errors" role="alert">
+    <p class="errors__title"><%= pluralize(record.errors.count, "problem") %> stopped this being saved.</p>
+    <ul>
+      <% record.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>

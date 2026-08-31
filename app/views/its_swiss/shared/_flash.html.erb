@@ -1,0 +1,8 @@
+<%# The two things a page has to say, in the register the library keeps for
+    each. A refusal interrupts, with a rule rather than a filled panel; a
+    confirmation does not interrupt at all. %>
+<% if flash[:alert].present? %>
+  <div class="errors" role="alert"><p class="errors__title"><%= flash[:alert] %></p></div>
+<% elsif flash[:notice].present? %>
+  <p class="hint" role="status"><%= flash[:notice] %></p>
+<% end %>

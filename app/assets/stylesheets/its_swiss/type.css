@@ -1,0 +1,109 @@
+/* Typography.
+ *
+ * One family, five sizes, two weights. Hierarchy comes from size, weight and
+ * where a thing sits on the grid — never from a box drawn around it.
+ *
+ * Every line box is a whole number of baselines, taken from the one ladder in
+ * tokens.css, so a line of type and the space beneath it are measured in the
+ * same units.
+ */
+
+@layer its-swiss.type {
+  body {
+    font-family: var(--font-family);
+    font-size: var(--size-2);
+    font-weight: 400;
+    line-height: var(--space-3);
+    text-align: left;
+    /* A weight the file does not carry is better absent than drawn by the
+       browser: a synthesised bold at a large size is visibly a smeared
+       regular, and this style leans on exactly two weights. */
+    font-synthesis: none;
+  }
+
+  /* Flush left, ragged right, everywhere. */
+  h1, h2, h3, h4, p, dt, dd, li, label, legend, caption, th, td { text-align: left; }
+
+  /* --- The five registers -------------------------------------------------
+     Named for what they are rather than for the elements that happen to use
+     them, so an application can put a page title in an <h2> when the outline
+     calls for it without the type changing under it. */
+
+  .page-title {
+    font-size: var(--size-5);
+    line-height: var(--space-6);
+    font-weight: 700;
+    letter-spacing: -0.028em;
+    text-wrap: balance;
+  }
+
+  h1 { font-size: var(--size-4); line-height: var(--space-5); font-weight: 700; letter-spacing: -0.02em; }
+
+  h2 { font-size: var(--size-3); line-height: var(--space-4); font-weight: 700; letter-spacing: -0.015em; }
+
+  h3, h4 { font-size: var(--size-2); line-height: var(--space-3); font-weight: 700; }
+
+  /* The micro register: labels, metadata, captions. Size and value carry it.
+     Nothing here is set in capitals — that is a different tradition, and in
+     lowercase the wide tracking it needs reads as a gap. */
+  .micro,
+  caption,
+  legend,
+  label,
+  .field label {
+    font-size: var(--size-1);
+    line-height: var(--space-2);
+    letter-spacing: 0.01em;
+  }
+
+  /* The same size on a line box one step taller: the micro type you can tap.
+     At a 16px line box these are 14px targets, under the 24px minimum. The
+     leading does the work so the type does not have to change. */
+  .micro--tap,
+  .pagination a,
+  .pagination [aria-current] { line-height: var(--space-3); }
+
+  /* Quiet: this is secondary. One rule, so the whole library says it the same
+     way and an application adds its own selectors to the list rather than
+     picking a gray. */
+  .quiet,
+  .hint,
+  .nav a,
+  .footer,
+  .pairs dt,
+  .button--quiet,
+  .button--danger,
+  .link-quiet { color: var(--ink-quiet); }
+
+  .hint {
+    font-size: var(--size-1);
+    line-height: var(--space-3);
+    max-width: var(--measure);
+  }
+
+  /* Prose stops where the field it sits in stops. */
+  .measure,
+  .lede,
+  p { max-width: var(--measure); }
+
+  .lede { margin-top: var(--space-2); }
+
+  /* Navigation and actions read at body size. They are how an application is
+     used, not annotations on it. */
+  .nav a,
+  .button { font-size: var(--size-2); line-height: var(--space-3); }
+
+  /* Anything read as a column of digits rather than as a word. */
+  .tabular,
+  .pairs dd,
+  td,
+  th { font-variant-numeric: tabular-nums; letter-spacing: 0.01em; }
+
+  /* A button brings its own font, and a button that exists to look like the
+     text it replaced has to give it back. Stated here rather than in
+     components.css so it stays ahead of the size modifiers there: a `font`
+     shorthand after them would flatten every one. */
+  .copy { font: inherit; }
+
+  code, pre, kbd, samp { font-family: var(--font-mono); font-size: 0.9em; }
+}

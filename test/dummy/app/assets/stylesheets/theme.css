@@ -1,0 +1,6 @@
+/* What a consuming application fills in. Unlayered, so it beats the library
+   without having to out-specify it. */
+:root {
+  --accent: oklch(57.7% 0.234 28);
+  --columns: 6;
+}

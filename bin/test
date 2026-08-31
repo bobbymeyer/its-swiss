@@ -1,0 +1,12 @@
+#!/usr/bin/env ruby
+# The suite. Given files or directories it runs those, otherwise everything.
+require "bundler/setup"
+
+$LOAD_PATH.unshift File.expand_path("../test", __dir__)
+$LOAD_PATH.unshift File.expand_path("../lib", __dir__)
+
+targets = ARGV.empty? ? [ File.expand_path("../test", __dir__) ] : ARGV
+
+targets.flat_map { |target|
+  File.directory?(target) ? Dir[File.join(target, "**", "*_test.rb")] : [ target ]
+}.each { |file| require File.expand_path(file) }

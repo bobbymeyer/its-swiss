@@ -1,0 +1,14 @@
+<section data-specimen="grid">
+  <h3>Grid primitives</h3>
+  <p class="hint">
+    The library ships the machinery and never the grid. This page declares
+    <code>--columns: <%= 6 %></code>; a child says how many fields it takes
+    with <code>--span</code>, and a child that says nothing runs the field.
+  </p>
+  <div class="grid specimen__grid">
+    <% 6.times do %><span style="--span: 1"><span class="specimen__field"></span></span><% end %>
+    <span style="--span: 2"><span class="specimen__field"></span></span>
+    <span style="--span: 4"><span class="specimen__field"></span></span>
+    <span><span class="specimen__field"></span></span>
+  </div>
+</section>

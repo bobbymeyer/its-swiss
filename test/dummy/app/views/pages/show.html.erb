@@ -1,0 +1,11 @@
+<% content_for :title, "A page" %>
+<% content_for :head do %><meta name="dummy-said-this" content="yield :head reached this"><% end %>
+<% content_for :mark, "Dummy" %>
+<% content_for :nav do %>
+  <%= nav_link_to "A page", "/page" %>
+  <%= nav_link_to "Another page", "/other" %>
+<% end %>
+<% content_for :footer, "A footer the application wrote." %>
+
+<h1 class="page-title">A page</h1>
+<p>Body copy on the dummy application's one page.</p>

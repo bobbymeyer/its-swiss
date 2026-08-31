@@ -1,0 +1,50 @@
+/* Reset. Only what the library's own type and spacing decisions require: a
+ * predictable box, no margins the ladder did not put there, and no list
+ * bullets, because a list in this style is set on the grid rather than
+ * indented behind a dot. */
+
+@layer its-swiss.reset {
+  *,
+  *::before,
+  *::after { box-sizing: border-box; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+  }
+
+  h1, h2, h3, h4, p, ul, ol, dl, dd, figure, fieldset, legend, blockquote {
+    margin: 0;
+    padding: 0;
+  }
+
+  ul, ol { list-style: none; }
+
+  fieldset { border: 0; }
+
+  img, svg, video { max-width: 100%; display: block; }
+
+  /* A table is a grid of values, and a gap between its cells is a gap the
+     spacing ladder should be setting rather than the browser. */
+  table { border-collapse: collapse; border-spacing: 0; }
+
+  /* The browser hides [hidden] with display: none, and any author rule that
+     sets display at all outranks it — a .button says inline-block, so a
+     hidden button stays on the page. The attribute means hidden, so it is
+     made to mean it once, here, rather than remembered at every element that
+     might one day carry it. The library's one !important, and the reason it
+     needs one: the rule it has to beat is inside the same layer. */
+  [hidden] { display: none !important; }
+
+  a { color: inherit; }
+
+  /* The accent's first job. Unset it and this is an ink outline, which is
+     still a focus ring. */
+  :focus-visible {
+    outline: var(--rule-heavy) solid var(--accent);
+    outline-offset: 3px;
+  }
+}

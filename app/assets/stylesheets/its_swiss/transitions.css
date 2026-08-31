@@ -1,0 +1,47 @@
+/* View transitions.
+ *
+ * The library names the transitions and says how long they last. Which page
+ * transitions to which is the application's, because it depends on what the
+ * pages are: a name is given to an element by whoever knows that the same
+ * record is on both sides of the navigation.
+ *
+ * The at-rule covers a plain cross-document navigation. Turbo drives the same
+ * transitions from the <meta name="view-transition"> tag the shell writes.
+ */
+
+@layer its-swiss.transitions {
+  @view-transition { navigation: auto; }
+
+  /* The page crossfade is taken of the body rather than of :root, which is
+     the element that carries it by default. A snapshot of :root is sized to
+     the viewport including the scrollbar, while the page is laid out in the
+     width left after it — so for the length of every navigation the document
+     is wider than its own viewport and genuinely scrolls sideways. It settles
+     back the moment the transition ends, which is why the page measures clean
+     whenever it is asked standing still. */
+  :root { view-transition-name: none; }
+
+  body { view-transition-name: page; }
+
+  ::view-transition-old(page),
+  ::view-transition-new(page) {
+    animation-duration: var(--transition-page);
+    animation-timing-function: var(--transition-ease);
+  }
+
+  /* Anything an application has named travels rather than crossfading, and
+     runs longer, because the thing travelling has to stay readable while it
+     does. */
+  ::view-transition-group(*) {
+    animation-duration: var(--transition-morph);
+    animation-timing-function: var(--transition-ease);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    @view-transition { navigation: none; }
+
+    ::view-transition-group(*),
+    ::view-transition-old(*),
+    ::view-transition-new(*) { animation: none; }
+  }
+}

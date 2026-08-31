@@ -1,0 +1,24 @@
+<section data-specimen="type">
+  <h3>Type scale</h3>
+  <p class="hint">
+    Five sizes on an alternating 1.33 / 1.5 ratio. Every line box is a whole
+    number of baselines.
+  </p>
+  <%# The rung and the line box it is set on. Written out rather than derived,
+      because the ladder is not every whole number: there is no --space-7, and
+      asking for one silently drops the line box back to the browser's. %>
+  <% { 1 => [ 2, "Labels and metadata" ], 2 => [ 3, "Body copy" ], 3 => [ 4, "Section" ],
+       4 => [ 5, "Subhead" ], 5 => [ 6, "Page title" ] }.each do |step, (leading, name)| %>
+    <p data-size="<%= step %>" style="font-size: var(--size-<%= step %>); line-height: var(--space-<%= leading %>)">
+      <%= name %> — <code>--size-<%= step %></code> on <code>--space-<%= leading %></code>
+    </p>
+  <% end %>
+
+  <h4>Registers</h4>
+  <p>Body. The measure holds prose to three fields, which is where it stops rather than where the window does.</p>
+  <p class="quiet">Quiet. This is secondary.</p>
+  <p class="micro">Micro. Labels, metadata, captions — never capitals.</p>
+  <p class="hint">Hint. What a field needs said about it.</p>
+  <p class="tabular">Tabular 0123456789 — figures read down a column.</p>
+  <p><%= link_to "A link keeps its underline", "#type", class: "link-quiet" %> and a button does not.</p>
+</section>
