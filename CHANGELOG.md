@@ -4,11 +4,11 @@ Semver. Consumers pin `~> 0.1`.
 
 ## 0.1.0 — 2026-08-31
 
-The first extraction, from Pandatone.
+The first extraction, from Pandatone, which ships on it.
 
-Cut before either consumer has shipped on it, which is what the leading zero
-is for: the boundary was drawn from one real application and a second has not
-tested it yet. Expect the surface to move. Pin `~> 0.1` and read this file
+One consumer, not two, which is what the leading zero is for: the boundary was
+drawn from one real application and the second has not been built yet. Expect
+the surface to move — see "Unproven" below. Pin `~> 0.1` and read this file
 before upgrading.
 
 ### Core
@@ -47,7 +47,11 @@ before upgrading.
 
 ### Unproven
 
-`.table` and `.pagination` have one consumer between them and no second
-application to check them against yet. They are in the boundary the handoff
-drew, and they are the two components most likely to move when Stripeclub
-lands.
+`.table` and `.pagination` have **no consumer at all**. Pandatone's migration
+used neither, so the only thing that has ever rendered them is the specimen.
+They are in the boundary the handoff drew and they break the library's own
+rule about two applications; they are the two components most likely to move
+when Stripeclub lands.
+
+`.footer` is the same shape of guess — the shell has the slot and Pandatone
+does not fill it.

@@ -252,10 +252,10 @@ Two behavioural differences to know about:
 
 Semver with a changelog. Consumers pin `~> 0.1`.
 
-`0.1.0` was cut before either consumer shipped on it, which is what the
-leading zero is for: the boundary was drawn from one real application and a
-second has not tested it yet. The surface will move. Read `CHANGELOG.md`
-before upgrading, and see `RELEASING.md` for how a version gets out.
+`0.1.0` ships with one consumer — Pandatone — and that is what the leading
+zero is for: the boundary was drawn from one real application and the second
+has not been built yet. The surface will move. Read `CHANGELOG.md` before
+upgrading, and see `RELEASING.md` for how a version gets out.
 
 ## License
 
