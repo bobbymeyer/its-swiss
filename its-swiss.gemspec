@@ -17,19 +17,24 @@ Gem::Specification.new do |spec|
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.2.0"
 
-  spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = spec.homepage
+  spec.metadata["bug_tracker_uri"] = "#{spec.homepage}/issues"
   spec.metadata["changelog_uri"] = "#{spec.homepage}/blob/main/CHANGELOG.md"
   spec.metadata["rubygems_mfa_required"] = "true"
 
+  # Files only: Dir returns the directories too, and a directory in the
+  # manifest is an entry RubyGems warns about and nothing ever reads.
   spec.files = Dir[
     "app/**/*", "config/**/*", "lib/**/*",
     "CHANGELOG.md", "LICENSE", "README.md"
-  ]
+  ].select { |path| File.file?(path) }
   spec.require_paths = [ "lib" ]
 
-  spec.add_dependency "railties", ">= 8.0"
-  spec.add_dependency "actionview", ">= 8.0"
-  spec.add_dependency "propshaft", ">= 1.0"
-  spec.add_dependency "importmap-rails", ">= 2.0"
+  # Bounded a major up rather than left open. The engine touches Rails' asset
+  # paths, the importmap config and ActionView's form builder — all stable
+  # within a major and none of them promised across one.
+  spec.add_dependency "railties", ">= 8.0", "< 10"
+  spec.add_dependency "actionview", ">= 8.0", "< 10"
+  spec.add_dependency "propshaft", ">= 1.0", "< 3"
+  spec.add_dependency "importmap-rails", ">= 2.0", "< 4"
 end

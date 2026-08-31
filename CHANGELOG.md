@@ -1,11 +1,15 @@
 # Changelog
 
-Semver. Consumers pin `~> 0.x`.
+Semver. Consumers pin `~> 0.1`.
 
-## Unreleased — 0.1.0.pre
+## 0.1.0 — 2026-08-31
 
-The first extraction, from Pandatone. `0.1.0` is tagged when a consumer ships
-on it.
+The first extraction, from Pandatone.
+
+Cut before either consumer has shipped on it, which is what the leading zero
+is for: the boundary was drawn from one real application and a second has not
+tested it yet. Expect the surface to move. Pin `~> 0.1` and read this file
+before upgrading.
 
 ### Core
 
