@@ -120,8 +120,13 @@
   .table td:last-child,
   .table th:last-child { padding-inline-end: 0; }
 
-  /* A column of numbers reads right-aligned against its own heading. */
-  .table .numeric { text-align: right; padding-inline: var(--space-3) 0; }
+  /* A column of numbers reads right-aligned against its own heading. The
+     space moves to the start, where the previous column's text now ends —
+     but only the start: written as the padding-inline shorthand this also set
+     the end to zero on every numeric cell, which is right for one in the
+     final column, already covered by the rule above, and wrong anywhere else,
+     because the next column then begins exactly where the number ends. */
+  .table .numeric { text-align: right; padding-inline-start: var(--space-3); }
 
   /* --- Definition list ----------------------------------------------------
      Term and value in two columns, the term set in the quiet register and the

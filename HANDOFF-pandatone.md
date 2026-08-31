@@ -1,5 +1,12 @@
 # Pandatone — Handoff
 
+> **Done.** Pandatone migrated across seven commits and now consumes
+> `its-swiss` from RubyGems: 598 tests and 240 browser tests green on 0.1.0,
+> with `base.css` and `transitions.css` gone from the app entirely and the
+> gem unchanged by the move. Kept as the record of what was extracted and
+> why, and as the template for the next consumer. Everything below is written
+> in the tense it was written in.
+
 its-swiss exists. Pandatone is its first consumer, and the job now is to
 delete what was extracted and take it from the gem instead.
 

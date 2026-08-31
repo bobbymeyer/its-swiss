@@ -1,19 +1,18 @@
+<%# locals: (page:, pages:, url:, window: 2, label: "Pages") %>
 <%#
-  A run of numbers under a hairline. Takes a page number, a total, and a block
-  that turns a number into a URL — the library has no paginator and no opinion
-  about which one an application uses.
+  A run of numbers under a hairline. Takes a page number, a total, and a
+  callable that turns a number into a URL — the library has no paginator and
+  no opinion about which one an application uses. Long runs are elided around
+  the current page, because a hundred numbers is not a control.
 
-    <%= render "its_swiss/shared/pagination", page: @page, pages: @pages,
-          url: ->(n) { colors_path(page: n) } %>
-
-  Long runs are elided around the current page, because a hundred numbers is
-  not a control.
+  The worked example is in the README, and has to be: an ERB comment ends at
+  the first closing delimiter it meets, including one belonging to an example
+  written inside it, and every line after that is emitted as page content.
+  Which is what this file did, on the specimen, for the whole of 0.1.0.
 %>
-<% window = local_assigns.fetch(:window, 2) %>
-<% numbers = its_swiss_page_numbers(page, pages, window:) %>
 <% if pages > 1 %>
-  <nav class="pagination" aria-label="<%= local_assigns.fetch(:label, "Pages") %>">
-    <% numbers.each do |number| %>
+  <nav class="pagination" aria-label="<%= label %>">
+    <% its_swiss_page_numbers(page, pages, window:).each do |number| %>
       <% if number.nil? %>
         <span class="pagination__gap" aria-hidden="true">…</span>
       <% elsif number == page %>

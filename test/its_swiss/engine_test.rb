@@ -38,6 +38,7 @@ class EngineTest < ActiveSupport::TestCase
       app/views/layouts/its_swiss/shell.html.erb
       config/importmap.rb
       lib/generators/its_swiss/install/templates/theme.css
+      lib/generators/its_swiss/install/templates/application.html.erb
     ].each { |path| assert_includes spec.files, path, "#{path} would not be in the built gem" }
   end
 
