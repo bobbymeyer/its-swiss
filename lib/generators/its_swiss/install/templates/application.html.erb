@@ -1,0 +1,32 @@
+<%# What this application puts in the slots its_swiss/shell leaves. Everything
+    else a layout used to have to remember — the view transition opt-in, the
+    library's stylesheets, the importmap, a way past the masthead for a
+    keyboard, and the flash — is the shell's.
+
+    A layout rather than `layout "its_swiss/shell"` on the controller, because
+    content_for has to run while a view is rendering and these are set once for
+    the whole application. The last line is what makes this a layout *for* the
+    shell rather than one instead of it. %>
+
+<% content_for :head do %>
+  <%# This application's own stylesheets. The shell links the library's six and
+      stops; theme.css holds the accent and the grid, and nothing links it but
+      this. Unlayered, so they win wherever the two meet, whatever order they
+      arrive in. %>
+  <%= stylesheet_link_tag "theme", "data-turbo-track": "reload" %>
+<% end %>
+
+<% content_for :mark do %>
+  <%= link_to Rails.application.class.module_parent_name.underscore.humanize, root_path %>
+<% end %>
+
+<% content_for :nav do %>
+  <%# nav_link_to marks where you are with aria-current, which the library
+      colours and weights. Pass current: where current_page? would be wrong —
+      on a show page that still belongs to an index, say. %>
+<% end %>
+
+<%# Give main the grid when this application's pages are laid out on one:
+    content_for :main_class, "grid" %>
+
+<%= render template: "layouts/its_swiss/shell" %>

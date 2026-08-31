@@ -126,11 +126,27 @@ it stops on a field line:
 
 ## The layout shell
 
-```ruby
-class ApplicationController < ActionController::Base
-  layout "its_swiss/shell"
-end
+The installer writes `app/views/layouts/application.html.erb` as a layout
+**for** the shell rather than one instead of it:
+
+```erb
+<% content_for :head do %>
+  <%= stylesheet_link_tag "theme", "data-turbo-track": "reload" %>
+<% end %>
+
+<% content_for :mark do %><%= link_to "Your app", root_path %><% end %>
+
+<%= render template: "layouts/its_swiss/shell" %>
 ```
+
+Nested, not `layout "its_swiss/shell"` on a controller. `content_for` has to
+run while a view is rendering, and these slots are set once for the whole
+application — naming the shell on the controller renders it but leaves
+nowhere to fill it, so every view ends up writing the same masthead.
+
+Note the `:head` slot links `theme.css`. The shell links the library's six
+stylesheets and stops; the accent and the grid live in yours, and nothing
+links it but this.
 
 Slots, all optional:
 
@@ -156,6 +172,19 @@ beyond the shell is the application's, for the same reason its grid is.
 | `copy_button(value)` | A value that copies itself |
 | `its_swiss_form_with(...)` | `form_with`, already holding the library's builder |
 | `its_swiss_page_numbers(page, pages)` | Which numbers a run of them shows, elided |
+
+### Pagination
+
+The library has no paginator and no opinion about which one you use — it takes
+a page, a total, and something that turns a number into a URL:
+
+```erb
+<%= render "its_swiss/shared/pagination",
+      page: @page, pages: @pages, url: ->(n) { colors_path(page: n) } %>
+```
+
+Long runs are elided around the current page. `window:` (default 2) sets how
+many neighbours show; `label:` names the `<nav>` for a screen reader.
 
 ## The form builder
 

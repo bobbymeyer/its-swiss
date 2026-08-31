@@ -95,6 +95,22 @@ class SpecimenSystemTest < ApplicationSystemTestCase
     end
   end
 
+  # A figure is read right-aligned against its own heading, which is what
+  # .numeric is for. Setting it with the padding-inline shorthand also zeroed
+  # the end padding of every numeric cell — right for one in the final column,
+  # which the :last-child rule already covered, and wrong anywhere else,
+  # because the next column's text then begins exactly where the number ends.
+  # The specimen's table now has a numeric column that is not last, which is
+  # the case that broke.
+  test "a numeric column that is not last keeps the space after it" do
+    numeric = "[data-specimen-take=monochrome] .table tbody td.numeric"
+
+    assert_operator computed(numeric, "padding-inline-end").to_f, :>, 0,
+      "a number runs straight into the next column"
+    assert_equal computed(".table tbody td:last-child", "padding-inline-end"), "0px",
+      "the last column still stops at the page"
+  end
+
   # A page that scrolls sideways at a phone's width is a page whose grid has
   # escaped its own container, and the specimen holds every component the
   # library has.

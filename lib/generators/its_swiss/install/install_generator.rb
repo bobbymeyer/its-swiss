@@ -16,15 +16,20 @@ module ItsSwiss
         template "theme.css", "app/assets/stylesheets/theme.css"
       end
 
-      # An application that has already chosen a layout has chosen it.
-      def render_through_the_shell
-        controller = "app/controllers/application_controller.rb"
-        return say_status(:skip, "#{controller} not found", :yellow) unless exists?(controller)
-
-        contents = read(controller)
-        return say_status(:skip, "#{controller} already chooses a layout", :yellow) if contents.match?(/^\s*layout\s/)
-
-        inject_into_class controller, "ApplicationController", %(  layout "its_swiss/shell"\n)
+      # A nested layout, not a `layout` line on the controller.
+      #
+      # 0.1.0 injected `layout "its_swiss/shell"` into ApplicationController.
+      # That renders the shell, but the shell is filled through content_for,
+      # and content_for has to run while a view is rendering — so there was
+      # nowhere to set the masthead once, and an application would write it
+      # into every view before noticing. This is the Rails idiom for the same
+      # thing, and it needs no line on the controller at all, because
+      # application.html.erb is already the default layout's name.
+      #
+      # copy_file rather than template: the file is ERB the application will
+      # run, not ERB this generator should.
+      def create_the_layout
+        copy_file "application.html.erb", "app/views/layouts/application.html.erb"
       end
 
       # Development only, and the controller refuses it a second time: the
@@ -50,8 +55,9 @@ module ItsSwiss
 
           its-swiss is installed. What is left is yours:
 
-            app/assets/stylesheets/theme.css   the accent, the typeface, the grid
-            /its-swiss/specimen                every component, rendered twice
+            app/assets/stylesheets/theme.css      the accent, the typeface, the grid
+            app/views/layouts/application.html.erb the shell's slots, to fill
+            /its-swiss/specimen                   every component, rendered twice
 
           The library ships no typeface and no palette. Set --accent to one
           colour and read the specimen with it unset: if the page still works,

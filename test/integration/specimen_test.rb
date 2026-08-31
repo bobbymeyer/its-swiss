@@ -13,6 +13,20 @@ class SpecimenTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  # The specimen renders every view the library ships, so it is the one place
+  # that can catch a template emitting its own source. An ERB comment holding
+  # a worked example ends at the example's own `%>`, and everything after it
+  # becomes page content — which is what the pagination partial did, on this
+  # very page, for the whole of 0.1.0. Every other assertion in this file is
+  # about markup that should be present; none was about output that should
+  # not be.
+  test "emits no template delimiters onto the page" do
+    %w[ <%# <%= %> ].each do |delimiter|
+      assert_not_includes response.body, delimiter,
+        "#{delimiter} reached the page: a template is printing its own source"
+    end
+  end
+
   # Rendered twice: once with the accent slot left as the library ships it,
   # once with an accent set. If the page reads correctly with the accent
   # collapsed onto ink, the values are doing the work — which is the whole
