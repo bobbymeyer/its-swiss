@@ -1,0 +1,16 @@
+/* The whole library in one <link>.
+ *
+ * The layer order is stated before the first import rather than left to the
+ * order the files arrive in, so a slow network cannot reorder the cascade.
+ * Every file states its own layer as well, which is what makes this file and
+ * six separate <link> tags resolve identically — the Rails helper writes the
+ * six, and anything else can point at this.
+ */
+@layer its-swiss.tokens, its-swiss.reset, its-swiss.type, its-swiss.grid, its-swiss.components, its-swiss.transitions;
+
+@import url("its_swiss/tokens.css");
+@import url("its_swiss/reset.css");
+@import url("its_swiss/type.css");
+@import url("its_swiss/grid.css");
+@import url("its_swiss/components.css");
+@import url("its_swiss/transitions.css");

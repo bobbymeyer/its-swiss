@@ -1,0 +1,27 @@
+<% content_for :title, "its-swiss specimen" %>
+<%# The specimen's own furniture, loaded only here: none of it is a component
+    an application should reach for. %>
+<% content_for :head, stylesheet_link_tag("its_swiss/specimen") %>
+<% content_for :mark, link_to("its-swiss", specimen_path) %>
+<% content_for :nav do %>
+  <%= nav_link_to "Specimen", specimen_path %>
+<% end %>
+<% content_for :footer, "its-swiss #{ItsSwiss::VERSION} — the specimen is the documentation and the regression fixture." %>
+
+<h1 class="page-title">its-swiss</h1>
+<p class="lede">
+  Every component the library ships, the type scale, the value scale and the
+  grid primitives — rendered twice. The first take is the library exactly as
+  it ships, with the accent slot left unfilled and collapsed onto ink. The
+  second sets an accent. If the first reads correctly, the values are doing
+  the work.
+</p>
+
+<%# The second take differs by one custom property. Not a second stylesheet
+    and not a modifier class: the accent is one slot, and the comparison is
+    only honest if that is all that changed between them. %>
+<%= render "its_swiss/specimen/take", take: "monochrome", accent: nil,
+      caption: "Accent unset. The library ships like this: --accent falls back to ink." %>
+
+<%= render "its_swiss/specimen/take", take: "accent", accent: "oklch(57.7% 0.234 28)",
+      caption: "Accent set to a signal red. Nothing else changed." %>

@@ -1,0 +1,19 @@
+<section data-specimen-take="<%= take %>" <%= tag.attributes(style: ("--accent: #{accent}" if accent)) %>>
+  <hr class="rule--heavy">
+  <h2><%= take.humanize %></h2>
+  <p class="hint"><%= caption %></p>
+
+  <%# Every section is rendered in both takes from the same partials, or the
+      second take is not a comparison — it is a different page. %>
+  <%= render "its_swiss/specimen/values" %>
+  <%= render "its_swiss/specimen/type" %>
+  <%= render "its_swiss/specimen/grid" %>
+  <%= render "its_swiss/specimen/masthead" %>
+  <%= render "its_swiss/specimen/buttons" %>
+  <%= render "its_swiss/specimen/form" %>
+  <%= render "its_swiss/specimen/table" %>
+  <%= render "its_swiss/specimen/pairs" %>
+  <%= render "its_swiss/specimen/pagination" %>
+  <%= render "its_swiss/specimen/messages" %>
+  <%= render "its_swiss/specimen/footer" %>
+</section>

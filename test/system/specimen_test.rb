@@ -1,0 +1,121 @@
+require "application_system_test_case"
+
+# The specimen rendered by a browser that actually resolves the cascade. Every
+# assertion here is one the file-reading tests cannot make: a cascade layer
+# only means something once something else is competing with it, and an OKLCH
+# lightness step is only a value once a browser has converted it.
+class SpecimenSystemTest < ApplicationSystemTestCase
+  setup do
+    needs_a_browser
+    visit "/its-swiss/specimen"
+  end
+
+  test "renders" do
+    assert_selector "h1.page-title", text: "its-swiss"
+  end
+
+  # The whole argument in one assertion. Both takes are the same markup and
+  # the same stylesheets; the only difference between them is one custom
+  # property.
+  test "the accent is one property, and unset it is ink" do
+    monochrome = channels("[data-specimen-take=monochrome] .nav [aria-current=page]", "color")
+    accented = channels("[data-specimen-take=accent] .nav [aria-current=page]", "color")
+
+    assert_equal channels("body", "color"), monochrome,
+      "with no accent the current destination is ink, and the weight is carrying it"
+    assert_not_equal monochrome, accented
+  end
+
+  # The boundary, made mechanical. An application's own stylesheet is
+  # unlayered and the library is not, so the application wins without having
+  # to out-specify anything or reach for !important.
+  test "an application's own stylesheet outranks the library's" do
+    assert_equal "6", computed(":root", "--columns")
+
+    execute_script(<<~JS)
+      const sheet = new CSSStyleSheet()
+      sheet.replaceSync(":root { --columns: 12 }")
+      document.adoptedStyleSheets = [ ...document.adoptedStyleSheets, sheet ]
+    JS
+
+    assert_equal "12", computed(":root", "--columns"),
+      "a single unlayered declaration should beat the library's layered one"
+  end
+
+  # The steps have to be perceptually even to read as a scale, which is the
+  # reason for OKLCH, and they have to actually resolve, which is the reason
+  # for asking a browser.
+  test "the value scale resolves to six descending steps" do
+    lightnesses = (0..5).map do |step|
+      luminance("[data-specimen-take=monochrome] [data-value='#{step}'] + dd .specimen__value", "background-color")
+    end
+
+    assert_equal lightnesses, lightnesses.sort.reverse, "the ladder doubles back"
+    assert_operator lightnesses.first, :>, 0.9, "paper is not paper"
+    assert_operator lightnesses.last, :<, 0.05, "ink is not ink"
+  end
+
+  # The slot a consumer warms the scale with. It has to turn the whole ladder,
+  # not part of it: a scale where four steps are warm and two are neutral is
+  # not a scale, and the way to get one is to write an oklch() somewhere that
+  # does not read both properties.
+  test "warming the scale turns every step of it" do
+    before = (0..5).map { |step| channels("[data-value='#{step}'] + dd .specimen__value", "background-color") }
+
+    execute_script(<<~JS)
+      const sheet = new CSSStyleSheet()
+      sheet.replaceSync(":root { --value-chroma: 0.02; --value-hue: 95 }")
+      document.adoptedStyleSheets = [ ...document.adoptedStyleSheets, sheet ]
+    JS
+
+    after = (0..5).map { |step| channels("[data-value='#{step}'] + dd .specimen__value", "background-color") }
+
+    before.zip(after).each_with_index do |(was, now), step|
+      assert_not_equal was, now, "--value-#{step} did not warm with the rest of the ladder"
+    end
+  end
+
+  # Secondary text is the step most likely to be picked for its look and then
+  # be unreadable. 4.5:1 is the requirement, and this is the one value on the
+  # ladder that sits near it.
+  test "quiet ink clears the contrast requirement against paper" do
+    assert_operator contrast([ ".hint", "color" ], [ "body", "background-color" ]), :>=, 4.5
+  end
+
+  # Every line box is a whole number of baselines, or the vertical rhythm is
+  # decorative rather than real.
+  test "every line box is a whole number of baselines" do
+    baseline = evaluate_script("parseFloat(getComputedStyle(document.documentElement).fontSize) * 0.5")
+
+    [ "body", "h1.page-title", "[data-specimen-take=monochrome] h2", ".hint", ".micro", ".nav a", ".button" ].each do |selector|
+      leading = computed(selector, "line-height").to_f
+
+      assert_equal 0, (leading % baseline).round(2),
+        "#{selector} has a #{leading}px line box, which is #{(leading / baseline).round(2)} baselines"
+    end
+  end
+
+  # A page that scrolls sideways at a phone's width is a page whose grid has
+  # escaped its own container, and the specimen holds every component the
+  # library has.
+  test "nothing escapes the page at a phone's width" do
+    page.driver.browser.manage.window.resize_to(390, 844)
+
+    assert_equal 0, evaluate_script("document.documentElement.scrollWidth - document.documentElement.clientWidth"),
+      "something on the page is wider than the viewport"
+  ensure
+    page.driver.browser.manage.window.resize_to(*SCREEN_SIZE)
+  end
+
+  # Prose stops on a field line rather than three pixels short of one, because
+  # the measure is derived from the page rather than chosen. Measured against
+  # the fields the browser actually laid out, not against the same arithmetic
+  # the stylesheet did — the two agreeing is the whole assertion.
+  test "the measure stops on a field line" do
+    fields = "[data-specimen-take=monochrome] .specimen__grid > *"
+    first = rect_of("#{fields}:first-child")
+    third = rect_of("#{fields}:nth-child(3)")
+
+    assert_in_delta third["left"] + third["width"] - first["left"], computed(".hint", "max-width").to_f, 1.0
+  end
+end

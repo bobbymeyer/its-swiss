@@ -1,0 +1,55 @@
+<%#
+  The shell. Everything an application's own layout would otherwise have to
+  remember: the view transition opt-in, the stylesheets in layer order, a way
+  past the masthead for a keyboard, and the two things a page has to say.
+
+  Slots, all optional:
+
+    :title       the page's title; falls back to the application's name
+    :head        anything else that belongs in <head>
+    :mark        the wordmark. No mark and no nav means no masthead at all
+    :nav         the destinations
+    :main_class  what the page's main region is, if it is a grid
+    :footer      whatever belongs after the page
+
+  It stops there. A page layout beyond this shell is the application's, for
+  the same reason its grid is.
+%>
+<!DOCTYPE html>
+<html lang="<%= I18n.locale %>">
+  <head>
+    <title><%= content_for(:title) || its_swiss_application_name %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <%# Opts every same-origin navigation into the View Transitions API.
+        Turbo reads this tag; transitions.css covers the same navigation with
+        JavaScript switched off. %>
+    <meta name="view-transition" content="same-origin">
+
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <%= its_swiss_stylesheet_tags %>
+    <%= javascript_importmap_tags if respond_to?(:javascript_importmap_tags) %>
+  </head>
+
+  <body>
+    <%# Before anything else in the document, so it is the first thing a
+        keyboard reaches. Off screen until it is focused, at which point it
+        has to be somewhere you can read it. %>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <%= render "its_swiss/shared/masthead" %>
+
+    <main id="main" class="page <%= content_for(:main_class) %>">
+      <%= render "its_swiss/shared/flash" %>
+      <%= yield %>
+    </main>
+
+    <% if content_for?(:footer) %>
+      <footer class="footer page"><%= content_for(:footer) %></footer>
+    <% end %>
+  </body>
+</html>

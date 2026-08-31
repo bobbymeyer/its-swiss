@@ -1,0 +1,18 @@
+<section data-specimen="values">
+  <h3>Value scale</h3>
+  <p class="hint">
+    Six steps of OKLCH lightness, paper to ink. Neutral as shipped; a consumer
+    warms the whole ladder with <code>--value-chroma</code> and
+    <code>--value-hue</code>.
+  </p>
+  <dl class="pairs">
+    <% (0..5).each do |step| %>
+      <dt data-value="<%= step %>"><code>--value-<%= step %></code></dt>
+      <dd>
+        <span class="specimen__value" style="background: var(--value-<%= step %>)"></span>
+      </dd>
+    <% end %>
+    <dt><code>--accent</code></dt>
+    <dd><span class="specimen__value" style="background: var(--accent)"></span></dd>
+  </dl>
+</section>

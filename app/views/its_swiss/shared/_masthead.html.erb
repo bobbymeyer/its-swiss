@@ -1,0 +1,15 @@
+<%# A band, a mark at one end, the destinations beside it, a hairline
+    underneath — and nothing at all if the application has given it neither.
+    A library that insisted on a bar across the top would be insisting on a
+    shape rather than offering one. %>
+<% if content_for?(:mark) || content_for?(:nav) %>
+  <header class="masthead page">
+    <% if content_for?(:mark) %>
+      <p class="masthead__mark"><%= content_for(:mark) %></p>
+    <% end %>
+
+    <% if content_for?(:nav) %>
+      <nav class="nav"><%= content_for(:nav) %></nav>
+    <% end %>
+  </header>
+<% end %>

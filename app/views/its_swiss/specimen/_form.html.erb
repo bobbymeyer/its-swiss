@@ -1,0 +1,18 @@
+<section data-specimen="form">
+  <h3>Form</h3>
+  <%= its_swiss_form_with url: "#form", method: :get do |form| %>
+    <%= form.text_field :name, value: "Brand Core", hint: "As it appears in the nav." %>
+    <%= form.text_area :notes, value: "" %>
+    <%= form.select :kind, [ %w[ Note note ], %w[ Essay essay ] ] %>
+    <%= form.check_box :published %>
+    <div class="field field--invalid">
+      <label for="specimen_refused">Refused</label>
+      <input id="specimen_refused" type="text" aria-invalid="true" aria-describedby="specimen_refused_error">
+      <p class="field__error" id="specimen_refused_error">Refused cannot be blank</p>
+    </div>
+    <div class="run">
+      <%= form.submit "Save" %>
+      <button type="button" class="button button--quiet">Cancel</button>
+    </div>
+  <% end %>
+</section>
