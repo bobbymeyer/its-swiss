@@ -45,4 +45,21 @@ jobs:
 
       - run: bin/test test/stylesheets test/helpers test/its_swiss test/generators test/integration
 
+      # A tag can be pushed for a version that is already out — a re-pushed
+      # tag, or a first release that went out by hand before this workflow
+      # existed. Publishing is not idempotent and RubyGems rejects a repeat,
+      # so the run would fail for having nothing to do. Ask first.
+      - name: Is this version already on RubyGems?
+        id: published
+        run: |
+          version="$(ruby -Ilib -e 'require "its_swiss/version"; print ItsSwiss::VERSION')"
+          if curl -sf "https://rubygems.org/api/v1/versions/its-swiss.json" \
+               | jq -e --arg v "$version" 'any(.[]; .number == $v)' > /dev/null; then
+            echo "already=true" >> "$GITHUB_OUTPUT"
+            echo "its-swiss $version is already published; nothing to push."
+          else
+            echo "already=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: rubygems/release-gem@v1
+        if: steps.published.outputs.already == 'false'

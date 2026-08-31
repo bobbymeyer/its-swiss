@@ -42,6 +42,10 @@ GitHub Actions publisher with:
 
 Docs: <https://guides.rubygems.org/trusted-publishing/>
 
+A tag pushed for a version that is already out does not fail the run — the
+workflow asks RubyGems first and skips the push. That is what makes it safe
+to tag a release that went out by hand.
+
 ## The manual path
 
 If trusted publishing is not set up, or a release has to go out from a
@@ -54,6 +58,11 @@ gem push its-swiss-0.1.0.gem
 
 The gemspec sets `rubygems_mfa_required`, so this prompts for an OTP. Keep it
 that way — it is the reason an API key on its own cannot publish this gem.
+
+That setting also means the pushing account needs MFA turned on for API
+operations, not just for signing in to the website. If a push is refused for
+MFA, that is the setting to check, under rubygems.org → Settings → Multi-factor
+authentication.
 
 ## What is checked before a push
 
