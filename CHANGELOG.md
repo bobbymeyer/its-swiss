@@ -86,6 +86,15 @@ upgrading.
 
 ### Fixed
 
+- **`rake release` did not exist.** The release workflow runs
+  `bundle exec rake release`, which is Bundler's task and arrives with
+  `require "bundler/gem_tasks"` — which the Rakefile did not have. So a
+  release passed every check it makes, minted its credentials over OIDC, and
+  stopped at *Don't know how to build task 'release'*. 0.2.0 never reached
+  RubyGems for this reason, and 0.1.0 only did because it was pushed by hand
+  before the workflow existed, which the "already published" guard then read
+  as nothing to do. Guarded now, along with the workflow's own tag-versus-
+  gemspec check.
 - **Every browser test was skipping in CI.** The suite looks for a browser and
   a driver, and a candidate found on the `PATH` came back as the bare name it
   was looked up by. Selenium wants a file — given `"chromedriver"` it raises
