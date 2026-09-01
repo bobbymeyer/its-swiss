@@ -10,7 +10,11 @@ class TypeTest < ActiveSupport::TestCase
     leadings = type.scan(/line-height: ([^;]+);/).flatten
 
     assert_not_empty leadings
-    assert_empty leadings.reject { |value| value.match?(/\Avar\(--space-\d+\)\z/) },
+    # Zero is the one value that is not a measurement: an inline box of
+    # another family brings its own ascent and descent and grows the line it
+    # sits on, and taking its leading to nothing leaves the line box to the
+    # strut, which is measured in baselines like everything else.
+    assert_empty leadings.reject { |value| value.match?(/\Avar\(--space-\d+\)\z|\A0\z/) },
       "a line box measured in anything but baselines breaks the vertical rhythm"
     assert_no_match(/--lead-/, type, "there is one ladder, and it is the space ladder")
   end

@@ -28,8 +28,16 @@
   img, svg, video { max-width: 100%; display: block; }
 
   /* A table is a grid of values, and a gap between its cells is a gap the
-     spacing ladder should be setting rather than the browser. */
-  table { border-collapse: collapse; border-spacing: 0; }
+     spacing ladder should be setting rather than the browser — hence the zero
+     spacing.
+
+     Separate rather than collapsed, because a collapsed border belongs to the
+     boundary rather than to either cell, and the browser pays for it by
+     splitting it: every row lands on a half pixel and the first one is half a
+     pixel short. Nothing here draws a vertical rule or a border two cells
+     could share, so separate borders cost nothing and each row is exactly as
+     tall as the ladder says. */
+  table { border-collapse: separate; border-spacing: 0; }
 
   /* The browser hides [hidden] with display: none, and any author rule that
      sets display at all outranks it — a .button says inline-block, so a
