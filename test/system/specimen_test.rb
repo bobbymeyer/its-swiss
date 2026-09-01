@@ -109,7 +109,15 @@ class SpecimenSystemTest < ApplicationSystemTestCase
     offenders = evaluate_script(<<~JS)
       (() => {
         const baseline = #{baseline}
-        const off = (value) => Math.abs(Math.round((value % baseline) * 100) / 100) > 0
+        // A browser lays out in 64ths of a pixel, and a cap height rounded up
+        // to the ladder can land a 64th short of it depending on the font's
+        // metrics. The tolerance is a layout unit or two, not a fudge: a real
+        // error here is a whole pixel, because that is the smallest thing a
+        // rule or a border can be.
+        const off = (value) => {
+          const over = ((value % baseline) + baseline) % baseline
+          return Math.min(over, baseline - over) > 0.05
+        }
         return Array.from(document.querySelectorAll("body *")).filter((el) => {
           const style = getComputedStyle(el)
           // A line box is the other assertion's business, an out-of-flow box
@@ -165,7 +173,8 @@ class SpecimenSystemTest < ApplicationSystemTestCase
           const style = getComputedStyle(el)
           if (style.textBoxTrim !== "trim-both") return true
           const bottom = el.getBoundingClientRect().bottom + window.scrollY
-          return Math.abs(Math.round((bottom % baseline) * 100) / 100) > 0
+          const over = ((bottom % baseline) + baseline) % baseline
+          return Math.min(over, baseline - over) > 0.05
         }).map((el) => {
           const style = getComputedStyle(el)
           const bottom = el.getBoundingClientRect().bottom + window.scrollY
