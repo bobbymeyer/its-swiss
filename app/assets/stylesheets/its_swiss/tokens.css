@@ -63,7 +63,16 @@
 
     /* --- Rules -------------------------------------------------------------
        Two weights. A hairline separates; a heavier one interrupts, and is
-       kept for the two or three places a page has something to insist on. */
+       kept for the two or three places a page has something to insist on.
+
+       A rule is drawn inside the box it belongs to, never on top of it:
+       wherever one sits on a padded edge, its width comes out of that
+       padding — calc(var(--space-1) - var(--rule-hair)) — and wherever it is
+       the element, out of the margin above it. A pixel added instead of
+       taken is a box a pixel taller than the ladder says, which puts
+       everything below it off the baseline; and since every rule on the page
+       does it, the error accumulates down the column rather than showing up
+       once. */
     --rule-hair: 1px;
     --rule-heavy: 2px;
 

@@ -60,6 +60,7 @@
      At a 16px line box these are 14px targets, under the 24px minimum. The
      leading does the work so the type does not have to change. */
   .micro--tap,
+  .choice label,
   .pagination a,
   .pagination [aria-current] { line-height: var(--space-3); }
 
@@ -106,4 +107,18 @@
   .copy { font: inherit; }
 
   code, pre, kbd, samp { font-family: var(--font-mono); font-size: 0.9em; }
+
+  /* A token set in a line of prose is a second font on that line, and a
+     second font brings its own ascent and descent. Both inline boxes align on
+     the baseline and the line box has to hold both, so the line grows — by a
+     pixel at body size, by four under the page title, and only on the lines
+     that happen to mention a token. Zero leading takes the inline box out of
+     that calculation and leaves the line to the strut, which is the one thing
+     on the line already measured in baselines. The glyphs are unaffected:
+     leading has never been what draws them.
+
+     Inline only. A pre is a block, and a block with no leading has no lines. */
+  code, kbd, samp { line-height: 0; }
+
+  pre { line-height: var(--space-3); }
 }

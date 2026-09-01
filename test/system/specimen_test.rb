@@ -95,6 +95,45 @@ class SpecimenSystemTest < ApplicationSystemTestCase
     end
   end
 
+  # A line box is not a box. Every line box here is a whole number of
+  # baselines and the page was still off the grid, because the rhythm is
+  # broken by what is drawn around the type: a hairline added to a padded edge
+  # makes the box a pixel taller than the ladder says, and every ruled
+  # component in the library did it — so the error accumulated down the column
+  # instead of showing up once, and by the footer the page was seven pixels
+  # out. This measures what the browser actually laid out, on a page that
+  # holds one of everything.
+  test "every box on the page is a whole number of baselines" do
+    baseline = evaluate_script("parseFloat(getComputedStyle(document.documentElement).fontSize) * 0.5")
+
+    offenders = evaluate_script(<<~JS)
+      (() => {
+        const baseline = #{baseline}
+        const off = (value) => Math.abs(Math.round((value % baseline) * 100) / 100) > 0
+        return Array.from(document.querySelectorAll("body *")).filter((el) => {
+          const style = getComputedStyle(el)
+          // A line box is the other assertion's business, an out-of-flow box
+          // sits on no column at all, and a checkbox is drawn by the browser
+          // at a size of its own on a row that is measured here regardless.
+          if (style.display.startsWith("inline") && style.display !== "inline-block") return false
+          if (style.position === "absolute" || style.position === "fixed") return false
+          if (el.matches("input[type=checkbox], input[type=radio]")) return false
+
+          const box = el.getBoundingClientRect()
+          if (box.height === 0) return false
+          return off(box.top + window.scrollY) || off(box.height)
+        }).map((el) => {
+          const box = el.getBoundingClientRect()
+          return el.tagName.toLowerCase() + (el.className ? "." + String(el.className).trim().split(/\\s+/).join(".") : "") +
+            " starts at " + (box.top + window.scrollY) + " and is " + box.height + " tall"
+        }).slice(0, 10)
+      })()
+    JS
+
+    assert_empty offenders,
+      "a box that is not a whole number of #{baseline}px baselines puts everything below it off the grid"
+  end
+
   # A figure is read right-aligned against its own heading, which is what
   # .numeric is for. Setting it with the padding-inline shorthand also zeroed
   # the end padding of every numeric cell — right for one in the final column,

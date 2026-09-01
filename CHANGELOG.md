@@ -2,6 +2,58 @@
 
 Semver. Consumers pin `~> 0.1`.
 
+## Unreleased
+
+### Fixed
+
+- **The vertical rhythm was decorative.** Every line box was a whole number of
+  baselines and the page was still off the grid, because a line box is not a
+  box: wherever a rule sat on a padded edge, its width was *added* to a box
+  whose padding was already whole baselines. A hairline is a pixel, so each
+  one moved everything below it by a pixel — and since the masthead, the
+  footer, `hr`, every table row, every field control, every button, the
+  pagination and the errors block all did it, the error accumulated down the
+  column rather than showing up once. On the specimen the page was one pixel
+  out by the first heading and seven by the footer.
+
+  Every rule now comes out of the padding it sits on — `calc(var(--space-1) -
+  var(--rule-hair))` — and `hr` draws its rule on the top edge of a box one
+  baseline tall instead of compensating in a margin, because a margin
+  compensation collapses away exactly where a rule leads or precedes a
+  section. Boxes that change height: a button and a table row are 40px rather
+  than 42 and 41, a field control 32 rather than 33, a `select` 32 rather than
+  29.
+- **A token in a line of prose grew the line.** `code`, `kbd` and `samp` set
+  in the mono stack are a second font on the line, with an ascent and a
+  descent of their own that the line box had to hold — a pixel at body size,
+  four under the page title, and only on the lines that happened to mention a
+  token. Their leading is now zero, which leaves the line box to the strut;
+  the glyphs are untouched.
+- **`select` ignored its leading.** `font: inherit` hands a control the family
+  and the size and puts its line box back to `normal`, so a select stood 29px
+  where every other control stood 32. It is now given the height the rest of
+  the ladder produces.
+- **A checkbox row was 20px.** The label beside a checkbox took the micro
+  register's 16px line box, which is not the row a 13px control sits on. It
+  now takes the same 24px line the library already gives the micro type you
+  can tap.
+- **Table rows landed on half pixels.** With `border-collapse: collapse` the
+  shared rule belongs to the boundary rather than to either cell, and the
+  browser splits it: every row sat at `x.5` and the header row was half a
+  pixel short. Nothing in the library draws a border two cells could share, so
+  borders are separate — with the spacing still zero — and a row is exactly as
+  tall as the ladder says.
+
+### Guards added
+
+- **Every box on the specimen starts on a baseline and is a whole number of
+  them tall**, measured in the browser on the page that holds one of
+  everything. The suite already asserted that every *line box* was a whole
+  number of baselines, which was true throughout and is what let all of the
+  above through.
+- The leading guard now admits `0`, the one value that is not a measurement:
+  an inline box that takes no part in the line it sits on.
+
 ## 0.2.0 — 2026-08-31
 
 Everything here was found by the second consumer inside a day of building on
