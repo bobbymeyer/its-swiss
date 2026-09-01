@@ -112,7 +112,7 @@
 
   .table th,
   .table td {
-    padding-block: var(--space-1) calc(var(--space-1) - var(--rule-hair));
+    padding-block: calc(var(--space-1) + var(--cap-correction)) calc(var(--space-1) - var(--rule-hair));
     padding-inline-end: var(--space-3);
     border-bottom: var(--rule-hair) solid var(--rule);
     vertical-align: baseline;

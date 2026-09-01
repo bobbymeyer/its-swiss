@@ -17,8 +17,20 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
 
   CHROMIUM = %w[ /opt/pw-browsers/chromium chromium chromium-browser google-chrome ].freeze
 
+  # Where a candidate actually is. Selenium wants a file rather than a name —
+  # given "chromedriver" it raises "not a file" — and a name is exactly what
+  # the PATH lookup used to return, so a runner that had installed a driver
+  # skipped every browser test as though it had none.
   def self.find(candidates)
-    candidates.find { |path| File.executable?(path) || system("command -v #{path} > /dev/null 2>&1") }
+    candidates.filter_map { |candidate| File.absolute_path?(candidate) ? executable(candidate) : on_path(candidate) }.first
+  end
+
+  def self.executable(path)
+    path if File.executable?(path) && !File.directory?(path)
+  end
+
+  def self.on_path(name)
+    ENV.fetch("PATH", "").split(File::PATH_SEPARATOR).filter_map { |dir| executable(File.join(dir, name)) }.first
   end
 
   BROWSER = ENV["CHROME_BINARY"].presence || find(CHROMIUM)
@@ -48,8 +60,17 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
 
   def browser? = Capybara.current_driver != :rack_test
 
+  # A skipped browser test is invisible in a passing job, which is the one way
+  # this suite can lie: the assertions that need a browser are the ones about
+  # what the cascade and the box model actually did. So a machine without one
+  # skips, and a run that was supposed to have one fails instead — CI sets
+  # REQUIRE_BROWSER, and read the flag rather than guessing at CI's own.
   def needs_a_browser
-    skip "needs a real browser; set CHROME_BINARY and CHROMEDRIVER" unless browser?
+    return if browser?
+
+    message = "needs a real browser; set CHROME_BINARY and CHROMEDRIVER"
+
+    ENV["REQUIRE_BROWSER"].present? ? flunk("#{message} — and REQUIRE_BROWSER says this run has one") : skip(message)
   end
 
   # What the browser resolved, rather than what the stylesheet says. A rule on

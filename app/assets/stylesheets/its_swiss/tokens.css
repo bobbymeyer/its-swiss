@@ -76,6 +76,15 @@
     --rule-hair: 1px;
     --rule-heavy: 2px;
 
+    /* What a trimmed block adds above its cap to reach the next baseline.
+       Zero here and given a value in type.css where the browser can trim, so
+       a component that sets its own padding writes the same arithmetic in
+       both directions — calc(var(--space-1) + var(--cap-correction)) is the
+       padding either way. It is deliberately not resolved here: a custom
+       property is substituted where it is used, so 1cap inside it is the cap
+       height of the element that reads it rather than of the root. */
+    --cap-correction: 0px;
+
     /* --- Type --------------------------------------------------------------
        Five sizes on an alternating 1.33 / 1.5 ratio, every one a multiple of
        four. Five is the count an interface actually uses: labels, body, a

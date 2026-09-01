@@ -37,7 +37,24 @@ jobs:
           ruby-version: .ruby-version
           bundler-cache: true
       - uses: browser-actions/setup-chrome@v1
+        id: chrome
         with:
           chrome-version: stable
           install-chromedriver: true
+      # If either path is empty the pinning above did nothing and the run would
+      # quietly fall back to the PATH, which is the failure this job just had.
+      - name: The browser and driver this job will use
+        run: |
+          "${{ steps.chrome.outputs.chrome-path }}" --version
+          "${{ steps.chrome.outputs.chromedriver-path }}" --version
       - run: bin/test test/system
+        env:
+          # The job exists for these assertions; a run that skips them all is
+          # a green job that checked nothing.
+          REQUIRE_BROWSER: "1"
+          # The pair this step just installed, rather than whatever the PATH
+          # offers first: the runner image ships a chromedriver of its own,
+          # and a driver one major version ahead of the browser refuses to
+          # start a session at all.
+          CHROME_BINARY: ${{ steps.chrome.outputs.chrome-path }}
+          CHROMEDRIVER: ${{ steps.chrome.outputs.chromedriver-path }}

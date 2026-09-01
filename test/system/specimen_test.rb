@@ -109,7 +109,15 @@ class SpecimenSystemTest < ApplicationSystemTestCase
     offenders = evaluate_script(<<~JS)
       (() => {
         const baseline = #{baseline}
-        const off = (value) => Math.abs(Math.round((value % baseline) * 100) / 100) > 0
+        // A browser lays out in 64ths of a pixel, and a cap height rounded up
+        // to the ladder can land a 64th short of it depending on the font's
+        // metrics. The tolerance is a layout unit or two, not a fudge: a real
+        // error here is a whole pixel, because that is the smallest thing a
+        // rule or a border can be.
+        const off = (value) => {
+          const over = ((value % baseline) + baseline) % baseline
+          return Math.min(over, baseline - over) > 0.05
+        }
         return Array.from(document.querySelectorAll("body *")).filter((el) => {
           const style = getComputedStyle(el)
           // A line box is the other assertion's business, an out-of-flow box
@@ -121,7 +129,10 @@ class SpecimenSystemTest < ApplicationSystemTestCase
 
           const box = el.getBoundingClientRect()
           if (box.height === 0) return false
-          return off(box.top + window.scrollY) || off(box.height)
+          // An inline-block sits on its line rather than on the column, so
+          // only its height is the ladder's business.
+          const inline = style.display === "inline-block"
+          return (!inline && off(box.top + window.scrollY)) || off(box.height)
         }).map((el) => {
           const box = el.getBoundingClientRect()
           return el.tagName.toLowerCase() + (el.className ? "." + String(el.className).trim().split(/\\s+/).join(".") : "") +
@@ -132,6 +143,49 @@ class SpecimenSystemTest < ApplicationSystemTestCase
 
     assert_empty offenders,
       "a box that is not a whole number of #{baseline}px baselines puts everything below it off the grid"
+  end
+
+  # What the grid is actually for. Boxes in step are not a baseline grid: a
+  # line's baseline falls wherever the font's ascent and the leading either
+  # side of it put it inside the line box, so at 0.2.0 a paragraph's baselines
+  # sat a pixel off the grid, a caption's four, and the two were three pixels
+  # out of register with each other.
+  #
+  # Trimming makes the block's under edge the baseline of its last line — that
+  # is what `alphabetic` means — so measuring the box measures the baseline,
+  # and every earlier line is a whole number of baselines above it because the
+  # leading is. Measured rather than probed on purpose: inserting a span to
+  # read a baseline directly re-lays out a trimmed page and moves the thing it
+  # was measuring.
+  test "the type sits on the baseline, not merely in step with it" do
+    skip "this browser does not trim text boxes" unless evaluate_script(
+      %(CSS.supports("text-box", "trim-both cap alphabetic"))
+    )
+
+    baseline = evaluate_script("parseFloat(getComputedStyle(document.documentElement).fontSize) * 0.5")
+
+    offenders = evaluate_script(<<~JS)
+      (() => {
+        const baseline = #{baseline}
+        const registers = ".page-title, h1, h2, h3, h4, p, li, dt, dd, .micro, .hint, .lede"
+        return Array.from(document.querySelectorAll(registers)).filter((el) => {
+          if (!el.textContent.trim()) return false
+          const style = getComputedStyle(el)
+          if (style.textBoxTrim !== "trim-both") return true
+          const bottom = el.getBoundingClientRect().bottom + window.scrollY
+          const over = ((bottom % baseline) + baseline) % baseline
+          return Math.min(over, baseline - over) > 0.05
+        }).map((el) => {
+          const style = getComputedStyle(el)
+          const bottom = el.getBoundingClientRect().bottom + window.scrollY
+          return el.tagName.toLowerCase() + (el.className ? "." + String(el.className).trim().split(/\\s+/).join(".") : "") +
+            " at " + el.style.fontSize + " trim=" + style.textBoxTrim + " baseline at " + bottom
+        }).slice(0, 10)
+      })()
+    JS
+
+    assert_empty offenders,
+      "a register whose last baseline is not on a #{baseline}px line is a register in its own rhythm"
   end
 
   # A figure is read right-aligned against its own heading, which is what

@@ -63,6 +63,44 @@ holding all of them. Nothing here has a default the gem could pick honestly.
 | `--font-family` | The typeface. The gem ships none — declare `@font-face` and name it |
 | `--value-chroma`, `--value-hue` | Warms the whole value scale together. Neutral as shipped |
 | `--columns`, `--gutter`, `--baseline` | How many fields this problem has, and the unit everything vertical is measured in |
+| `--cap-correction` | Read, not set: what a trimmed register adds above its cap to reach the next baseline |
+
+### The baseline
+
+Everything vertical is measured in baselines, and the type sits on them rather
+than merely in step with them.
+
+Boxes in step are the easy half: line boxes and spacing are whole numbers of
+`--baseline`, so blocks that start together stay together down the column.
+That alone is not a baseline grid — where a line's baseline falls inside its
+line box depends on the font's ascent and the leading either side of it, so a
+caption and a paragraph can both be in step and still be three pixels out of
+register with each other.
+
+So every text register is trimmed to its own type: `text-box: trim-both cap
+alphabetic` makes a block's over edge the cap of its first line and its under
+edge the baseline of its last, and one padding rounds the cap height up to the
+next baseline —
+
+```css
+padding-block-start: calc(round(up, 1cap, var(--baseline)) - 1cap);
+```
+
+— which the browser computes in cap units, so the library still never has to
+be told the font's metrics. It is published as `--cap-correction`: a component
+that sets its own padding on trimmed text adds it, as
+`calc(var(--space-1) + var(--cap-correction))`, which is the right padding
+whether or not the browser trims.
+
+Two things opt out, with `text-box: normal; padding-block-start: 0`: a control,
+whose box is the target and whose label is centred in it, and any block whose
+content is not type — an image, a swatch, a diagram.
+
+It is behind `@supports`, and the fallback is the box rhythm above. Chromium
+and Safari trim; Firefox does not yet. The two do not render identically:
+trimming takes the leading out of a block's own box, so a trimmed page is a
+few pixels tighter per block and the ladder means what it says rather than
+what it says plus half a line. Both stay on the grid.
 
 ### The value scale
 
@@ -240,10 +278,11 @@ every line box is measured in baselines, that no signal rests on colour alone.
 The rest needs a browser, because a rule on the wrong selector reads correctly
 in the CSS and does nothing on a page. Those assert what Chromium actually
 resolved: that an unlayered declaration beats the library's layered one, that
-the accent unset is ink, that quiet ink clears 4.5:1, that every line box is a
-whole number of baselines, that nothing escapes the page at 390px, and that the
-measure lands on a field line the browser really laid out. They skip loudly
-rather than pretending to have checked.
+the accent unset is ink, that quiet ink clears 4.5:1, that every box on the
+specimen starts on a baseline and is a whole number of them tall, that every
+register's last baseline lands on one, that nothing escapes the page at 390px,
+and that the measure lands on a field line the browser really laid out. They
+skip loudly rather than pretending to have checked.
 
 There are no pixel tests.
 
