@@ -82,8 +82,10 @@ Semver. Consumers pin `~> 0.1`.
   *not a file* — so the harness caught that, fell back to `rack_test` and
   skipped, on a runner that had just installed a driver for it. The job was
   green and had checked nothing: 12 runs, 12 skips. Candidates now resolve to
-  where they actually are, and the CI job sets `REQUIRE_BROWSER`, which turns
-  a skip into a failure — a skipped browser test is invisible in a passing
+  where they actually are, and the CI job now names the browser and the driver
+  the same step installed — the runner image ships a chromedriver of its own,
+  and a driver a major version ahead of the browser refuses to start a session
+  at all — and sets `REQUIRE_BROWSER`, which turns a skip into a failure — a skipped browser test is invisible in a passing
   job, and the assertions that need a browser are the ones about what the
   cascade and the box model actually did.
 - **The `:head` slot rendered before the library's own stylesheets**, so a
