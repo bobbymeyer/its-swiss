@@ -44,8 +44,54 @@ Semver. Consumers pin `~> 0.1`.
   borders are separate — with the spacing still zero — and a row is exactly as
   tall as the ladder says.
 
+### Added
+
+- **The type sits on the baseline now, not merely in step with it.** Boxes in
+  step are not a baseline grid. Where a line's baseline falls inside its line
+  box depends on the font's ascent and the leading either side of it, so at
+  0.2.0 a paragraph's baselines sat a pixel off the grid, a caption's four,
+  and the two were three pixels out of register with each other — every
+  register keeping its own grid, none of them the page's.
+
+  Every text register is now trimmed — `text-box: trim-both cap alphabetic` —
+  which makes a block's over edge the cap of its first line and its under edge
+  the baseline of its last. What then separates the box from the grid is the
+  cap height, and one padding rounds it up: `calc(round(up, 1cap,
+  var(--baseline)) - 1cap)`, measured by the browser in cap units, so a
+  library that leaves the typeface to the application still never has to be
+  told the font's metrics. It is published as `--cap-correction`, which any
+  component setting its own padding adds to it — `calc(var(--space-1) +
+  var(--cap-correction))` is the right padding in both paths.
+
+  Behind `@supports`, and the fallback is the box rhythm below: Chromium and
+  Safari trim, Firefox does not yet. **The two do not render identically.**
+  Trimming takes the leading out of a block's own box, so the spacing you
+  declare is the spacing you see; a trimmed page is a few pixels tighter per
+  block than the same page in Firefox, and the ladder means what it says
+  rather than what it says plus half a line. Both stay on the grid.
+
+  Controls opt out — a button is five baselines of box with its label centred,
+  and trimming the label would take the box with it — as does any block whose
+  content is not type. `text-box: normal; padding-block-start: 0` is how.
+
+### Fixed
+
+- **The `:head` slot rendered before the library's own stylesheets**, so a
+  layer named there took its place in the order ahead of every layer the
+  library declares and lost to all of them. The specimen's own furniture is
+  one such stylesheet, and it could not override the library it documents. The
+  slot now comes after.
+
 ### Guards added
 
+- **Every register's last baseline is on a baseline**, measured in the
+  browser. Under `trim-both … alphabetic` a block's under edge *is* that
+  baseline, so measuring the box measures the type — and it is measured rather
+  than probed on purpose: inserting a span to read a baseline re-lays out a
+  trimmed page and moves the thing it was measuring. Skips where the browser
+  cannot trim.
+- **The correction is zero where the browser cannot trim**, read from the
+  source, so the enhancement can never become a requirement.
 - **Every box on the specimen starts on a baseline and is a whole number of
   them tall**, measured in the browser on the page that holds one of
   everything. The suite already asserted that every *line box* was a whole

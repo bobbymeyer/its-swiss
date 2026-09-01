@@ -108,6 +108,54 @@
 
   code, pre, kbd, samp { font-family: var(--font-mono); font-size: 0.9em; }
 
+  /* --- The baseline, actually -------------------------------------------
+     Everything above puts whole baselines between one line box and the next,
+     which keeps blocks in step but is not yet a baseline grid: where a line's
+     baseline falls inside its line box depends on the font's ascent and the
+     leading either side of it, so a caption's baselines and a paragraph's are
+     both 24 apart and 3px out of register with each other. The grid was the
+     boxes' and the type sat wherever the font left it.
+
+     Trimming makes the box the type's: the block's over edge becomes the cap
+     of its first line and its under edge the baseline of its last. The cap
+     height is then all that separates the box from the grid, and one padding
+     rounds it up to a whole baseline — measured by the browser, in cap units,
+     so a library that leaves the family to the application still never has to
+     be told the font's metrics. Every baseline in the block lands on a line,
+     because the rest are a whole number of them above the last.
+
+     Behind @supports, and the fallback is the rhythm above: Chromium and
+     Safari trim, Firefox does not yet, and a page that keeps its boxes on the
+     ladder is what the two have in common. */
+  @supports (text-box: trim-both cap alphabetic) and (padding-top: round(up, 1cap, 8px)) {
+    :root { --cap-correction: calc(round(up, 1cap, var(--baseline)) - 1cap); }
+
+    .page-title,
+    h1, h2, h3, h4,
+    p, li, dt, dd, th, td, blockquote, figcaption, caption, legend, label,
+    .micro, .hint, .lede, .empty,
+    /* Flex items are blockified, so the text in a row is trimmable too — and
+       has to be, or a row that aligns on the baseline is aligning a trimmed
+       box against an untrimmed one. */
+    .nav a,
+    .pagination a,
+    .pagination [aria-current],
+    .pagination__gap {
+      text-box: trim-both cap alphabetic;
+      padding-block-start: var(--cap-correction);
+    }
+
+    /* A control's box is the target, not the type in it: a button is five
+       baselines of box with its label centred, and trimming the label would
+       take the box with it. */
+    .button,
+    .copy,
+    /* The label beside a checkbox is the exception among labels: it shares a
+       row with a control the browser draws at a size of its own, and the row
+       is held to a line by the leading rather than by the box. */
+    .choice label { text-box: normal; padding-block-start: 0; }
+  }
+
   /* A token set in a line of prose is a second font on that line, and a
      second font brings its own ascent and descent. Both inline boxes align on
      the baseline and the line box has to hold both, so the line grows — by a

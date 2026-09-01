@@ -29,10 +29,15 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
-    <%= yield :head %>
-
     <%= its_swiss_stylesheet_tags %>
     <%= javascript_importmap_tags if respond_to?(:javascript_importmap_tags) %>
+
+    <%# After the library, not before it. A layer takes its place in the order
+        from where it is first named, so a page that adds a layered stylesheet
+        through this slot — the specimen's own furniture is one — would
+        otherwise land ahead of every layer the library declares and lose to
+        all of them. %>
+    <%= yield :head %>
   </head>
 
   <body>

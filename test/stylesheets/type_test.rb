@@ -19,6 +19,21 @@ class TypeTest < ActiveSupport::TestCase
     assert_no_match(/--lead-/, type, "there is one ladder, and it is the space ladder")
   end
 
+  # The trimmed path is an enhancement, not a requirement: Firefox does not
+  # trim a text box yet, and a stylesheet that assumed it would leave every
+  # padded register a few pixels tall for no reason.
+  test "the cap correction is zero where the browser cannot trim" do
+    assert_match(/--cap-correction:\s*0px/, rules_in("tokens"),
+      "the correction has to be inert before type.css gives it a value")
+
+    trim = rules_in("type")[/@supports[^{]+\{.*/m]
+
+    assert_not_nil trim, "the trim belongs behind @supports or it is a requirement"
+    assert_match(/text-box:\s*trim-both cap alphabetic/, trim)
+    assert_match(/--cap-correction:\s*calc\(round\(up, 1cap, var\(--baseline\)\) - 1cap\)/, trim,
+      "the correction is the browser's cap height rounded to the ladder, not a number the library was told")
+  end
+
   test "nothing is set in capitals" do
     offenders = every_stylesheet.select { |_, css| css.match?(/text-transform:\s*uppercase/) }
 
