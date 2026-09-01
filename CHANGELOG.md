@@ -76,6 +76,16 @@ Semver. Consumers pin `~> 0.1`.
 
 ### Fixed
 
+- **Every browser test was skipping in CI.** The suite looks for a browser and
+  a driver, and a candidate found on the `PATH` came back as the bare name it
+  was looked up by. Selenium wants a file — given `"chromedriver"` it raises
+  *not a file* — so the harness caught that, fell back to `rack_test` and
+  skipped, on a runner that had just installed a driver for it. The job was
+  green and had checked nothing: 12 runs, 12 skips. Candidates now resolve to
+  where they actually are, and the CI job sets `REQUIRE_BROWSER`, which turns
+  a skip into a failure — a skipped browser test is invisible in a passing
+  job, and the assertions that need a browser are the ones about what the
+  cascade and the box model actually did.
 - **The `:head` slot rendered before the library's own stylesheets**, so a
   layer named there took its place in the order ahead of every layer the
   library declares and lost to all of them. The specimen's own furniture is
