@@ -2,7 +2,17 @@
 
 Semver. Consumers pin `~> 0.1`.
 
-## Unreleased
+## 0.3.0 — 2026-09-01
+
+The vertical rhythm, twice: once to put every box on the baseline, and again
+to put the type on it. Found from outside, in a page that embedded the
+specimen and turned the baseline overlay on — the grid was drawn correctly and
+nothing sat on it.
+
+Rendering moves. Every ruled component is a pixel or two shorter, and where a
+browser can trim a text box the leading comes out of the block, so a page is
+tighter than 0.2.0 by a few pixels per block. Read this section before
+upgrading.
 
 ### Fixed
 
