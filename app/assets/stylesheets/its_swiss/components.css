@@ -71,7 +71,7 @@
     padding-block: calc(var(--line) - var(--rule-hair)) var(--line);
     border-top: var(--rule-hair) solid var(--rule);
     font-size: var(--size-1);
-    line-height: var(--space-3);
+    line-height: var(--line);
   }
 
   /* --- Rules --------------------------------------------------------------
@@ -292,7 +292,7 @@
   .field__error {
     color: var(--accent);
     font-size: var(--size-1);
-    line-height: var(--space-2);
+    line-height: var(--line);
   }
 
   /* --- Buttons ------------------------------------------------------------

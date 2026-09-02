@@ -2,6 +2,31 @@
 
 Semver. Consumers pin `~> 0.1`.
 
+## 0.6.1 — 2026-09-02
+
+Two registers were leaded off the ladder, and trimming was hiding it.
+
+- **`.footer` and `.field__error` take their leading from `--line`.** The
+  footer was led on `--space-3` and the field error on `--space-2`. The first
+  happens to be twenty-four pixels and so was only wrong to read; the second
+  is sixteen, and put eight pixels into the column that everything below it
+  then carried.
+- **The leading guard is asked of every stylesheet, not only `type.css`.** It
+  passed for as long as it did because a register can be declared in any file
+  and it was only ever looking in one.
+- **The grid is measured without `text-box-trim` as well as with it,** and the
+  published page is measured at all. A trimmed box is its cap rounded up to a
+  whole line whatever the leading under it says, so trimming hides exactly
+  this class of error; a browser without it got a page that came apart from
+  the form down. The check now runs twice, and the file `bin/specimen` writes
+  is loaded in a browser over `file://` rather than only read as text.
+
+Why: the vertical grid was a claim about Chromium. Both mistakes were in
+`components.css`, both were invisible to the guard that exists to catch them,
+and both were invisible on screen in the one browser everything was checked
+in — which is three ways of saying the same thing, and the reason the fix is
+mostly test.
+
 ## 0.6.0 — 2026-09-02
 
 The specimen is published, so nothing has to keep a copy of it.

@@ -9,15 +9,24 @@ class TypeTest < ActiveSupport::TestCase
   # lines puts every line of type after it somewhere new — which is what a
   # label on sixteen and a section head on thirty-two did, all the way down a
   # column, for as long as eight pixels was called the baseline.
+  #
+  # Asked of type.css alone this passed while two registers in components.css
+  # were leaded off the ladder — a footer on twenty-four by way of the space
+  # step, and a field error on sixteen. Trimming hid both, because a trimmed
+  # box is its cap rounded up to a line whatever the leading under it says,
+  # so the page only came apart in a browser without it. A register can be
+  # declared in any file, so the question has to be asked of all of them.
   test "every leading is a whole number of lines" do
-    type = rules_in("type")
-    leadings = type.scan(/line-height: ([^;]+);/).flatten - [ "0" ]
+    every_stylesheet.each do |name, css|
+      leadings = css.scan(/line-height: ([^;]+);/).flatten - [ "0" ]
 
-    assert_not_empty leadings
-    assert_empty leadings.reject { |value| value.match?(/\Avar\(--line(-\d+)?\)\z/) },
-      "a line box measured in anything but whole lines breaks the vertical rhythm"
-    assert_no_match(/line-height: var\(--space-/, type,
-      "the space ladder is the horizontal step; it is not the baseline")
+      assert_empty leadings.reject { |value| value.match?(/\Avar\(--line(-\d+)?\)\z/) },
+        "#{name}.css measures a line box in something other than whole lines"
+      assert_no_match(/line-height: var\(--space-/, css,
+        "#{name}.css leads type off the space ladder, which is the horizontal step")
+    end
+
+    assert_not_empty rules_in("type").scan(/line-height: ([^;]+);/).flatten
   end
 
   test "nothing is set in capitals" do
