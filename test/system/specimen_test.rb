@@ -85,7 +85,7 @@ class SpecimenSystemTest < ApplicationSystemTestCase
   # Every line box is a whole number of baselines, or the vertical rhythm is
   # decorative rather than real.
   test "every line box is a whole number of baselines" do
-    baseline = evaluate_script("parseFloat(getComputedStyle(document.documentElement).fontSize) * 0.5")
+    baseline = evaluate_script("parseFloat(getComputedStyle(document.documentElement).fontSize) * 1.5")
 
     [ "body", "h1.page-title", "[data-specimen-take=monochrome] h2", ".hint", ".micro", ".nav a", ".button" ].each do |selector|
       leading = computed(selector, "line-height").to_f
@@ -104,7 +104,7 @@ class SpecimenSystemTest < ApplicationSystemTestCase
   # out. This measures what the browser actually laid out, on a page that
   # holds one of everything.
   test "every box on the page is a whole number of baselines" do
-    baseline = evaluate_script("parseFloat(getComputedStyle(document.documentElement).fontSize) * 0.5")
+    baseline = evaluate_script("parseFloat(getComputedStyle(document.documentElement).fontSize) * 1.5")
 
     offenders = evaluate_script(<<~JS)
       (() => {
@@ -114,10 +114,16 @@ class SpecimenSystemTest < ApplicationSystemTestCase
         // metrics. The tolerance is a layout unit or two, not a fudge: a real
         // error here is a whole pixel, because that is the smallest thing a
         // rule or a border can be.
-        const off = (value) => {
-          const over = ((value % baseline) + baseline) % baseline
-          return Math.min(over, baseline - over) > 0.05
+        const off = (value, unit) => {
+          const over = ((value % unit) + unit) % unit
+          return Math.min(over, unit - over) > 0.05
         }
+        // A block of small type may sit on a half-line — that is what
+        // .subgrid declares, and the whole point of declaring it. The block
+        // itself still owes the column whole lines; only what is inside it
+        // may halve them.
+        const unitFor = (el) =>
+          el.parentElement && el.parentElement.closest(".subgrid") ? baseline / 2 : baseline
         return Array.from(document.querySelectorAll("body *")).filter((el) => {
           const style = getComputedStyle(el)
           // A line box is the other assertion's business, an out-of-flow box
@@ -132,7 +138,8 @@ class SpecimenSystemTest < ApplicationSystemTestCase
           // An inline-block sits on its line rather than on the column, so
           // only its height is the ladder's business.
           const inline = style.display === "inline-block"
-          return (!inline && off(box.top + window.scrollY)) || off(box.height)
+          const unit = unitFor(el)
+          return (!inline && off(box.top + window.scrollY, unit)) || off(box.height, unit)
         }).map((el) => {
           const box = el.getBoundingClientRect()
           return el.tagName.toLowerCase() + (el.className ? "." + String(el.className).trim().split(/\\s+/).join(".") : "") +
@@ -162,7 +169,7 @@ class SpecimenSystemTest < ApplicationSystemTestCase
       %(CSS.supports("text-box", "trim-both cap alphabetic"))
     )
 
-    baseline = evaluate_script("parseFloat(getComputedStyle(document.documentElement).fontSize) * 0.5")
+    baseline = evaluate_script("parseFloat(getComputedStyle(document.documentElement).fontSize) * 1.5")
 
     offenders = evaluate_script(<<~JS)
       (() => {
@@ -202,6 +209,24 @@ class SpecimenSystemTest < ApplicationSystemTestCase
       "a number runs straight into the next column"
     assert_equal computed(".table tbody td:last-child", "padding-inline-end"), "0px",
       "the last column still stops at the page"
+  end
+
+  # The case that nearly does not transfer from print. A picture's height is
+  # its fluid width over its ratio, which is a fraction that changes as the
+  # window does — so without rounding, one picture puts the whole column
+  # below it off the grid at every width but a few.
+  test "a picture takes a whole number of lines at any width" do
+    line = evaluate_script("parseFloat(getComputedStyle(document.documentElement).fontSize) * 1.5")
+
+    [ 1400, 1100, 903, 712 ].each do |width|
+      page.driver.browser.manage.window.resize_to(width, 1400)
+      height = rect_of("[data-specimen=figure] .figure > svg")["height"]
+
+      assert_equal 0, (height % line).round(2),
+        "at #{width}px the picture is #{height}px, which is #{(height / line).round(2)} lines"
+    end
+  ensure
+    page.driver.browser.manage.window.resize_to(*SCREEN_SIZE)
   end
 
   # A page that scrolls sideways at a phone's width is a page whose grid has

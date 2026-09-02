@@ -62,7 +62,9 @@ holding all of them. Nothing here has a default the gem could pick honestly.
 | `--accent`, `--accent-ink` | State and emphasis only. Unset, the accent is ink |
 | `--font-family` | The typeface. The gem ships none — declare `@font-face` and name it |
 | `--value-chroma`, `--value-hue` | Warms the whole value scale together. Neutral as shipped |
-| `--columns`, `--gutter`, `--baseline` | How many fields this problem has, and the unit everything vertical is measured in |
+| `--columns`, `--gutter` | How many fields this problem has |
+| `--line` | The baseline: the interval everything vertical registers to |
+| `--ratio` | A picture's aspect ratio, per figure — the library cannot read one |
 | `--cap-correction` | Read, not set: what a trimmed register adds above its cap to reach the next baseline |
 
 ### The baseline
@@ -135,6 +137,54 @@ ladder to the warm grays of a printed page — and, near enough, to Pandatone's:
 Within three units a channel, which is the cost of the four hand-picked
 values becoming one ladder with a single chroma and a single hue. Measured in
 Chromium, not calculated.
+
+### The baseline
+
+`--line` (24px) is the interval everything vertical registers to, and the
+leading of the body text. In this style those are one number, because that is
+what a baseline grid is: Müller-Brockmann's horizontal lines are one line of
+text apart and a field is a whole number of them.
+
+Every leading is `var(--line)` or a whole multiple. Every margin, padding and
+gap on the vertical axis is too. `--space-*` survives as the **horizontal**
+step — an inline gap has no baseline to miss.
+
+Landing on the line rather than merely keeping step with it needs
+`text-box: trim-both cap alphabetic`, which makes a block's under edge the
+baseline of its last line. Behind `@supports`; where it is missing the rhythm
+still holds and only the exact landing is lost.
+
+One subgrid, for a block of small type — a dense run of captions, a table of
+figures:
+
+```html
+<div class="subgrid">…</div>
+```
+
+It halves `--line` for the block's children, and the leadings, the spacing and
+the cap correction all follow. A block, and only a block: an inline `<small>`
+shares its paragraph's line and must not change it.
+
+### Pictures
+
+The one case that nearly does not transfer from print. A picture's height is
+its fluid width over its ratio, so without help one picture puts the whole
+column below it off the grid at every width but a few.
+
+```html
+<figure class="figure" style="--ratio: 1.618">
+  <img src="…" alt="…">
+  <figcaption class="micro">…</figcaption>
+</figure>
+```
+
+The box is the picture's natural height taken up to the next whole line, by
+`round()`, recomputed as the container resizes. The picture is fitted inside
+it — `contain` by default, because a library must not crop an image it did not
+choose. `.figure--cover` crops instead, which is the Müller-Brockmann move and
+yours to make where you own the picture.
+
+`--ratio` is yours to declare; CSS cannot read an intrinsic one.
 
 ### The grid
 

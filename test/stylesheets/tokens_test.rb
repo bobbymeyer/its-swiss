@@ -62,11 +62,33 @@ class TokensTest < ActiveSupport::TestCase
 
   # --- The ladders ---------------------------------------------------------
 
-  test "the space ladder is derived from the baseline and nothing else" do
-    steps = rules_in("tokens").scan(/--space-(\d+): calc\(var\(--baseline\) \* (\d+)\)/)
+  test "the space ladder is derived from one step and nothing else" do
+    steps = rules_in("tokens").scan(/--space-(\d+): calc\(var\(--space-unit\) \* (\d+)\)/)
 
     assert_operator steps.size, :>=, 6, "a ladder of five values is a list of margins"
-    steps.each { |name, multiple| assert_equal name, multiple, "--space-#{name} is not #{name} baselines" }
+    steps.each { |name, multiple| assert_equal name, multiple, "--space-#{name} is not #{name} steps" }
+  end
+
+  # The baseline is the leading of the body text, because that is what a
+  # baseline grid is. Eight pixels is a third of that: a block can be a whole
+  # number of thirds and still land every line of type after it off the grid.
+  test "the line is the baseline, and the ladder above it is whole lines" do
+    tokens = rules_in("tokens")
+
+    assert_match(/--line: 1\.5rem;/, tokens)
+    assert_match(/--half-line: calc\(var\(--line\) \/ 2\);/, tokens,
+      "the one subgrid derives from the line rather than being chosen")
+
+    tokens.scan(/--line-(\d+): calc\(var\(--line\) \* (\d+)\)/).each do |name, multiple|
+      assert_equal name, multiple, "--line-#{name} is not #{name} lines"
+    end
+  end
+
+  # A token that no longer means what it says is worse than one that is gone:
+  # --baseline was eight pixels and everything vertical was measured in it.
+  test "nothing is still called the baseline that is not one" do
+    assert_no_match(/--baseline/, every_stylesheet.values.join,
+      "the name moved to --line and the old one has to go, not change value under a consumer")
   end
 
   test "the type scale is a modular scale rather than a list of sizes" do

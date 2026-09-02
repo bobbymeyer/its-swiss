@@ -5,20 +5,20 @@
  */
 
 @layer its-swiss.specimen {
-  [data-specimen-take] { margin-top: var(--space-13); }
+  [data-specimen-take] { margin-top: var(--line-4); }
 
-  [data-specimen] { margin-top: var(--space-6); }
+  [data-specimen] { margin-top: var(--line-2); }
 
-  [data-specimen] > h3 { margin-bottom: var(--space-2); }
+  [data-specimen] > h3 { margin-bottom: var(--line); }
 
-  [data-specimen] > * + * { margin-top: var(--space-2); }
+  [data-specimen] > * + * { margin-top: var(--line); }
 
   /* A block of value, the height of a line box so it sits on the baseline
      beside the token that names it. */
   .specimen__value {
     display: block;
     width: var(--space-13);
-    height: var(--space-3);
+    height: var(--line);
     box-shadow: inset 0 0 0 var(--rule-hair) color-mix(in oklch, var(--ink) 12%, transparent);
   }
 
@@ -30,11 +30,13 @@
 
   /* The field, drawn. Each child is one span, and the bar inside it shows
      where that span starts and stops against the page. */
-  .specimen__grid { row-gap: var(--space-1); }
+  /* Three rows of a half-line, and a half-line under the last, so the
+     diagram is a whole number of lines however many rows it draws. */
+  .specimen__grid { row-gap: var(--half-line); padding-block-end: var(--half-line); }
 
   .specimen__field {
     display: block;
-    height: var(--space-2);
+    height: var(--half-line);
     background: var(--value-2);
   }
 
