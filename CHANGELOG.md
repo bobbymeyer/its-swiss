@@ -2,6 +2,34 @@
 
 Semver. Consumers pin `~> 0.1`.
 
+## 0.6.0 — 2026-09-02
+
+The specimen is published, so nothing has to keep a copy of it.
+
+- **`bin/specimen`** writes the page as one static file: the six stylesheets
+  inlined verbatim, the engine's own markup, and the accent and the baseline
+  as buttons rather than as a second rendering. It needs nothing to display —
+  no Rails, no network, no stylesheet it has to go and fetch.
+- **A Pages workflow publishes it on every push to `main`**, keeping every
+  released version alongside the current one:
+
+  | | |
+  | --- | --- |
+  | `bobbymeyer.github.io/its-swiss/` | the current specimen |
+  | `bobbymeyer.github.io/its-swiss/0.6.0.html` | the one a post can pin |
+
+  Point a post or a release note at the version-stamped copy. A page that
+  silently changes what it depicts is worse than one a little behind.
+
+Why: the specimen is ERB rendered by Rails, so anything that cannot run Rails
+has had to keep a copy made by hand. Two did, and both drifted — one declared
+a `--baseline` the library had renamed and a `--measure` it never had. A copy
+made by hand is a copy that will be wrong; the fix is to publish the real one.
+
+The page also broadcasts its own height by `postMessage`, so an iframe can
+size itself rather than have a height guessed at one width and wrong at every
+other.
+
 ## 0.5.0 — 2026-09-02
 
 Asking the specimen to show everything found that it did not, and that one

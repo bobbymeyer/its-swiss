@@ -1,0 +1,67 @@
+name: Specimen
+
+# The specimen is ERB rendered by Rails, so anything that cannot run Rails —
+# a static site, a README, a release note — has had to keep a copy made by
+# hand. Two of those drifted. This publishes the real page instead:
+#
+#   https://bobbymeyer.github.io/its-swiss/            the current one
+#   https://bobbymeyer.github.io/its-swiss/0.5.0.html  the one a post can pin
+#
+# Point a post at the version-stamped copy. A page that silently changes what
+# it depicts is worse than one that is a little behind.
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+# One deployment at a time, and never cancel one half-done.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The step below reads every released tag, and a default checkout
+          # fetches none of them.
+          fetch-tags: true
+          fetch-depth: 0
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+
+      # Every version published so far, so pinning a post to one keeps working
+      # after the next release. Pages replaces the whole site each deploy, so
+      # the older files have to be carried forward rather than assumed.
+      - name: Keep what is already published
+        run: |
+          mkdir -p specimen
+          for tag in $(git tag -l 'v*' | sed 's/^v//'); do
+            curl -sf -o "specimen/$tag.html" "https://bobbymeyer.github.io/its-swiss/$tag.html" \
+              || rm -f "specimen/$tag.html"
+          done
+          ls specimen | sed 's/^/  carried forward: /' || true
+
+      - run: bin/specimen specimen
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: specimen
+
+      - id: deploy
+        uses: actions/deploy-pages@v4

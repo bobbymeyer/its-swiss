@@ -23,6 +23,12 @@ bin/rails generate its_swiss:install
 
 Then open `/its-swiss/specimen`.
 
+The current specimen is also published, for anywhere that cannot run Rails:
+**[bobbymeyer.github.io/its-swiss](https://bobbymeyer.github.io/its-swiss/)**.
+`bin/specimen out` writes it as one static file, and a Pages workflow does
+that on every push to `main`, keeping each released version alongside the
+current one at `/<version>.html` for anything that needs to pin.
+
 ## What is in the gem, and what stays in the application
 
 | In the gem | Stays in the application |

@@ -1,0 +1,22 @@
+#!/usr/bin/env ruby
+# Writes the specimen as one static file, for anywhere that cannot run Rails.
+#
+#   bin/specimen out            # out/index.html and out/<version>.html
+#
+# The version-stamped copy is what a blog post or a release note should point
+# at: a page that silently changes what it depicts is worse than one that is
+# a little behind.
+ENV["RAILS_ENV"] ||= "test"
+
+require "bundler/setup"
+require_relative "../test/dummy/config/environment"
+require_relative "../script/specimen"
+
+dir = Pathname.new(ARGV.fetch(0, "specimen"))
+dir.mkpath
+
+page = ItsSwiss::StaticSpecimen.call
+[ dir.join("index.html"), dir.join("#{ItsSwiss::VERSION}.html") ].each do |path|
+  path.write(page)
+  puts "  #{path} (#{path.size} bytes)"
+end
