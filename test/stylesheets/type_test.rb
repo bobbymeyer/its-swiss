@@ -5,33 +5,19 @@ require "test_helper"
 # and diverge everywhere else, which is how a heading ends up impossible to
 # separate from the block beneath it by the height of its own line.
 class TypeTest < ActiveSupport::TestCase
-  test "leading is drawn from the space ladder" do
+  # The whole grid in one assertion. A leading that is not a whole number of
+  # lines puts every line of type after it somewhere new — which is what a
+  # label on sixteen and a section head on thirty-two did, all the way down a
+  # column, for as long as eight pixels was called the baseline.
+  test "every leading is a whole number of lines" do
     type = rules_in("type")
-    leadings = type.scan(/line-height: ([^;]+);/).flatten
+    leadings = type.scan(/line-height: ([^;]+);/).flatten - [ "0" ]
 
     assert_not_empty leadings
-    # Zero is the one value that is not a measurement: an inline box of
-    # another family brings its own ascent and descent and grows the line it
-    # sits on, and taking its leading to nothing leaves the line box to the
-    # strut, which is measured in baselines like everything else.
-    assert_empty leadings.reject { |value| value.match?(/\Avar\(--space-\d+\)\z|\A0\z/) },
-      "a line box measured in anything but baselines breaks the vertical rhythm"
-    assert_no_match(/--lead-/, type, "there is one ladder, and it is the space ladder")
-  end
-
-  # The trimmed path is an enhancement, not a requirement: Firefox does not
-  # trim a text box yet, and a stylesheet that assumed it would leave every
-  # padded register a few pixels tall for no reason.
-  test "the cap correction is zero where the browser cannot trim" do
-    assert_match(/--cap-correction:\s*0px/, rules_in("tokens"),
-      "the correction has to be inert before type.css gives it a value")
-
-    trim = rules_in("type")[/@supports[^{]+\{.*/m]
-
-    assert_not_nil trim, "the trim belongs behind @supports or it is a requirement"
-    assert_match(/text-box:\s*trim-both cap alphabetic/, trim)
-    assert_match(/--cap-correction:\s*calc\(round\(up, 1cap, var\(--baseline\)\) - 1cap\)/, trim,
-      "the correction is the browser's cap height rounded to the ladder, not a number the library was told")
+    assert_empty leadings.reject { |value| value.match?(/\Avar\(--line(-\d+)?\)\z/) },
+      "a line box measured in anything but whole lines breaks the vertical rhythm"
+    assert_no_match(/line-height: var\(--space-/, type,
+      "the space ladder is the horizontal step; it is not the baseline")
   end
 
   test "nothing is set in capitals" do

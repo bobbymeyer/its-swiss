@@ -13,7 +13,7 @@
     font-family: var(--font-family);
     font-size: var(--size-2);
     font-weight: 400;
-    line-height: var(--space-3);
+    line-height: var(--line);
     text-align: left;
     /* A weight the file does not carry is better absent than drawn by the
        browser: a synthesised bold at a large size is visibly a smeared
@@ -31,17 +31,17 @@
 
   .page-title {
     font-size: var(--size-5);
-    line-height: var(--space-6);
+    line-height: var(--line-3);
     font-weight: 700;
     letter-spacing: -0.028em;
     text-wrap: balance;
   }
 
-  h1 { font-size: var(--size-4); line-height: var(--space-5); font-weight: 700; letter-spacing: -0.02em; }
+  h1 { font-size: var(--size-4); line-height: var(--line-2); font-weight: 700; letter-spacing: -0.02em; }
 
-  h2 { font-size: var(--size-3); line-height: var(--space-4); font-weight: 700; letter-spacing: -0.015em; }
+  h2 { font-size: var(--size-3); line-height: var(--line-2); font-weight: 700; letter-spacing: -0.015em; }
 
-  h3, h4 { font-size: var(--size-2); line-height: var(--space-3); font-weight: 700; }
+  h3, h4 { font-size: var(--size-2); line-height: var(--line); font-weight: 700; }
 
   /* The micro register: labels, metadata, captions. Size and value carry it.
      Nothing here is set in capitals — that is a different tradition, and in
@@ -52,7 +52,7 @@
   label,
   .field label {
     font-size: var(--size-1);
-    line-height: var(--space-2);
+    line-height: var(--line);
     letter-spacing: 0.01em;
   }
 
@@ -62,7 +62,7 @@
   .micro--tap,
   .choice label,
   .pagination a,
-  .pagination [aria-current] { line-height: var(--space-3); }
+  .pagination [aria-current] { line-height: var(--line); }
 
   /* Quiet: this is secondary. One rule, so the whole library says it the same
      way and an application adds its own selectors to the list rather than
@@ -78,7 +78,7 @@
 
   .hint {
     font-size: var(--size-1);
-    line-height: var(--space-3);
+    line-height: var(--line);
     max-width: var(--measure);
   }
 
@@ -87,12 +87,12 @@
   .lede,
   p { max-width: var(--measure); }
 
-  .lede { margin-top: var(--space-2); }
+  .lede { margin-top: var(--line); }
 
   /* Navigation and actions read at body size. They are how an application is
      used, not annotations on it. */
   .nav a,
-  .button { font-size: var(--size-2); line-height: var(--space-3); }
+  .button { font-size: var(--size-2); line-height: var(--line); }
 
   /* Anything read as a column of digits rather than as a word. */
   .tabular,
@@ -128,7 +128,7 @@
      Safari trim, Firefox does not yet, and a page that keeps its boxes on the
      ladder is what the two have in common. */
   @supports (text-box: trim-both cap alphabetic) and (padding-top: round(up, 1cap, 8px)) {
-    :root { --cap-correction: calc(round(up, 1cap, var(--baseline)) - 1cap); }
+    :root { --cap-correction: calc(round(up, 1cap, var(--line)) - 1cap); }
 
     .page-title,
     h1, h2, h3, h4,
@@ -166,7 +166,22 @@
      leading has never been what draws them.
 
      Inline only. A pre is a block, and a block with no leading has no lines. */
+  /* The one subgrid. A block of small type may sit on a half-line rather
+     than a whole one — a dense run of captions, a table of figures. It works
+     by redefining --line for the subtree, so the leadings, the spacing and
+     the cap correction all follow it down without any of them being told.
+
+     A block, and only a block. An inline <small> inside a paragraph shares
+     that paragraph's line and must not change it.
+
+     Declared on the children rather than on the block itself. The block's own
+     margins belong to the column outside it and are owed whole lines; only
+     what is inside it may halve them. Set on the block, a .subgrid halves the
+     gap above itself and lands the column half a line out — which is exactly
+     what it did, and what the specimen caught. */
+  .subgrid > * { --line: var(--half-line); }
+
   code, kbd, samp { line-height: 0; }
 
-  pre { line-height: var(--space-3); }
+  pre { line-height: var(--line); }
 }

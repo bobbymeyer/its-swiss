@@ -34,7 +34,15 @@
      they need, and every width in the app re-proportions. */
   --columns: 6;
   --gutter: 1.5rem;
-  --baseline: 0.5rem;
+
+  /* --- The baseline ------------------------------------------------------
+     The interval everything vertical registers to, and the leading of the
+     body text — one number, because that is what a baseline grid is. Change
+     it and every leading, every gap and every picture's box follow.
+
+     A block of small type may sit on a half-line, with class="subgrid". An
+     inline <small> may not: it shares its paragraph's line. */
+  --line: 1.5rem;
 }
 
 /* The grid itself lives here, not in the gem: which blocks span which fields

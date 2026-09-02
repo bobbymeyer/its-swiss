@@ -62,34 +62,39 @@ holding all of them. Nothing here has a default the gem could pick honestly.
 | `--accent`, `--accent-ink` | State and emphasis only. Unset, the accent is ink |
 | `--font-family` | The typeface. The gem ships none — declare `@font-face` and name it |
 | `--value-chroma`, `--value-hue` | Warms the whole value scale together. Neutral as shipped |
-| `--columns`, `--gutter`, `--baseline` | How many fields this problem has, and the unit everything vertical is measured in |
+| `--columns`, `--gutter` | How many fields this problem has |
+| `--line` | The baseline: the interval everything vertical registers to |
+| `--ratio` | A picture's aspect ratio, per figure — the library cannot read one |
 | `--cap-correction` | Read, not set: what a trimmed register adds above its cap to reach the next baseline |
 
 ### The baseline
 
-Everything vertical is measured in baselines, and the type sits on them rather
-than merely in step with them.
+`--line` (24px) is the interval everything vertical registers to, and the
+leading of the body text. In this style those are one number, because that is
+what a baseline grid is: Müller-Brockmann's horizontal lines are one line of
+text apart and a field is a whole number of them.
 
-Boxes in step are the easy half: line boxes and spacing are whole numbers of
-`--baseline`, so blocks that start together stay together down the column.
-That alone is not a baseline grid — where a line's baseline falls inside its
+Every leading is `var(--line)` or a whole multiple of it — `--line-2`,
+`--line-3`, `--line-4`, `--line-6`. Every margin, padding and gap on the
+vertical axis is too. `--space-*` survives as the **horizontal** step: an
+inline gap has no baseline to miss.
+
+Boxes in step are only the easy half. Where a line's baseline falls inside its
 line box depends on the font's ascent and the leading either side of it, so a
-caption and a paragraph can both be in step and still be three pixels out of
-register with each other.
-
-So every text register is trimmed to its own type: `text-box: trim-both cap
-alphabetic` makes a block's over edge the cap of its first line and its under
-edge the baseline of its last, and one padding rounds the cap height up to the
-next baseline —
+caption and a paragraph can both be in step and still be out of register with
+each other. So every text register is trimmed to its own type: `text-box:
+trim-both cap alphabetic` makes a block's over edge the cap of its first line
+and its under edge the baseline of its last, and one padding rounds the cap
+height up to the next line —
 
 ```css
-padding-block-start: calc(round(up, 1cap, var(--baseline)) - 1cap);
+padding-block-start: calc(round(up, 1cap, var(--line)) - 1cap);
 ```
 
 — which the browser computes in cap units, so the library still never has to
 be told the font's metrics. It is published as `--cap-correction`: a component
 that sets its own padding on trimmed text adds it, as
-`calc(var(--space-1) + var(--cap-correction))`, which is the right padding
+`calc(var(--half-line) + var(--cap-correction))`, which is the right padding
 whether or not the browser trims.
 
 Two things opt out, with `text-box: normal; padding-block-start: 0`: a control,
@@ -99,8 +104,25 @@ content is not type — an image, a swatch, a diagram.
 It is behind `@supports`, and the fallback is the box rhythm above. Chromium
 and Safari trim; Firefox does not yet. The two do not render identically:
 trimming takes the leading out of a block's own box, so a trimmed page is a
-few pixels tighter per block and the ladder means what it says rather than
-what it says plus half a line. Both stay on the grid.
+few pixels tighter per block. Both stay on the grid.
+
+#### The one subgrid
+
+A block of small type may sit on a half-line — a dense run of captions, a
+table of figures:
+
+```html
+<div class="subgrid">…</div>
+```
+
+It halves `--line` for the block's **children**, and the leadings, the spacing
+and the cap correction all follow. The children, not the block: a block's own
+margins belong to the column outside it and are owed whole lines. Set on the
+block itself it halves the gap above it and lands the column half a line out.
+
+A block, and only a block. An inline `<small>` shares its paragraph's line and
+must not change it.
+
 
 ### The value scale
 
@@ -135,6 +157,27 @@ ladder to the warm grays of a printed page — and, near enough, to Pandatone's:
 Within three units a channel, which is the cost of the four hand-picked
 values becoming one ladder with a single chroma and a single hue. Measured in
 Chromium, not calculated.
+
+### Pictures
+
+The one case that nearly does not transfer from print. A picture's height is
+its fluid width over its ratio, so without help one picture puts the whole
+column below it off the grid at every width but a few.
+
+```html
+<figure class="figure" style="--ratio: 1.618">
+  <img src="…" alt="…">
+  <figcaption class="micro">…</figcaption>
+</figure>
+```
+
+The box is the picture's natural height taken up to the next whole line, by
+`round()`, recomputed as the container resizes. The picture is fitted inside
+it — `contain` by default, because a library must not crop an image it did not
+choose. `.figure--cover` crops instead, which is the Müller-Brockmann move and
+yours to make where you own the picture.
+
+`--ratio` is yours to declare; CSS cannot read an intrinsic one.
 
 ### The grid
 
@@ -298,7 +341,8 @@ ladder; the names are the library's rather than the application's.
 | `--ink-quiet`, `--ink` | unchanged |
 | `--accent` | unchanged — still the application's to set |
 | `--font` | `--font-family` |
-| `--size-1..5`, `--space-N`, `--baseline`, `--measure`, `--page-max` | unchanged |
+| `--size-1..5`, `--space-N`, `--measure`, `--page-max` | unchanged |
+| `--baseline` (8px) | **gone.** `--line` (24px) is the baseline now — see 0.4.0 |
 | `.masthead__nav` | `.nav` |
 | `.channels` | `.pairs` |
 | `.form`, `.field`, `.button*`, `.copy`, `.errors`, `.hint`, `.empty` | unchanged |

@@ -2,6 +2,54 @@
 
 Semver. Consumers pin `~> 0.1`.
 
+## 0.4.0 — 2026-08-31
+
+**Breaking.** The baseline is now the line, not a third of it. Applications
+setting `--baseline` need to set `--line` instead; everything else follows.
+
+### The grid
+
+0.3.0 put the type on a baseline grid and then registered it to eight pixels —
+a third of the body line. A block could be a whole number of thirds and still
+land every line of type after it somewhere new, which is what a label on a
+sixteen-pixel leading and a section head on thirty-two did, all the way down a
+column. A third of a line is a spacing unit. It is not a baseline.
+
+- **`--line` (24px) replaces `--baseline` (8px)** as the interval everything
+  vertical registers to. It is also the body leading, because in a baseline
+  grid those are one number.
+- **Every leading is a whole number of lines.** `h1` and `h2` move from 40 and
+  32 to 48; the page title from 48 to 72; labels and captions from 16 to 24.
+  The page is airier, and that is what the convention looks like.
+- **`--line-2`, `--line-3`, `--line-4`, `--line-6`** for whole-line spacing.
+  `--space-*` survives, renamed at its root to `--space-unit`, as the
+  **horizontal** step: an inline gap has no baseline to miss.
+- **`--half-line` and `.subgrid`**, the one subgrid, for a block of small
+  type. It halves `--line` for the block's *children* — the block's own
+  margins belong to the column outside it and are owed whole lines. Declaring
+  it on the block itself halved the gap above it and landed the column half a
+  line out, which the specimen caught.
+
+### Pictures, rules, controls
+
+- **`.figure` puts a picture on the line at any width.** Its box is the
+  natural height taken up to the next whole line with `round()`, recomputed as
+  the container resizes; the picture is fitted inside with `contain`, so
+  nothing of it is lost. `.figure--cover` crops instead. `--ratio` is the
+  application's to declare. Tested at four widths.
+- `hr` is a line-tall box rather than a rule with margins either side.
+- A text control is two lines of box: one the text sits on, one the rule
+  closes. A checkbox is reset out of that, since the browser draws it at a
+  size of its own.
+
+### Guards
+
+- The box test measures in lines, and honours `.subgrid` — a block that
+  declares a half-line may use one; the block itself still owes whole lines.
+- A picture is measured at 1400, 1100, 903 and 712 pixels wide.
+- `--baseline` may not reappear in the library. A token that no longer means
+  what it says is worse than one that is gone.
+
 ## 0.3.0 — 2026-09-01
 
 The vertical rhythm, twice: once to put every box on the baseline, and again

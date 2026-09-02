@@ -7,7 +7,7 @@
  * A consuming application fills three slots — the accent, the typeface, and
  * how many fields its grid has. Everything else it inherits, and everything
  * else it can still override, because these are unlayered properties read
- * from inside a layer: setting --baseline in the application's own stylesheet
+ * from inside a layer: setting --line in the application's own stylesheet
  * reproportions the library without touching it.
  */
 
@@ -104,24 +104,47 @@
     --size-4: 2rem;      /* 32 — subhead, large values */
     --size-5: 3rem;      /* 48 — page title */
 
-    /* --- The vertical ladder -----------------------------------------------
-       One ladder, numbered in baselines, used for leading as much as for
-       space. Two ladders — a set for space and another for line boxes — agree
-       at three values and diverge everywhere else, which is how a heading
-       ends up impossible to separate from the block beneath it by the height
-       of its own line: the value simply does not exist.
+    /* --- The baseline -----------------------------------------------------
+       The interval everything vertical registers to, and the leading of the
+       body text. In this style those are one number, because that is what a
+       baseline grid is: Müller-Brockmann's horizontal lines are one line of
+       text apart, and a field is a whole number of them.
 
-       Changing --baseline reproportions everything. */
-    --baseline: 0.5rem;
+       0.1.0 called eight pixels the baseline. Eight pixels is a third of the
+       body line, so a block could be a whole number of them and still put
+       every line of type after it somewhere new — which is what a label at
+       sixteen and a section head at thirty-two did, all the way down a
+       column. A third of a line is a spacing unit. It is not a baseline. */
+    --line: 1.5rem;                        /* 24 */
 
-    --space-1: calc(var(--baseline) * 1);    /* 8 */
-    --space-2: calc(var(--baseline) * 2);    /* 16 */
-    --space-3: calc(var(--baseline) * 3);    /* 24 */
-    --space-4: calc(var(--baseline) * 4);    /* 32 */
-    --space-5: calc(var(--baseline) * 5);    /* 40 */
-    --space-6: calc(var(--baseline) * 6);    /* 48 */
-    --space-8: calc(var(--baseline) * 8);    /* 64 */
-    --space-13: calc(var(--baseline) * 13);  /* 104 */
+    /* Whole lines, for the vertical axis. Anything that separates two blocks
+       is measured in these, or the block below it lands between lines. */
+    --line-2: calc(var(--line) * 2);       /* 48 */
+    --line-3: calc(var(--line) * 3);       /* 72 */
+    --line-4: calc(var(--line) * 4);       /* 96 */
+    --line-6: calc(var(--line) * 6);       /* 144 */
+
+    /* The one subgrid. A block of small type may sit on a half-line — and
+       only a block: leading belongs to a text role, not to an inline element,
+       so a <small> inside a paragraph must not change that paragraph's
+       leading. Switched on with .subgrid, which redefines --line for its
+       subtree, and everything measured in lines follows it down. */
+    --half-line: calc(var(--line) / 2);    /* 12 */
+
+    /* --- Space -------------------------------------------------------------
+       The horizontal step. An inline gap has no baseline to miss, so this is
+       the one axis a smaller unit belongs on. Named for what it is rather
+       than for what it was mistaken for. */
+    --space-unit: 0.5rem;
+
+    --space-1: calc(var(--space-unit) * 1);    /* 8 */
+    --space-2: calc(var(--space-unit) * 2);    /* 16 */
+    --space-3: calc(var(--space-unit) * 3);    /* 24 */
+    --space-4: calc(var(--space-unit) * 4);    /* 32 */
+    --space-5: calc(var(--space-unit) * 5);    /* 40 */
+    --space-6: calc(var(--space-unit) * 6);    /* 48 */
+    --space-8: calc(var(--space-unit) * 8);    /* 64 */
+    --space-13: calc(var(--space-unit) * 13);  /* 104 */
 
     /* --- The grid ----------------------------------------------------------
        Primitives, not a grid. Six fields divide into halves and thirds and is
