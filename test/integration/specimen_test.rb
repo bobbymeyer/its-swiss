@@ -39,6 +39,30 @@ class SpecimenTest < ActionDispatch::IntegrationTest
     assert_nil takes.first["style"], "the first take shows the library exactly as it ships"
   end
 
+  # The specimen is the documentation and the regression fixture, so a class
+  # the library defines and the page never renders is a component with no
+  # documentation and no guard. It is also how dead CSS survives: .micro--tap
+  # became a no-op the moment 0.4.0 put .micro on a whole line, and every
+  # test still passed, because a rule that repeats what another rule already
+  # says is a rule whose leading is still a whole number of lines.
+  test "every class the library defines is demonstrated" do
+    css = ItsSwiss::STYLESHEETS.map { |name| stylesheet(name) }.join
+      .gsub(%r{/\*.*?\*/}m, "")
+      .gsub(/@layer[^{;]*[{;]/, "")   # its-swiss.tokens is a layer, not a class
+    defined = css.scan(/\.([a-z][a-z0-9_-]*)/).flatten.uniq
+
+    missing = defined - response.body.scan(/[\w-]+/) - ALLOWED_UNSHOWN
+
+    assert_empty missing,
+      "these are in the library and on no page of it: #{missing.join(", ")}"
+  end
+
+  # Two that cannot be shown, and why.
+  ALLOWED_UNSHOWN = %w[
+    button_to
+    visually-hidden
+  ].freeze
+
   test "shows every component the library ships" do
     %w[ masthead nav footer table pairs form field button pagination errors figure ].each do |component|
       assert html.at(".#{component}"), "the specimen does not show .#{component}"

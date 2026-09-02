@@ -15,4 +15,17 @@
       <button type="button" class="button button--quiet">Cancel</button>
     </div>
   <% end %>
+
+  <h4>Inline</h4>
+  <p class="hint">
+    A field and the button that submits it are a pair, not a run: they do not
+    wrap away from each other.
+  </p>
+  <form class="form form--inline" action="#form" method="get">
+    <div class="field field--inline">
+      <label for="specimen_q">Search</label>
+      <input id="specimen_q" name="q" type="search">
+    </div>
+    <button type="submit" class="button">Search</button>
+  </form>
 </section>
