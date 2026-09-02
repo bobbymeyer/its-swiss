@@ -56,14 +56,6 @@
     letter-spacing: 0.01em;
   }
 
-  /* The same size on a line box one step taller: the micro type you can tap.
-     At a 16px line box these are 14px targets, under the 24px minimum. The
-     leading does the work so the type does not have to change. */
-  .micro--tap,
-  .choice label,
-  .pagination a,
-  .pagination [aria-current] { line-height: var(--line); }
-
   /* Quiet: this is secondary. One rule, so the whole library says it the same
      way and an application adds its own selectors to the list rather than
      picking a gray. */
@@ -150,10 +142,13 @@
        take the box with it. */
     .button,
     .copy,
-    /* The label beside a checkbox is the exception among labels: it shares a
-       row with a control the browser draws at a size of its own, and the row
-       is held to a line by the leading rather than by the box. */
-    .choice label { text-box: normal; padding-block-start: 0; }
+    /* The labels that sit beside a control rather than above it. Both share a
+       row with a box the browser draws at a size of its own, and a row that
+       aligns on the baseline cannot align a trimmed box against an untrimmed
+       one — it lands on a half pixel and takes the column with it. The row is
+       held to a line by the leading instead. */
+    .choice label,
+    .field--inline label { text-box: normal; padding-block-start: 0; }
   }
 
   /* A token set in a line of prose is a second font on that line, and a

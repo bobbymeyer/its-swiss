@@ -135,9 +135,17 @@ class SpecimenSystemTest < ApplicationSystemTestCase
 
           const box = el.getBoundingClientRect()
           if (box.height === 0) return false
-          // An inline-block sits on its line rather than on the column, so
-          // only its height is the ladder's business.
-          const inline = style.display === "inline-block"
+          // Two kinds of box are placed by something other than the column,
+          // so only their height is the ladder's business: an inline-block,
+          // which sits on its line, and a flex item in a row that aligns on
+          // the baseline, which sits on that baseline. The row itself is
+          // still measured, so a row that breaks the column still fails —
+          // what is exempt is where the item sits inside a row that does not.
+          const parent = el.parentElement && getComputedStyle(el.parentElement)
+          const placedByARow = parent &&
+            parent.display.includes("flex") &&
+            parent.alignItems === "baseline"
+          const inline = style.display === "inline-block" || placedByARow
           const unit = unitFor(el)
           return (!inline && off(box.top + window.scrollY, unit)) || off(box.height, unit)
         }).map((el) => {

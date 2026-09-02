@@ -2,6 +2,37 @@
 
 Semver. Consumers pin `~> 0.1`.
 
+## 0.5.0 — 2026-09-02
+
+Asking the specimen to show everything found that it did not, and that one
+rule had quietly stopped doing anything.
+
+- **`.micro--tap` is gone**, with the rule it led. It gave micro type a taller
+  line box so a 14px tap target cleared 24px — and 0.4.0 put `.micro` on a
+  whole line, which made every selector in that rule a restatement of what
+  the body already said. Nothing caught it: the guards ask whether a leading
+  is a whole number of lines, and a redundant rule answers yes.
+- **`.stack`, `.form--inline`, `.field--inline`, `.pairs--stacked` and
+  `.figure--cover` are on the specimen**, which is where a component the
+  library ships is documented and guarded. They were shipped and shown
+  nowhere.
+- **A label beside a control opts out of trimming**, as `.choice label`
+  already did. A row that aligns on the baseline cannot align a trimmed box
+  against an untrimmed one: it lands on a half pixel and takes the column
+  with it, which is what the new inline field did.
+
+### Guards
+
+- **Every class the library defines appears on the specimen.** Two documented
+  exceptions: `button_to`, which is Rails' wrapper, and `visually-hidden`,
+  which is offered to applications and has nothing to show. This is the guard
+  that would have caught `.micro--tap`, and it is what makes the specimen a
+  claim about coverage rather than a page that happens to be long.
+- The box test exempts a flex item in a baseline-aligned row from the
+  column check, as it already exempted an inline-block: both are placed by
+  something other than the column. The row itself is still measured, so a row
+  that breaks the column still fails.
+
 ## 0.4.0 — 2026-08-31
 
 **Breaking.** The baseline is now the line, not a third of it. Applications
