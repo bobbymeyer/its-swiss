@@ -179,7 +179,19 @@ upgrading.
 - The leading guard now admits `0`, the one value that is not a measurement:
   an inline box that takes no part in the line it sits on.
 
-## 0.2.0 — 2026-08-31
+## 0.2.0 — 2026-08-31 · never published
+
+**This version is tagged but is not on RubyGems, and will not be.** Its
+release run passed the tag check, Rubocop and the suite, then failed at
+`rubygems/release-gem`, which runs `bundle exec rake release` — a task the
+Rakefile did not define until 0.3.0 added `require "bundler/gem_tasks"`. By
+the time that was fixed, 0.3.0 was the next release, and publishing an older
+version after two newer ones is worse than the gap.
+
+Nothing here is lost: 0.3.0 was cut from a `main` that already contained all
+of it, so every published version since carries these fixes. Only the version
+number is missing — `~> 0.2.0` resolves to nothing, and `~> 0.1` skips over
+it. Everything below shipped in 0.3.0.
 
 Everything here was found by the second consumer inside a day of building on
 0.1.0, which is roughly the point of having one.
