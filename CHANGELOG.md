@@ -2,6 +2,24 @@
 
 Semver. Consumers pin `~> 0.1`.
 
+## Unreleased
+
+### Fixed
+
+- **A pinned specimen stopped existing.** Pages replaces the whole site on
+  every deploy, so a version-stamped page survives only if the run writes it
+  again. The step meant to carry them forward read them back off the live
+  site, for released tags only — so it preserved nothing that a deploy had
+  already dropped, and nothing at all for a version that was never tagged.
+  `0.6.0.html`, which a published post points at, was gone the next time main
+  moved; the deploy after it uploaded `index.html` and `0.6.1.html` and
+  nothing else.
+
+  Pinned versions are kept in `published/` and copied into the site each
+  deploy, so what is published is reproducible from the repository rather than
+  from itself. `0.6.0.html` is restored there, rendered from the 0.6.0 commit
+  by that version's own `bin/specimen`.
+
 ## 0.6.1 — 2026-09-02
 
 Three ways the column came apart in a browser that was not Chromium.
