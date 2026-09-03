@@ -104,60 +104,42 @@ class SpecimenSystemTest < ApplicationSystemTestCase
   # out. This measures what the browser actually laid out, on a page that
   # holds one of everything.
   test "every box on the page is a whole number of baselines" do
-    baseline = evaluate_script("parseFloat(getComputedStyle(document.documentElement).fontSize) * 1.5")
+    unit = baseline
 
-    offenders = evaluate_script(<<~JS)
-      (() => {
-        const baseline = #{baseline}
-        // A browser lays out in 64ths of a pixel, and a cap height rounded up
-        // to the ladder can land a 64th short of it depending on the font's
-        // metrics. The tolerance is a layout unit or two, not a fudge: a real
-        // error here is a whole pixel, because that is the smallest thing a
-        // rule or a border can be.
-        const off = (value, unit) => {
-          const over = ((value % unit) + unit) % unit
-          return Math.min(over, unit - over) > 0.05
-        }
-        // A block of small type may sit on a half-line — that is what
-        // .subgrid declares, and the whole point of declaring it. The block
-        // itself still owes the column whole lines; only what is inside it
-        // may halve them.
-        const unitFor = (el) =>
-          el.parentElement && el.parentElement.closest(".subgrid") ? baseline / 2 : baseline
-        return Array.from(document.querySelectorAll("body *")).filter((el) => {
-          const style = getComputedStyle(el)
-          // A line box is the other assertion's business, an out-of-flow box
-          // sits on no column at all, and a checkbox is drawn by the browser
-          // at a size of its own on a row that is measured here regardless.
-          if (style.display.startsWith("inline") && style.display !== "inline-block") return false
-          if (style.position === "absolute" || style.position === "fixed") return false
-          if (el.matches("input[type=checkbox], input[type=radio]")) return false
+    assert_empty boxes_off_the_grid(unit),
+      "a box that is not a whole number of #{unit}px baselines puts everything below it off the grid"
+  end
 
-          const box = el.getBoundingClientRect()
-          if (box.height === 0) return false
-          // Two kinds of box are placed by something other than the column,
-          // so only their height is the ladder's business: an inline-block,
-          // which sits on its line, and a flex item in a row that aligns on
-          // the baseline, which sits on that baseline. The row itself is
-          // still measured, so a row that breaks the column still fails —
-          // what is exempt is where the item sits inside a row that does not.
-          const parent = el.parentElement && getComputedStyle(el.parentElement)
-          const placedByARow = parent &&
-            parent.display.includes("flex") &&
-            parent.alignItems === "baseline"
-          const inline = style.display === "inline-block" || placedByARow
-          const unit = unitFor(el)
-          return (!inline && off(box.top + window.scrollY, unit)) || off(box.height, unit)
-        }).map((el) => {
-          const box = el.getBoundingClientRect()
-          return el.tagName.toLowerCase() + (el.className ? "." + String(el.className).trim().split(/\\s+/).join(".") : "") +
-            " starts at " + (box.top + window.scrollY) + " and is " + box.height + " tall"
-        }).slice(0, 10)
-      })()
-    JS
+  # And the same page in a browser that does not trim. Trimming rounds a
+  # block's box up to a whole line whatever the leading under it says, which
+  # makes it a very good way to not notice that a register is leaded off the
+  # ladder: .footer was led on the space step and .field__error on sixteen,
+  # both read correctly under trimming, and both put eight pixels into the
+  # column in a browser without it. The grid is the library's claim in every
+  # browser or it is a claim about Chromium.
+  test "every box is a whole number of baselines without trimming too" do
+    unit = baseline
 
-    assert_empty offenders,
-      "a box that is not a whole number of #{baseline}px baselines puts everything below it off the grid"
+    without_trimmed_text_boxes do
+      assert_empty boxes_off_the_grid(unit),
+        "the column only holds while the browser trims, which is not a column"
+    end
+  end
+
+  # The masthead in particular, because it is where a page most often puts a
+  # block of type beside a flex container, and because the sweep above can
+  # only measure what is not exempt from it: an item placed by a baseline row
+  # is exempt, so for as long as this row aligned on a baseline nothing
+  # measured where its two halves actually landed.
+  test "the wordmark and the nav end on the same line" do
+    unit = baseline
+    mark = rect_of(".masthead__mark")
+    nav = rect_of(".masthead .nav")
+
+    assert_in_delta mark["top"] + mark["height"], nav["top"] + nav["height"], 0.05,
+      "the mark and the nav are on different baselines, which makes the row taller than the lines it is given"
+    assert_equal 0, (rect_of(".masthead")["height"] % unit).round(2),
+      "the masthead is not a whole number of lines, so everything below it is off the grid"
   end
 
   # What the grid is actually for. Boxes in step are not a baseline grid: a

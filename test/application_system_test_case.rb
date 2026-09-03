@@ -124,4 +124,83 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
       "(document.querySelector(#{selector.to_json}).getBoundingClientRect())"
     )
   end
+
+  # The interval everything vertical registers to, as the browser resolved it
+  # rather than as the stylesheet spells it.
+  def baseline
+    evaluate_script("parseFloat(getComputedStyle(document.documentElement).fontSize) * 1.5")
+  end
+
+  # Every box the page laid out that is not a whole number of baselines. The
+  # question is asked of whatever page is open, so the engine's specimen and
+  # the published one answer it the same way.
+  def boxes_off_the_grid(unit = baseline)
+    evaluate_script(<<~JS)
+      (() => {
+        const baseline = #{unit}
+        // A browser lays out in 64ths of a pixel, and a cap height rounded up
+        // to the ladder can land a 64th short of it depending on the font's
+        // metrics. The tolerance is a layout unit or two, not a fudge: a real
+        // error here is a whole pixel, because that is the smallest thing a
+        // rule or a border can be.
+        const off = (value, unit) => {
+          const over = ((value % unit) + unit) % unit
+          return Math.min(over, unit - over) > 0.05
+        }
+        // A block of small type may sit on a half-line — that is what
+        // .subgrid declares, and the whole point of declaring it. The block
+        // itself still owes the column whole lines; only what is inside it
+        // may halve them.
+        const unitFor = (el) =>
+          el.parentElement && el.parentElement.closest(".subgrid") ? baseline / 2 : baseline
+        return Array.from(document.querySelectorAll("body *")).filter((el) => {
+          const style = getComputedStyle(el)
+          // A line box is another assertion's business, an out-of-flow box
+          // sits on no column at all, and a checkbox is drawn by the browser
+          // at a size of its own on a row that is measured here regardless.
+          if (style.display.startsWith("inline") && style.display !== "inline-block") return false
+          if (style.position === "absolute" || style.position === "fixed") return false
+          if (el.matches("input[type=checkbox], input[type=radio]")) return false
+
+          const box = el.getBoundingClientRect()
+          if (box.height === 0) return false
+          // Two kinds of box are placed by something other than the column,
+          // so only their height is the ladder's business: an inline-block,
+          // which sits on its line, and a flex item in a row that aligns on
+          // the baseline, which sits on that baseline. The row itself is
+          // still measured, so a row that breaks the column still fails —
+          // what is exempt is where the item sits inside a row that does not.
+          const parent = el.parentElement && getComputedStyle(el.parentElement)
+          const placedByARow = parent &&
+            parent.display.includes("flex") &&
+            parent.alignItems === "baseline"
+          const inline = style.display === "inline-block" || placedByARow
+          const unit = unitFor(el)
+          return (!inline && off(box.top + window.scrollY, unit)) || off(box.height, unit)
+        }).map((el) => {
+          const box = el.getBoundingClientRect()
+          return el.tagName.toLowerCase() + (el.className ? "." + String(el.className).trim().split(/\\s+/).join(".") : "") +
+            " starts at " + (box.top + window.scrollY) + " and is " + box.height + " tall"
+        }).slice(0, 10)
+      })()
+    JS
+  end
+
+  # The page as a browser without text-box-trim lays it out. Trimming rounds
+  # a block up to a whole line whatever the leading under it says, so it hides
+  # a register leaded off the ladder: a footer led on the space step and a
+  # field error led on sixteen both read correctly under it and put eight
+  # pixels into the column without. The library declares the 0px fallback for
+  # --cap-correction outside the @supports block, so this is what those
+  # browsers actually get — and the sheet is unlayered, which is how an
+  # application's own CSS wins over the library's.
+  def without_trimmed_text_boxes
+    execute_script(<<~JS)
+      const sheet = new CSSStyleSheet()
+      sheet.replaceSync(":root { --cap-correction: 0px } * { text-box: normal }")
+      document.adoptedStyleSheets = [ ...document.adoptedStyleSheets, sheet ]
+    JS
+
+    yield
+  end
 end
