@@ -4,7 +4,7 @@ Semver. Consumers pin `~> 0.1`.
 
 ## 0.6.1 — 2026-09-02
 
-Two registers were leaded off the ladder, and trimming was hiding it.
+Three ways the column came apart in a browser that was not Chromium.
 
 - **`.footer` and `.field__error` take their leading from `--line`.** The
   footer was led on `--space-3` and the field error on `--space-2`. The first
@@ -14,6 +14,17 @@ Two registers were leaded off the ladder, and trimming was hiding it.
 - **The leading guard is asked of every stylesheet, not only `type.css`.** It
   passed for as long as it did because a register can be declared in any file
   and it was only ever looking in one.
+- **The masthead, the nav and the pagination align on their under edge
+  rather than on a baseline.** A trimmed block's under edge *is* the baseline
+  of its last line, and every child of those three rows is one line — so
+  aligning the edges aligns the baselines by construction, instead of asking
+  the browser to find a baseline. Browsers do not agree on that answer once
+  trimming is involved, and the masthead is where it shows: it puts a block
+  beside a flex container, and a browser that synthesizes those two a few
+  pixels apart grows the row past its three lines and carries the difference
+  down every section below it. The rows that keep `baseline` are the ones
+  that need it, where a line of type sits beside something taller — `.run`,
+  `.field--inline`, `.choice`.
 - **The grid is measured without `text-box-trim` as well as with it,** and the
   published page is measured at all. A trimmed box is its cap rounded up to a
   whole line whatever the leading under it says, so trimming hides exactly
@@ -21,11 +32,15 @@ Two registers were leaded off the ladder, and trimming was hiding it.
   the form down. The check now runs twice, and the file `bin/specimen` writes
   is loaded in a browser over `file://` rather than only read as text.
 
-Why: the vertical grid was a claim about Chromium. Both mistakes were in
-`components.css`, both were invisible to the guard that exists to catch them,
-and both were invisible on screen in the one browser everything was checked
-in — which is three ways of saying the same thing, and the reason the fix is
-mostly test.
+Why: the vertical grid was a claim about Chromium. All three were in
+`components.css`, none was visible to the guard that exists to catch it, and
+none was visible on screen in the one browser everything was checked in —
+which is three ways of saying the same thing, and the reason the fix is
+mostly test. The baseline one is the sharpest version of it: the box check
+exempts an item placed by a baseline row, on the grounds that a row is where
+a short thing legitimately sits off the line. So for as long as the masthead
+asked for a baseline, nothing measured where its two halves landed. It does
+not ask any more, and now they are measured like anything else.
 
 ## 0.6.0 — 2026-09-02
 

@@ -126,6 +126,22 @@ class SpecimenSystemTest < ApplicationSystemTestCase
     end
   end
 
+  # The masthead in particular, because it is where a page most often puts a
+  # block of type beside a flex container, and because the sweep above can
+  # only measure what is not exempt from it: an item placed by a baseline row
+  # is exempt, so for as long as this row aligned on a baseline nothing
+  # measured where its two halves actually landed.
+  test "the wordmark and the nav end on the same line" do
+    unit = baseline
+    mark = rect_of(".masthead__mark")
+    nav = rect_of(".masthead .nav")
+
+    assert_in_delta mark["top"] + mark["height"], nav["top"] + nav["height"], 0.05,
+      "the mark and the nav are on different baselines, which makes the row taller than the lines it is given"
+    assert_equal 0, (rect_of(".masthead")["height"] % unit).round(2),
+      "the masthead is not a whole number of lines, so everything below it is off the grid"
+  end
+
   # What the grid is actually for. Boxes in step are not a baseline grid: a
   # line's baseline falls wherever the font's ascent and the leading either
   # side of it put it inside the line box, so at 0.2.0 a paragraph's baselines

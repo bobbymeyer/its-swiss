@@ -44,6 +44,22 @@ class ComponentsTest < ActiveSupport::TestCase
     end
   end
 
+  # A row of one-line blocks has a shared baseline already: the trim makes a
+  # block's under edge the baseline of its last line, so aligning the edges
+  # aligns the baselines. Asking for `baseline` instead asks the browser where
+  # the baseline is, and browsers answer differently once trimming is involved
+  # — the masthead puts a block beside a flex container, and a browser that
+  # synthesized the two a few pixels apart grew the row past its three lines
+  # and carried the error down the whole page. The rows that keep `baseline`
+  # are the ones that need it, where a line of type sits beside something
+  # taller: a control, a button, a checkbox.
+  test "a row of single-line blocks aligns on its under edge, not on a baseline" do
+    [ ".masthead", ".nav", ".pagination" ].each do |selector|
+      assert_match(/align-items: end/, declarations_for(selector),
+        "#{selector} holds one line per child and has no reason to ask a browser to find a baseline")
+    end
+  end
+
   # A component that placed itself on the page's field would break the moment
   # an application decided its problem had eight fields rather than six.
   test "no component places itself on the application's grid" do
@@ -65,8 +81,13 @@ class ComponentsTest < ActiveSupport::TestCase
     # Every declaration that applies to a selector, across every rule that
     # names it: grouped selectors are how this stylesheet says a thing once,
     # so the first rule mentioning one is rarely the rule about it.
+    #
+    # The layer's own opening brace has to go first. Left in, it reads as a
+    # rule whose declarations run to the end of the first real one — so the
+    # first rule in the file was invisible here, and a guard asked about it
+    # failed for having found nothing rather than for what it found.
     def declarations_for(selector)
-      rules_in("components").scan(/([^{}]+)\{([^}]*)\}/m)
+      rules_in("components").sub(/@layer[^{]*\{/, "").scan(/([^{}]+)\{([^}]*)\}/m)
         .select { |selectors, _| selectors.split(",").map(&:strip).include?(selector) }
         .map(&:last).join
     end
