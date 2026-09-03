@@ -48,14 +48,18 @@ jobs:
       # Every version published so far, so pinning a post to one keeps working
       # after the next release. Pages replaces the whole site each deploy, so
       # the older files have to be carried forward rather than assumed.
-      - name: Keep what is already published
+      # Pages replaces the whole site each deploy, so a version-stamped page
+      # only survives if this run writes it again. Reading them back off the
+      # live site cannot do that: it preserves whatever happened to be up, and
+      # loses the version the moment one deploy misses it — which is how
+      # 0.6.0.html, pinned by a published post, stopped existing the next time
+      # main moved. They are kept in the repository instead, so the published
+      # set is reproducible from source rather than from itself.
+      - name: The versions something has pinned
         run: |
           mkdir -p specimen
-          for tag in $(git tag -l 'v*' | sed 's/^v//'); do
-            curl -sf -o "specimen/$tag.html" "https://bobbymeyer.github.io/its-swiss/$tag.html" \
-              || rm -f "specimen/$tag.html"
-          done
-          ls specimen | sed 's/^/  carried forward: /' || true
+          cp published/*.html specimen/ 2>/dev/null || true
+          ls specimen | sed 's/^/  published from the archive: /' || true
 
       - run: bin/specimen specimen
 
