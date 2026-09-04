@@ -76,7 +76,7 @@ module ItsSwiss
           .map((face) => `${face.family} ${face.weight} ${face.status}`)
         const report = [
           navigator.userAgent,
-          `its-swiss ${document.documentElement.dataset.version}, ${document.documentElement.classList.contains("metric-overrides") ? "on the faces" : "trimmed"}` +
+          `its-swiss ${document.documentElement.dataset.version}, ${document.documentElement.classList.contains("no-metric-overrides") ? "trimmed" : "on the faces"}` +
             `, ${CSS.supports("text-box", "trim-both cap alphabetic") ? "can trim" : "cannot trim"}`,
           `faces: ${faces.join("; ") || "none listed"}`,
           `${boxes.length} boxes and ${type.length} runs of type off the ${unit}px grid`,

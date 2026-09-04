@@ -42,10 +42,12 @@ Every baseline on the grid, in every browser, whatever the font.
   cap and its baseline and padded back up — to its *own* leading now,
   `round(up, 1cap, 1lh)`, so a subhead set on two lines is no longer trimmed
   to one, and less the cap as WebKit trims it, which is rounded to a pixel —
-  and only where it is needed: a trimmed box is a 64th short as
-  often as not, which down a long column is a pixel, so one line of script
-  ahead of the stylesheets marks the document `metric-overrides` where the
-  faces are honoured and the trim stands down. `its_swiss_stylesheet_tags`
+  and only where it is needed, and only when told: a trimmed box is a 64th
+  short as often as not on the engine the correction is written for and
+  half a pixel out on one that trims to the exact cap, which down a column
+  is a visible drift, so one line of script ahead of the stylesheets marks
+  the document `no-metric-overrides` where the faces are not honoured and
+  the trim steps in there alone. `its_swiss_stylesheet_tags`
   writes it; anything linking the stylesheets by hand should too, and the
   README has the line. Buttons, cells and the copy button are trimmed as
   well now, with the correction in their own paddings. A control's own text

@@ -27,11 +27,12 @@ module ItsSwiss
   FACES = { "its-swiss-150" => 1.5, "its-swiss-200" => 2.0, "its-swiss-100" => 1.0 }.freeze
   MONO_FACE = { "its-swiss-mono" => 5 / 3r }.freeze
 
-  # Marks the document when the browser honours a @font-face's metric
-  # descriptors, which is what the faces rely on. Written inline ahead of the
-  # stylesheets by its_swiss_stylesheet_tags and by the static specimen, and
-  # by anything else that links the stylesheets by hand.
-  METRIC_OVERRIDES_SCRIPT = %(if ("ascentOverride" in FontFace.prototype) document.documentElement.classList.add("metric-overrides")).freeze
+  # Marks the document when the browser does not honour a @font-face's metric
+  # descriptors, which is what the faces rely on, so that the trim in type.css
+  # steps in. Written inline ahead of the stylesheets by
+  # its_swiss_stylesheet_tags and by the static specimen, and by anything else
+  # that links the stylesheets by hand.
+  METRIC_OVERRIDES_SCRIPT = %(if (!("ascentOverride" in FontFace.prototype)) document.documentElement.classList.add("no-metric-overrides")).freeze
 
   # The cascade layer everything the gem ships lives in. An application's own
   # CSS is unlayered, and unlayered rules beat every layered one regardless of

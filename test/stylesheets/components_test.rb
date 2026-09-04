@@ -83,11 +83,12 @@ class ComponentsTest < ActiveSupport::TestCase
     button = declarations_for(".button")
 
     assert_match(/min-block-size: var\(--line-2\)/, button)
-    assert_match(/padding-block: var\(--half-line\)/, button)
+    assert_match(/--lift: round\(up, 1cap \/ 2, 0\.015625px\)/, button)
+    assert_match(/padding-block: var\(--lift\) calc\(var\(--line\) - var\(--lift\)\)/, button, "on the faces the label is let down by half its cap")
     assert_match(/border: 0/, button)
     assert_match(/box-shadow: inset 0 0 0 var\(--rule-hair\)/, button)
-    assert_match(/html\.metric-overrides \.button,\s*html\.metric-overrides \.skip-link \{[^}]*padding-block: var\(--lift\) calc\(var\(--line\) - var\(--lift\)\)/m,
-      rules_in("components"), "on the faces the label is let down by half its cap")
+    assert_match(/html\.no-metric-overrides \.button,\s*html\.no-metric-overrides \.skip-link \{ padding-block: var\(--half-line\); \}/,
+      rules_in("components"), "without the faces the font centres the label itself")
     assert_match(/padding-block: var\(--cap-correction\) calc\(var\(--line\) - var\(--rule-hair\)\)/, declarations_for(".table th"),
       "a cell puts nothing but the correction above its type, or the baseline is not one line down")
   end

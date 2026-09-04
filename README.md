@@ -134,21 +134,24 @@ padding-block-start: calc(round(up, 1cap, 1lh) - round(1cap, 1px));
 
 — measured by the browser in cap and line units, so the library still never
 has to be told the font's metrics. The cap is rounded to a pixel because that
-is the cap WebKit trims to, and WebKit is the browser this is for. It is published as `--cap-correction`: a
-component that puts padding above its type adds it. Only where it is needed,
-though. A trimmed box is a 64th of a pixel short as often as not, which down
-a long column is a pixel, so one line of script ahead of the stylesheets marks
-the document `metric-overrides` where the faces are honoured and the trim
-stands down; `its_swiss_stylesheet_tags` writes it, and anything linking the
-stylesheets by hand should too:
+is the cap WebKit trims to, and WebKit is the browser this is for. It is
+published as `--cap-correction`: a component that puts padding above its type
+adds it. Only where it is needed, though, and only when told: a trimmed box
+is a 64th of a pixel short as often as not on the engine the correction is
+written for, and half a pixel out per block on one that trims to the exact
+cap, which down a long column is a visible drift. So one line of script ahead
+of the stylesheets marks the document `no-metric-overrides` where the faces
+are not honoured, and the trim steps in there and nowhere else;
+`its_swiss_stylesheet_tags` writes it, and anything linking the stylesheets
+by hand should too:
 
 ```html
-<script>if ("ascentOverride" in FontFace.prototype) document.documentElement.classList.add("metric-overrides")</script>
+<script>if (!("ascentOverride" in FontFace.prototype)) document.documentElement.classList.add("no-metric-overrides")</script>
 ```
 
-Without it the page trims everywhere, which is exact in Safari, a 64th out
-per block in Chromium, and nothing either way in Firefox, which does not trim
-and honours the faces. Three things follow.
+Without it the page is on the faces alone: exact in Chromium and Firefox, and
+in Safari in step but not registered. The faces are the mechanism and the
+trim is the fallback. Three things follow.
 
 Anything that changes size *inside* a line — `code`, a `small`, a
 superscript — is given no leading at all, so it never asks the line for room;
@@ -429,9 +432,9 @@ The two grid questions are one function, `test/support/on_the_grid.js`, and
 `test/browsers/grid.mjs` asks it of the published specimen in Chromium, WebKit
 and Firefox through Playwright. CI runs all three; a grid checked in one
 browser is a claim about that browser. Chromium is also asked with the faces
-taken away and the mark taken off the document, which is the page as Safari
-lays it out, so the trim is measured on every push and not only in the one
-job that has WebKit.
+taken away and the document marked, which is the page as Safari lays it out,
+so the trim is measured on every push and not only in the one job that has
+WebKit.
 
 There are no pixel tests.
 

@@ -29,7 +29,7 @@
   // that, so Chromium trimming to the exact cap lands within half a pixel.
   // Neither tolerance is a fudge: a real error is a whole pixel, because
   // that is the smallest thing a rule or a border can be.
-  const exact = document.documentElement.classList.contains("metric-overrides")
+  const exact = !document.documentElement.classList.contains("no-metric-overrides")
   const tolerance = exact ? 0.05 : 0.5
   const off = (value, u) => {
     const over = ((value % u) + u) % u
