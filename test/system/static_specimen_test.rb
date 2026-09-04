@@ -48,12 +48,14 @@ class StaticSpecimenSystemTest < ApplicationSystemTestCase
     end
   end
 
-  # The mark the trim stands down on has to be there before the first layout
-  # or the page moves under the reader, and a static file has nowhere to get
-  # it from but itself.
-  test "carries the script that tells the trim to stand down" do
-    assert evaluate_script(%(document.documentElement.classList.contains("metric-overrides"))),
-      "the published page did not mark itself, so it is trimmed in a browser that did not need it"
+  # The mark the trim steps in on has to be there before the first layout or
+  # the page moves under the reader, and a static file has nowhere to get it
+  # from but itself. Chromium honours the faces, so on this page the script
+  # has run and left no mark.
+  test "carries the script that tells the trim when to step in" do
+    assert_includes page.html, "no-metric-overrides", "the published page does not carry the script"
+    assert_not evaluate_script(%(document.documentElement.classList.contains("no-metric-overrides"))),
+      "a browser that honours the faces was marked as one that does not"
   end
 
   # The overlay is the only reason to trust the page by eye, so it has to be

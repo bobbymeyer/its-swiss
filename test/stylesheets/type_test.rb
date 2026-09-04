@@ -43,31 +43,31 @@ class TypeTest < ActiveSupport::TestCase
   # @font-face's metrics, and Safari does not. There every text block is
   # trimmed to its cap and its baseline and padded back up to its own
   # leading — its own, or a subhead set on two lines is trimmed to one —
-  # and only there: a trimmed box is a 64th short as often as not, and a
-  # browser on the faces is told to leave the trim alone.
+  # and only there, and only when the document says so: a trimmed box is a
+  # 64th short as often as not on the engine the correction is written for
+  # and half a pixel out on the one it is not, and a browser on the faces
+  # must never be asked to trim what it already has exact.
   test "text is trimmed to its type where the faces are not honoured, and only there" do
     type = rules_in("type")
 
-    assert_match(/html:not\(\.metric-overrides\) \{ --cap-correction: calc\(round\(up, 1cap, 1lh\) - round\(1cap, 1px\)\); \}/, type,
+    assert_match(/html\.no-metric-overrides \{ --cap-correction: calc\(round\(up, 1cap, 1lh\) - round\(1cap, 1px\)\); \}/, type,
       "the correction rounds the cap up to the block's own leading, less the cap as WebKit trims it")
-    assert_match(/text-box: trim-both cap alphabetic;\s*padding-block-start: var\(--cap-correction\);/, type)
-    assert_match(/html\.metric-overrides :is\([^)]*\) \{\s*text-box: normal;\s*\}/m, type,
-      "a browser on the faces still trims, which is a 64th off a block")
+    assert_match(/html\.no-metric-overrides :is\([^{]*\) \{\s*text-box: trim-both cap alphabetic;\s*padding-block-start: var\(--cap-correction\);/m, type,
+      "the trim is asked without the document being marked, which is a page the faces had exact")
+    assert_equal 1, type.scan(/text-box: trim-both cap alphabetic;/).size, "the trim is declared once, behind the mark, and nowhere else"
     assert_match(/--cap-correction: 0px;/, rules_in("tokens"), "a browser that cannot trim is owed a correction of nothing")
   end
 
-  # A component that puts anything above its type puts the correction there,
-  # or the type is on the grid in one browser and a cap short of it in the
-  # other.
-  test "every padding above type carries the correction" do
+  # A component that puts anything above trimmed type puts the correction
+  # there, or the type is on the grid in one browser and a cap short of it in
+  # the other. A button is not trimmed — its label is centred in a box — and
+  # so is the one text-bearing component with no correction to carry.
+  test "every padding above trimmed type carries the correction" do
     components = rules_in("components")
 
-    [ ".button", ".skip-link" ].each do |selector|
-      assert_match(/#{Regexp.escape(selector)} \{[^}]*padding-block: var\(--cap-correction\) var\(--line\)/m, components,
-        "#{selector} puts nothing, rather than the correction, above its label")
-    end
     assert_match(/padding-block: var\(--cap-correction\) calc\(var\(--line\) - var\(--rule-hair\)\)/, components, "a cell")
     assert_match(/\.copy \{[^}]*padding: var\(--cap-correction\) 0 0/m, components)
+    assert_no_match(/\.button,\s*\.copy,\s*\.skip-link \{/, rules_in("type"), "a button is a box, and is not trimmed")
   end
 
   test "nothing is set in capitals" do

@@ -31,21 +31,35 @@ module ItsSwiss
 
       main { position: relative; }
 
-      /* The baseline, drawn over the type it is registered to. */
-      html.show-baseline main::before {
-        content: "";
+      /* The baseline, drawn over the type it is registered to: one laid-out
+         element per line rather than a repeating gradient. A gradient is
+         rasterised a tile at a time, and a tile whose height is not a whole
+         number of device pixels — a page shown at any scale but one to one —
+         gains a fraction with every repeat, until the lines have crept off
+         the boxes they are meant to show. An element at calc(n * --line) goes
+         through the same arithmetic as the boxes, and lands where they do at
+         any scale. */
+      .specimen__baselines {
         position: absolute;
         inset: 0;
         z-index: 1;
         pointer-events: none;
-        background: repeating-linear-gradient(
-          to bottom,
-          color-mix(in oklch, var(--accent) 34%, transparent) 0 1px,
-          transparent 1px var(--line)
-        );
+        display: none;
+      }
+
+      html.show-baseline .specimen__baselines { display: block; }
+
+      .specimen__baselines > i {
+        position: absolute;
+        inset-inline: 0;
+        border-top: var(--rule-hair) solid color-mix(in oklch, var(--accent) 34%, transparent);
       }
 
       .specimen-controls { margin-block: var(--line) var(--line-2); }
+
+      /* What the measure button says. Wrapped, or a user agent string scrolls
+         the page sideways; a whole number of lines, like anything else. */
+      #grid-report { margin-block: 0 var(--line-2); white-space: pre-wrap; overflow-wrap: anywhere; }
     CSS
 
     SCRIPT = <<~JS
@@ -60,6 +74,57 @@ module ItsSwiss
 
       toggle("accent-toggle", "no-accent", "Unset the accent", "Set the accent")
       toggle("baseline-toggle", "show-baseline", "Show the baseline", "Hide the baseline")
+
+      // The lines the baseline toggle shows, one per line of the page, laid
+      // out rather than painted. Drawn again whenever the page changes
+      // height, since a reflow at a new width is a different number of them.
+      const main = document.getElementById("main")
+      const baselines = document.createElement("div")
+      baselines.className = "specimen__baselines"
+      baselines.setAttribute("aria-hidden", "true")
+      main.append(baselines)
+      const drawBaselines = () => {
+        const line = parseFloat(getComputedStyle(document.documentElement).fontSize) * 1.5
+        const count = Math.ceil(main.offsetHeight / line) + 1
+        if (baselines.childElementCount === count) return
+        baselines.replaceChildren(...Array.from({ length: count }, (_, n) => {
+          const i = document.createElement("i")
+          i.style.top = `calc(${n} * var(--line))`
+          return i
+        }))
+      }
+      new ResizeObserver(drawBaselines).observe(main)
+      drawBaselines()
+
+      // The same question the test suite asks, asked of this browser: which
+      // mechanism it is on, which faces it loaded, and every box and run of
+      // type it laid out off the grid. A page that only looks right in the
+      // browsers somebody checked is a page with a button for the others.
+      document.getElementById("measure").addEventListener("click", () => {
+        const unit = parseFloat(getComputedStyle(document.documentElement).fontSize) * 1.5
+        const { boxes, type, scale, shift, perturbed } = (__GRID__)(unit)
+        const faces = Array.from(document.fonts).filter((face) => face.family.startsWith("its-swiss"))
+          .map((face) => `${face.family} ${face.weight} ${face.status}`)
+        const report = [
+          navigator.userAgent,
+          `its-swiss ${document.documentElement.dataset.version}, ${document.documentElement.classList.contains("no-metric-overrides") ? "trimmed" : "on the faces"}` +
+            `, ${CSS.supports("text-box", "trim-both cap alphabetic") ? "can trim" : "cannot trim"}`,
+          `faces: ${faces.join("; ") || "none listed"}`,
+          perturbed
+            ? "this browser adds noise to every rectangle a script reads, so the grid cannot be measured here; " +
+              "Brave does this with Shields up — turn them off for this page, or measure in Chrome or Firefox"
+            : `${boxes.length} boxes and ${type.length} runs of type off the ${unit}px grid` +
+              (scale !== 1 || shift !== 0 ? `, read through a scale of ${scale.toFixed(6)} and a shift of ${shift.toFixed(4)}px` : ""),
+          ...boxes.slice(0, 20), ...type.slice(0, 20)
+        ].join("\\n")
+        let out = document.getElementById("grid-report")
+        if (!out) {
+          out = document.createElement("pre")
+          out.id = "grid-report"
+          document.querySelector(".specimen-controls").after(out)
+        }
+        out.textContent = report
+      })
 
       // The library's one piece of JavaScript, which the gem ships as a
       // Stimulus controller. Written plainly here because this page has no
@@ -130,13 +195,14 @@ module ItsSwiss
           <div class="run specimen-controls">
             <button type="button" class="button" id="accent-toggle">Unset the accent</button>
             <button type="button" class="button" id="baseline-toggle">Show the baseline</button>
+            <button type="button" class="button button--quiet" id="measure">Measure the grid</button>
           </div>
 
         #{sections}
         </main>
 
         <script>
-        #{SCRIPT}
+        #{SCRIPT.sub("__GRID__", grid_script)}
         </script>
         </body>
         </html>
@@ -173,6 +239,9 @@ module ItsSwiss
 
         session.response.body
       end
+
+      # The grid guard, verbatim, so the page asks exactly what the suite asks.
+      def grid_script = gem_root.join("test/support/on_the_grid.js").read.gsub(%r{^//.*\n}, "").strip
 
       def gem_root = Pathname.new(File.expand_path("..", __dir__))
   end

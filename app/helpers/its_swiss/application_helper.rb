@@ -15,11 +15,10 @@ module ItsSwiss
     #
     # Ahead of them, one line of script: whether this browser honours what a
     # @font-face says about its metrics, which is what puts the baseline on
-    # the under edge of every line. Where it does, the document is marked and
-    # the trim in type.css that does the same job the long way stands down;
-    # where it does not — Safari — the trim is the grid. Inline and first,
-    # because it has to have run before the first layout, and a class added
-    # after paint is a page that moves.
+    # the under edge of every line. Where it does not — Safari — the document
+    # is marked and the trim in type.css that does the same job the long way
+    # steps in. Inline and first, because it has to have run before the first
+    # layout, and a class added after paint is a page that moves.
     def its_swiss_stylesheet_tags(**options)
       safe_join([
         tag.script(ItsSwiss::METRIC_OVERRIDES_SCRIPT.html_safe), # rubocop:disable Rails/OutputSafety -- a constant

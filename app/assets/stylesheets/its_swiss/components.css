@@ -329,26 +329,41 @@
      the only difference between them is what fills it. No radius, no shadow,
      and the keyline is the hairline drawn everywhere else.
 
-     The box is the shape a text control is: two lines, the label set on the
-     first and the keyline closing the second, so a button beside a field has
-     its label on the field's text and its under edge on the field's rule.
-     The keyline is drawn inside the box rather than laid out around it. A
-     border is a pixel of box above the label, and a pixel above the label is
-     a baseline a pixel off the grid; an inset shadow is the same hairline
-     and no box at all. */
+     A button is a box, not a line of type: two lines tall, on the grid, with
+     its label centred in it. The label's baseline is the one baseline in the
+     library that is not on a line, and on purpose — a button is read as a
+     shape, and a label set on the second line of a two-line box reads as a
+     field with a rule under it, which is the one thing a button must not be
+     mistaken for.
+
+     Centred by cap: a face puts the label's baseline on the under edge of
+     its line, so the line is let down by half the cap height and the cap
+     sits across the middle. Half a cap on a 64th of a pixel, because the
+     browser lays out in 64ths and snaps each padding on its own, and two
+     halves of a fraction each snapped down are a box a 64th short; rounded
+     up to the unit first, the two paddings sum to the line exactly. Where
+     the faces are not honoured the font's own metrics put the cap near the
+     middle of its line already, and the paddings are simply equal. The
+     keyline is drawn inside the box rather than laid out around it, so the
+     arithmetic is the label's line and two paddings, and nothing else. */
 
   .button {
     --keyline: var(--rule);
+    --lift: round(up, 1cap / 2, 0.015625px);
     display: inline-block;
     border: 0;
     box-shadow: inset 0 0 0 var(--rule-hair) var(--keyline);
     background: transparent;
     color: var(--ink);
-    padding-block: var(--cap-correction) var(--line);
+    min-block-size: var(--line-2);
+    padding-block: var(--lift) calc(var(--line) - var(--lift));
     padding-inline: var(--space-2);
     cursor: pointer;
     text-decoration: none;
   }
+
+  html.no-metric-overrides .button,
+  html.no-metric-overrides .skip-link { padding-block: var(--half-line); }
 
   .button:hover { --keyline: var(--ink); }
 
@@ -508,7 +523,9 @@
     left: var(--space-2);
     top: var(--space-2);
     z-index: 1;
-    padding-block: var(--cap-correction) var(--line);
+    --lift: round(up, 1cap / 2, 0.015625px);
+    min-block-size: var(--line-2);
+    padding-block: var(--lift) calc(var(--line) - var(--lift));
     padding-inline: var(--space-2);
     background: var(--paper);
     box-shadow: inset 0 0 0 var(--rule-hair) var(--ink);

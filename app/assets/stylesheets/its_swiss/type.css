@@ -186,13 +186,17 @@
      leading above the cap away and the padding puts the same amount back —
      but almost: a cap height is a fraction, the browser lays out in 64ths of
      a pixel, and a trimmed block comes out a 64th short as often as not,
-     which down a long column is a pixel. So it is only asked of a browser
-     that needs it. The one line of script its_swiss_stylesheet_tags writes
-     ahead of the stylesheets marks the document `metric-overrides` when the
-     browser honours the descriptors, and the trim stands down; without the
-     script the page trims everywhere, which is exact in Safari and a 64th
-     out per block in Chromium, and in Firefox, which does not trim, is
-     nothing either way.
+     which down a long column is a pixel — and in a browser that trims to
+     the exact cap while the correction below is written for a rounded one,
+     half a pixel a block, which down a column is many. So it is only asked
+     of a browser that needs it, and only when told. The one line of script
+     its_swiss_stylesheet_tags writes ahead of the stylesheets marks the
+     document `no-metric-overrides` when the browser does not honour the
+     descriptors, and the trim steps in; without the script the page is on
+     the faces alone, which is exact in Chromium and Firefox and, in Safari,
+     in step but not registered. The faces are the mechanism; the trim is
+     the fallback, and a fallback that could run where it is not needed is
+     one that drifts a page the faces had exact.
 
      Text elements, and only those: a block that holds other blocks is
      trimmed through its first and last child and would be corrected twice.
@@ -209,33 +213,27 @@
      Chromium, which trims to the exact cap, only ever trims here without
      the script, and lands within half a pixel of the line. */
   @supports (text-box: trim-both cap alphabetic) and (padding-top: round(up, 1cap, 1lh)) {
-    html:not(.metric-overrides) { --cap-correction: calc(round(up, 1cap, 1lh) - round(1cap, 1px)); }
+    html.no-metric-overrides { --cap-correction: calc(round(up, 1cap, 1lh) - round(1cap, 1px)); }
 
-    .page-title,
-    h1, h2, h3, h4,
-    p, dt, th, td, figcaption, caption, legend, label,
-    li:not(:has(> :is(p, ul, ol, dl, div, figure, table, pre, blockquote))),
-    dd:not(:has(> :is(p, ul, ol, dl, div, figure, table, pre, blockquote))),
-    .micro, .hint, .lede, .empty, .masthead__mark, .field__error, .errors__title,
-    /* Flex items are blockified, so the text in a row is trimmable too. */
-    .nav a,
-    .pagination a,
-    .pagination [aria-current],
-    .pagination__gap,
-    /* A button is a block of one line with a keyline drawn inside it, and
-       trims like any other; its paddings are written in components.css
-       with the correction already in them. */
-    .button,
-    .copy,
-    .skip-link {
+    html.no-metric-overrides :is(
+      .page-title,
+      h1, h2, h3, h4,
+      p, dt, th, td, figcaption, caption, legend, label,
+      li:not(:has(> :is(p, ul, ol, dl, div, figure, table, pre, blockquote))),
+      dd:not(:has(> :is(p, ul, ol, dl, div, figure, table, pre, blockquote))),
+      .micro, .hint, .lede, .empty, .masthead__mark, .field__error, .errors__title,
+      /* Flex items are blockified, so the text in a row is trimmable too. */
+      .nav a,
+      .pagination a,
+      .pagination [aria-current],
+      .pagination__gap,
+      /* The copy button is a value set in a line of prose, and sits on that
+         line's baseline like the rest of it. A .button is a box with its
+         label centred, and is not trimmed: see components.css. */
+      .copy
+    ) {
       text-box: trim-both cap alphabetic;
       padding-block-start: var(--cap-correction);
-    }
-
-    html.metric-overrides :is(.page-title, h1, h2, h3, h4, p, dt, dd, li, th, td, figcaption, caption, legend, label,
-      .micro, .hint, .lede, .empty, .masthead__mark, .field__error, .errors__title,
-      .nav a, .pagination a, .pagination [aria-current], .pagination__gap, .button, .copy, .skip-link) {
-      text-box: normal;
     }
   }
 

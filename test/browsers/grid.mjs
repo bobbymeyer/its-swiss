@@ -28,8 +28,8 @@
 // the same, and WebKit lists them and keeps the font's own metrics. What
 // counts is the grid, and which of the two mechanisms an engine is on is
 // read off the document: the script ahead of the stylesheets marks it when
-// the engine honours a face's metrics, and the trim is doing the work
-// otherwise.
+// the engine does not honour a face's metrics, and the trim is then doing
+// the work.
 import { chromium, webkit, firefox } from "playwright"
 import { readFileSync } from "node:fs"
 import { resolve } from "node:path"
@@ -57,7 +57,7 @@ for (const name of named.length ? named : Object.keys(engines)) {
       .map((face) => `${face.family}/${face.weight}`))
   const { boxes, type } = await page.evaluate(`(${onTheGrid})(${unit})`)
 
-  const mechanism = await page.evaluate(() => document.documentElement.classList.contains("metric-overrides") ? "on the faces" : "trimmed")
+  const mechanism = await page.evaluate(() => document.documentElement.classList.contains("no-metric-overrides") ? "trimmed" : "on the faces")
   const verdict = boxes.length || type.length ? "off the grid" : "on the grid"
   console.log(`${name}: ${verdict}, ${mechanism} — ${boxes.length} boxes, ${type.length} runs of type; faces loaded: ${faces.join(" ") || "none"}`)
   for (const line of [ ...boxes, ...type ].slice(0, 20)) console.log(`  ${line}`)

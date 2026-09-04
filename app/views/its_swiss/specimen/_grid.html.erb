@@ -5,20 +5,21 @@
     <code>--columns: <%= 6 %></code>; a child says how many fields it takes
     with <code>--span</code>, and a child that says nothing runs the field.
   </p>
-  <div class="grid specimen__grid subgrid">
-    <% 6.times do %><span style="--span: 1"><span class="specimen__field"></span></span><% end %>
-    <span style="--span: 2"><span class="specimen__field"></span></span>
-    <span style="--span: 4"><span class="specimen__field"></span></span>
-    <span><span class="specimen__field"></span></span>
+  <div class="grid specimen__grid">
+    <% 6.times do %><span class="specimen__field" style="--span: 1"></span><% end %>
+    <span class="specimen__field" style="--span: 2"></span>
+    <span class="specimen__field" style="--span: 4"></span>
+    <span class="specimen__field"></span>
   </div>
 
   <h4>Runs and columns</h4>
   <p class="hint">
     Almost every arrangement in an interface is one of two: items on a shared
     baseline a space apart, wrapping when they must — a <code>.run</code> —
-    or the same turned ninety degrees, a <code>.stack</code>.
+    or the same turned ninety degrees, a <code>.stack</code>. This one is
+    also a <code>.subgrid</code>: small type on the half-line.
   </p>
-  <div class="stack">
+  <div class="stack subgrid">
     <span class="micro">A stack puts a whole line between its children.</span>
     <span class="micro">So the column below it is still on the grid.</span>
   </div>

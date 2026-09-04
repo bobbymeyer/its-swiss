@@ -42,10 +42,12 @@ Every baseline on the grid, in every browser, whatever the font.
   cap and its baseline and padded back up — to its *own* leading now,
   `round(up, 1cap, 1lh)`, so a subhead set on two lines is no longer trimmed
   to one, and less the cap as WebKit trims it, which is rounded to a pixel —
-  and only where it is needed: a trimmed box is a 64th short as
-  often as not, which down a long column is a pixel, so one line of script
-  ahead of the stylesheets marks the document `metric-overrides` where the
-  faces are honoured and the trim stands down. `its_swiss_stylesheet_tags`
+  and only where it is needed, and only when told: a trimmed box is a 64th
+  short as often as not on the engine the correction is written for and
+  half a pixel out on one that trims to the exact cap, which down a column
+  is a visible drift, so one line of script ahead of the stylesheets marks
+  the document `no-metric-overrides` where the faces are not honoured and
+  the trim steps in there alone. `its_swiss_stylesheet_tags`
   writes it; anything linking the stylesheets by hand should too, and the
   README has the line. Buttons, cells and the copy button are trimmed as
   well now, with the correction in their own paddings. A control's own text
@@ -63,13 +65,25 @@ Every baseline on the grid, in every browser, whatever the font.
   on `top`: every box's baselines are whole lines below its own over edge,
   so starting items on one line puts their baselines on one line, without a
   question that a button, a form and a block of text answer three ways.
-- **A button is the shape of a control** — two lines, the label on the first
-  and the keyline closing the second — so a button beside a field has its
-  label on the field's text and its under edge on the field's rule. The
-  keyline is an inset shadow rather than a border, because a border is a
-  pixel of box above the label and a pixel above the label is a baseline a
-  pixel off the grid. A table cell is the same shape, with nothing above its
+- **A button is a box, with its label centred in it.** Two lines tall, on
+  the grid, and the label's baseline is the one baseline in the library that
+  is not on a line, on purpose: a button is read as a shape, and a label set
+  on the second line of a two-line box reads as a field with a rule under
+  it. Centred by cap where the faces are honoured, since a face puts the
+  label's baseline on the under edge of its line; by the font's own metrics
+  otherwise. The keyline is an inset shadow rather than a border, so the box
+  is the label's line and two paddings and nothing else. A table cell is a
+  line the type is set on and a line the rule closes, with nothing above its
   type.
+- **Each bold face names the regular ones after its own.** A face whose
+  every `local()` fails does not load, and the browser goes on to the next
+  family — the grotesque stack, with its own metrics — for every heading on
+  the page while the body stays on the grid. Falling through to the regular
+  file keeps the metrics and loses the weight.
+- **The specimen measures itself.** A third button asks the page the
+  question the suite asks: which mechanism this browser is on, which faces
+  it loaded, and every box and run of type off the grid, printed on the
+  page to be read or pasted.
 - **`its_swiss_typeface`** writes an application's own font under the
   library's face names with the library's descriptors, from a regular and a
   bold file or one variable file, and a monospace if there is one.

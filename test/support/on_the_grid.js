@@ -5,10 +5,13 @@
 // read by the Ruby system tests and by the cross-engine job in CI, which is
 // why it is a file rather than a heredoc in either.
 //
-// Two lists come back. `boxes` holds every block box whose over or under
-// edge is not on a line: the column is a stack of these, and one that is a
-// pixel tall too many puts everything below it off the grid. `type` holds
-// every run of text whose baseline is not on a line.
+// Two lists come back. `boxes` holds every block box off the grid: a box
+// that holds lines or nothing ends on a line whatever its height — a
+// paragraph, a cell, a half-line swatch standing on a baseline — and a box
+// that holds blocks starts on a line and puts whole lines under the last of
+// them. The column is a stack of these, and one that ends a pixel late puts
+// everything below it a pixel late. `type` holds every run of text whose
+// baseline is not on a line.
 //
 // Where the baseline is depends on which of the library's two mechanisms
 // the engine is using, and both are read off what the engine laid out
@@ -29,12 +32,16 @@
   // that, so Chromium trimming to the exact cap lands within half a pixel.
   // Neither tolerance is a fudge: a real error is a whole pixel, because
   // that is the smallest thing a rule or a border can be.
-  const exact = document.documentElement.classList.contains("metric-overrides")
+  const exact = !document.documentElement.classList.contains("no-metric-overrides")
   const tolerance = exact ? 0.05 : 0.5
-  const off = (value, u) => {
+  const by = (value, u) => {
     const over = ((value % u) + u) % u
-    return Math.min(over, u - over) > tolerance
+    return Math.min(over, u - over)
   }
+  const off = (value, u) => by(value, u) > tolerance
+  // Worst first, with how far off it is: the first line of the list is the
+  // thing to look at, and a page off by a 64th everywhere reads as one.
+  const worst = (list) => list.sort((a, b) => b.by - a.by).map((entry) => `${entry.where} (${entry.by.toFixed(3)}px off)`)
 
   // Where a page is measured from. On the faces every box is exact, and it
   // is measured from the top of the page: a box a pixel out puts everything
@@ -58,13 +65,38 @@
     let previous = el.previousElementSibling
     while (previous && !inFlow(previous)) previous = previous.previousElementSibling
     const reference = previous ? previous.getBoundingClientRect().bottom : el.parentElement.getBoundingClientRect().top
-    return reference + window.scrollY
+    return y(reference)
   }
 
   // A block of small type may sit on a half-line — that is what .subgrid
   // declares. The block itself still owes the column whole lines; only what
   // is inside it may halve them.
   const unitFor = (el) => (el.closest(".subgrid > *") ? unit / 2 : unit)
+
+  // A page shown at a scale — an embed fitted to a panel, a zoomed window —
+  // reports every rectangle at that scale while its layout is in CSS pixels,
+  // and a grid of 24 measured against boxes of 24.002 is off everywhere by
+  // the page's height. The scale is read off a probe of a known size at the
+  // document's origin: a thousand pixels tall, so the scale is exact to the
+  // float, and at the top, so a shift of the whole page is read with it.
+  // Every position below is read through both.
+  const probe = document.createElement("div")
+  probe.style.cssText = "position: absolute; top: 0; left: 0; width: 1000px; height: 1000px; visibility: hidden; pointer-events: none"
+  document.body.append(probe)
+  const known = probe.getBoundingClientRect()
+  const scale = known.height / 1000 || 1
+  const shift = known.top + window.scrollY
+  // A browser that perturbs what it reports — Brave's Shields add a little
+  // to every rectangle so a script cannot fingerprint the fonts by measuring
+  // text — cannot be measured by a script at all. A second probe a line tall
+  // says so: an engine lays out in 64ths of a pixel, and a box declared one
+  // line tall that comes back a hair off a 64th is not layout, it is noise.
+  probe.style.height = "24px"
+  const line = probe.getBoundingClientRect().height / scale
+  const perturbed = Math.abs(line * 64 - Math.round(line * 64)) > 0.001
+  probe.remove()
+  if (perturbed) return { boxes: [], type: [], scale, shift, perturbed }
+  const y = (visual) => (visual + window.scrollY - shift) / scale
 
   const name = (el) => {
     const classes = typeof el.className === "string" && el.className.trim()
@@ -85,32 +117,42 @@
     if (box.height === 0) continue
 
     const u = unitFor(el)
-    const top = box.top + window.scrollY
-    const bottom = box.bottom + window.scrollY
+    const top = y(box.top)
+    const bottom = y(box.bottom)
     const where = `${name(el)} from ${top} to ${bottom}`
+    // A control is a leaf whatever its options say they are.
+    const blocks = el.matches("select") ? [] : Array.from(el.children).filter((child) => inFlow(child) && blockLevel(child))
+    const last = blocks.at(-1)
 
     if (exact) {
-      if (off(top, u) || off(bottom, u)) boxes.push(where)
+      const worstBy = Math.max(by(bottom, u), last ? by(top, u) : 0)
+      if (worstBy > tolerance) boxes.push({ where, by: worstBy })
       continue
     }
 
-    // An inline-block sits on its line rather than under a sibling, so only
-    // its height is the ladder's business.
-    if (blockLevel(el) && off(top - origin(el), u)) boxes.push(where)
-    // A control is a leaf whatever its options say they are, and what a box
-    // puts under its last block is measured in that block's unit: the space
-    // under a subgrid's last row may be a half-line.
-    const blocks = el.matches("select") ? [] : Array.from(el.children).filter((child) => inFlow(child) && blockLevel(child))
-    const last = blocks.at(-1)
-    const under = last ? bottom - (last.getBoundingClientRect().bottom + window.scrollY) : box.height
-    if (off(under, last ? unitFor(last) : u)) boxes.push(where)
+    // Measured from the box before. An inline-block sits on its line rather
+    // than under a sibling, so only its height is the ladder's business; a
+    // box that holds blocks starts where the box before it ended and puts
+    // whole lines under its last block, measured in that block's unit, since
+    // the space under a subgrid's last row may be a half-line.
+    let worstBy = 0
+    if (!blockLevel(el)) {
+      worstBy = by(bottom - top, u)
+    } else if (last) {
+      const under = bottom - y(last.getBoundingClientRect().bottom)
+      worstBy = Math.max(by(top - origin(el), u), by(under, unitFor(last)))
+    } else {
+      worstBy = by(bottom - origin(el), u)
+    }
+    if (worstBy > tolerance) boxes.push({ where, by: worstBy })
   }
 
   const type = []
-  // A superscript and a subscript are moved off the baseline on purpose;
-  // a control's text is not in the document at all; everything else that is
+  // A superscript and a subscript are moved off the baseline on purpose, and
+  // so is a button's label, centred in a box that is itself on the grid; a
+  // control's text is not in the document at all; everything else that is
   // not on the page is not on the grid either.
-  const unmeasured = "script, style, title, select, textarea, sup, sub, [hidden], .visually-hidden, .skip-link"
+  const unmeasured = "script, style, title, select, textarea, sup, sub, .button, [hidden], .visually-hidden, .skip-link, #grid-report"
   const trimmed = (el) => getComputedStyle(el).textBoxTrim === "trim-both"
   const blockOf = (el) => {
     while (el && el !== document.body) {
@@ -139,21 +181,21 @@
       measured.add(block)
       const style = getComputedStyle(block)
       const box = block.getBoundingClientRect()
-      const baseline = box.bottom + window.scrollY - parseFloat(style.paddingBottom) - parseFloat(style.borderBottomWidth)
-      const from = exact ? 0 : box.top + window.scrollY
-      if (off(baseline - from, u)) type.push(`${label} ends on a baseline at ${baseline}`)
+      const baseline = y(box.bottom) - parseFloat(style.paddingBottom) - parseFloat(style.borderBottomWidth)
+      const from = exact ? 0 : y(box.top)
+      if (off(baseline - from, u)) type.push({ where: `${label} ends on a baseline at ${baseline}`, by: by(baseline - from, u) })
       continue
     }
 
-    const from = exact ? 0 : block.getBoundingClientRect().top + window.scrollY
+    const from = exact ? 0 : y(block.getBoundingClientRect().top)
     const range = document.createRange()
     range.selectNodeContents(node)
     for (const rect of range.getClientRects()) {
       if (rect.width === 0 || rect.height === 0) continue
-      const baseline = rect.bottom + window.scrollY
-      if (off(baseline - from, u)) type.push(`${label} has a baseline at ${baseline}`)
+      const baseline = y(rect.bottom)
+      if (off(baseline - from, u)) type.push({ where: `${label} has a baseline at ${baseline}`, by: by(baseline - from, u) })
     }
   }
 
-  return { boxes, type }
+  return { boxes: worst(boxes), type: worst(type), scale, shift, perturbed: false }
 }
