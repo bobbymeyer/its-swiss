@@ -61,13 +61,21 @@
     let previous = el.previousElementSibling
     while (previous && !inFlow(previous)) previous = previous.previousElementSibling
     const reference = previous ? previous.getBoundingClientRect().bottom : el.parentElement.getBoundingClientRect().top
-    return reference + window.scrollY
+    return y(reference)
   }
 
   // A block of small type may sit on a half-line — that is what .subgrid
   // declares. The block itself still owes the column whole lines; only what
   // is inside it may halve them.
   const unitFor = (el) => (el.closest(".subgrid > *") ? unit / 2 : unit)
+
+  // A page shown at a scale — an embed fitted to a panel, a zoomed window —
+  // reports every rectangle at that scale while its layout is in CSS pixels,
+  // and a grid of 24 measured against boxes of 23.98 is off everywhere and
+  // nowhere. The scale is the body's rectangle over its layout width, and
+  // every position below is read through it.
+  const scale = document.body.getBoundingClientRect().width / document.body.offsetWidth || 1
+  const y = (visual) => (visual + window.scrollY) / scale
 
   const name = (el) => {
     const classes = typeof el.className === "string" && el.className.trim()
@@ -88,8 +96,8 @@
     if (box.height === 0) continue
 
     const u = unitFor(el)
-    const top = box.top + window.scrollY
-    const bottom = box.bottom + window.scrollY
+    const top = y(box.top)
+    const bottom = y(box.bottom)
     const where = `${name(el)} from ${top} to ${bottom}`
     // A control is a leaf whatever its options say they are.
     const blocks = el.matches("select") ? [] : Array.from(el.children).filter((child) => inFlow(child) && blockLevel(child))
@@ -106,9 +114,9 @@
     // whole lines under its last block, measured in that block's unit, since
     // the space under a subgrid's last row may be a half-line.
     if (!blockLevel(el)) {
-      if (off(box.height, u)) boxes.push(where)
+      if (off(bottom - top, u)) boxes.push(where)
     } else if (last) {
-      const under = bottom - (last.getBoundingClientRect().bottom + window.scrollY)
+      const under = bottom - y(last.getBoundingClientRect().bottom)
       if (off(top - origin(el), u) || off(under, unitFor(last))) boxes.push(where)
     } else if (off(bottom - origin(el), u)) {
       boxes.push(where)
@@ -149,21 +157,21 @@
       measured.add(block)
       const style = getComputedStyle(block)
       const box = block.getBoundingClientRect()
-      const baseline = box.bottom + window.scrollY - parseFloat(style.paddingBottom) - parseFloat(style.borderBottomWidth)
-      const from = exact ? 0 : box.top + window.scrollY
+      const baseline = y(box.bottom) - parseFloat(style.paddingBottom) - parseFloat(style.borderBottomWidth)
+      const from = exact ? 0 : y(box.top)
       if (off(baseline - from, u)) type.push(`${label} ends on a baseline at ${baseline}`)
       continue
     }
 
-    const from = exact ? 0 : block.getBoundingClientRect().top + window.scrollY
+    const from = exact ? 0 : y(block.getBoundingClientRect().top)
     const range = document.createRange()
     range.selectNodeContents(node)
     for (const rect of range.getClientRects()) {
       if (rect.width === 0 || rect.height === 0) continue
-      const baseline = rect.bottom + window.scrollY
+      const baseline = y(rect.bottom)
       if (off(baseline - from, u)) type.push(`${label} has a baseline at ${baseline}`)
     }
   }
 
-  return { boxes, type }
+  return { boxes, type, scale }
 }

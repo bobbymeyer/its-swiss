@@ -31,18 +31,28 @@ module ItsSwiss
 
       main { position: relative; }
 
-      /* The baseline, drawn over the type it is registered to. */
-      html.show-baseline main::before {
-        content: "";
+      /* The baseline, drawn over the type it is registered to: one laid-out
+         element per line rather than a repeating gradient. A gradient is
+         rasterised a tile at a time, and a tile whose height is not a whole
+         number of device pixels — a page shown at any scale but one to one —
+         gains a fraction with every repeat, until the lines have crept off
+         the boxes they are meant to show. An element at calc(n * --line) goes
+         through the same arithmetic as the boxes, and lands where they do at
+         any scale. */
+      .specimen__baselines {
         position: absolute;
         inset: 0;
         z-index: 1;
         pointer-events: none;
-        background: repeating-linear-gradient(
-          to bottom,
-          color-mix(in oklch, var(--accent) 34%, transparent) 0 1px,
-          transparent 1px var(--line)
-        );
+        display: none;
+      }
+
+      html.show-baseline .specimen__baselines { display: block; }
+
+      .specimen__baselines > i {
+        position: absolute;
+        inset-inline: 0;
+        border-top: var(--rule-hair) solid color-mix(in oklch, var(--accent) 34%, transparent);
       }
 
       .specimen-controls { margin-block: var(--line) var(--line-2); }
@@ -65,13 +75,34 @@ module ItsSwiss
       toggle("accent-toggle", "no-accent", "Unset the accent", "Set the accent")
       toggle("baseline-toggle", "show-baseline", "Show the baseline", "Hide the baseline")
 
+      // The lines the baseline toggle shows, one per line of the page, laid
+      // out rather than painted. Drawn again whenever the page changes
+      // height, since a reflow at a new width is a different number of them.
+      const main = document.getElementById("main")
+      const baselines = document.createElement("div")
+      baselines.className = "specimen__baselines"
+      baselines.setAttribute("aria-hidden", "true")
+      main.append(baselines)
+      const drawBaselines = () => {
+        const line = parseFloat(getComputedStyle(document.documentElement).fontSize) * 1.5
+        const count = Math.ceil(main.offsetHeight / line) + 1
+        if (baselines.childElementCount === count) return
+        baselines.replaceChildren(...Array.from({ length: count }, (_, n) => {
+          const i = document.createElement("i")
+          i.style.top = `calc(${n} * var(--line))`
+          return i
+        }))
+      }
+      new ResizeObserver(drawBaselines).observe(main)
+      drawBaselines()
+
       // The same question the test suite asks, asked of this browser: which
       // mechanism it is on, which faces it loaded, and every box and run of
       // type it laid out off the grid. A page that only looks right in the
       // browsers somebody checked is a page with a button for the others.
       document.getElementById("measure").addEventListener("click", () => {
         const unit = parseFloat(getComputedStyle(document.documentElement).fontSize) * 1.5
-        const { boxes, type } = (__GRID__)(unit)
+        const { boxes, type, scale } = (__GRID__)(unit)
         const faces = Array.from(document.fonts).filter((face) => face.family.startsWith("its-swiss"))
           .map((face) => `${face.family} ${face.weight} ${face.status}`)
         const report = [
@@ -79,7 +110,8 @@ module ItsSwiss
           `its-swiss ${document.documentElement.dataset.version}, ${document.documentElement.classList.contains("no-metric-overrides") ? "trimmed" : "on the faces"}` +
             `, ${CSS.supports("text-box", "trim-both cap alphabetic") ? "can trim" : "cannot trim"}`,
           `faces: ${faces.join("; ") || "none listed"}`,
-          `${boxes.length} boxes and ${type.length} runs of type off the ${unit}px grid`,
+          `${boxes.length} boxes and ${type.length} runs of type off the ${unit}px grid` +
+            (Math.abs(scale - 1) > 0.0001 ? `, measured through a scale of ${scale.toFixed(5)}` : ""),
           ...boxes.slice(0, 20), ...type.slice(0, 20)
         ].join("\\n")
         let out = document.getElementById("grid-report")

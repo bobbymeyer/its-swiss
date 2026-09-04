@@ -189,13 +189,14 @@
   @font-face {
     font-family: "its-swiss-mono";
     src: local("SF Mono"), local("SFMono-Regular"),
-         local("Menlo"), local("Menlo-Regular"),
+         local("Menlo"), local("Menlo Regular"), local("Menlo-Regular"),
          local("Consolas"),
          local("Cascadia Mono"), local("CascadiaMono"),
          local("Liberation Mono"), local("LiberationMono"),
          local("Roboto Mono"), local("RobotoMono-Regular"),
          local("Noto Sans Mono"), local("NotoSansMono-Regular"),
-         local("DejaVu Sans Mono"), local("DejaVuSansMono");
+         local("DejaVu Sans Mono"), local("DejaVuSansMono"),
+         local("Courier New"), local("CourierNewPSMT");
     ascent-override: 166.6667%;
     descent-override: 0%;
     line-gap-override: 0%;
