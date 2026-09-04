@@ -171,8 +171,10 @@ be corrected twice. Plain text dropped straight into a `<footer>` or a `<div>`
 is in step and, in Safari, off the baseline; put it in a paragraph. The shell
 does, for the `:footer` slot.
 
-A control is two lines: one the type is set on, one the rule closes, with the
-rule's width taken out of the second. A button is a box, two lines tall with
+A control is two lines: a line of air under the label, then the line the
+type is set on, which the rule closes, with the rule's width taken out of the
+first — so the type stands on its rule the way a line of handwriting stands
+on a ruled page. A button is a box, two lines tall with
 its label centred in it, and its label's baseline is the one baseline in the
 library that is not on a line — on purpose, since a label set on the second
 line of a two-line box reads as a field with a rule under it. Its keyline is
@@ -184,9 +186,8 @@ type the library takes off the baseline, and it does so on purpose too. A
 browser sets that text in a box of its own, centres it there and clips it
 there, and on a face with no descent every descender was cut off at the
 rule. So the text is set in `--font-family` itself, with the font's own
-metrics, on one line inside the two-line box: the box is on the grid, the
-line is the ladder's, and where the baseline falls inside the line is the
-font's. Which means the typeface has to exist under its own name as well as
+metrics, on the line the rule closes: the box is on the grid, the line is
+the ladder's, and where the baseline falls inside the line is the font's. Which means the typeface has to exist under its own name as well as
 under the faces; `its_swiss_typeface` declares it there when given
 `family:`, and `--font-family` names it.
 

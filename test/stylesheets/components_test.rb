@@ -29,6 +29,8 @@ class ComponentsTest < ActiveSupport::TestCase
       assert_match(/font-family: var\(--font-family\)/, declarations, "#{selector} has to give its descenders somewhere to go")
       assert_match(/line-height: var\(--line\)/, declarations, "#{selector} is one line of type, however the font measures it")
       assert_match(/block-size: var\(--line-/, declarations, "#{selector}'s box is the ladder's whatever the type does")
+      assert_match(/padding-block: calc\(var\(--line\) - var\(--rule-hair\)\) 0/, declarations,
+        "#{selector}'s text sits on the line the rule closes, not a line above it")
       assert_no_match(/font: inherit/, declarations, "#{selector} inherits the face along with the font")
     end
   end

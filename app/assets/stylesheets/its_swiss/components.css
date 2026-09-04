@@ -285,13 +285,13 @@
     font-size: inherit;
     font-weight: inherit;
     line-height: var(--line);
-    /* No padding above it: the rule belongs under the text, not a line's
-       height below it, or the label reads as belonging to nothing. */
+    /* A control is two lines of box, and the text sits on the second: the
+       line the rule closes, so the type stands on its rule the way a line of
+       handwriting stands on a ruled page, and the rule is on the grid. The
+       first line is air between the label and the text — the rule's width
+       comes out of it, so the box stays two lines exactly. */
     block-size: var(--line-2);
-    /* The rule sits a whole line under the text rather than a few pixels
-       under it. A control is two lines of box: one the text is set on, one
-       the rule closes. */
-    padding-block: 0 calc(var(--line) - var(--rule-hair));
+    padding-block: calc(var(--line) - var(--rule-hair)) 0;
   }
 
   .field textarea {
