@@ -273,7 +273,18 @@
     border-bottom: var(--rule-hair) solid var(--ink);
     background: transparent;
     color: inherit;
-    font: inherit;
+    /* The one run of type in the library that is taken off the baseline on
+       purpose. A control's text is not in the document: the browser sets it
+       in a box of its own, centres it there and clips it there, and on a
+       face with no descent — the faces are what put every other baseline on
+       the under edge of its line — every descender was cut off at the rule.
+       So the type is set in the typeface itself, with the font's own
+       metrics, on one line. The line is the ladder's and so is the box; only
+       where the baseline falls inside the line is the font's. */
+    font-family: var(--font-family);
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: var(--line);
     /* No padding above it: the rule belongs under the text, not a line's
        height below it, or the label reads as belonging to nothing. */
     block-size: var(--line-2);

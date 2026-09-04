@@ -15,6 +15,24 @@ class ComponentsTest < ActiveSupport::TestCase
     end
   end
 
+  # A control's box is on the grid; its text is not on the baseline. The
+  # faces put the baseline on the under edge of the line by giving the type
+  # no descent, and a browser centres a control's text in a box of its own
+  # and clips it there — so on the faces every descender was cut off at the
+  # rule. The text is set in the typeface itself, on one line, and the box
+  # stays two.
+  test "a control's text is set in the typeface, not on a face, and its box stays on the grid" do
+    [ ".field input", ".field select", ".field textarea" ].each do |selector|
+      declarations = declarations_for(selector)
+
+      assert_not_empty declarations, "expected #{selector} to be declared"
+      assert_match(/font-family: var\(--font-family\)/, declarations, "#{selector} has to give its descenders somewhere to go")
+      assert_match(/line-height: var\(--line\)/, declarations, "#{selector} is one line of type, however the font measures it")
+      assert_match(/block-size: var\(--line-/, declarations, "#{selector}'s box is the ladder's whatever the type does")
+      assert_no_match(/font: inherit/, declarations, "#{selector} inherits the face along with the font")
+    end
+  end
+
   # A keyboard reaches these and touch never hovers at all.
   test "everything that answers hover answers focus" do
     components = rules_in("components")

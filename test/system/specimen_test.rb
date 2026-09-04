@@ -141,6 +141,35 @@ class SpecimenSystemTest < ApplicationSystemTestCase
     end
   end
 
+  # A control's text is the one run of type the library takes off the
+  # baseline on purpose: a browser centres it in a box of its own and clips
+  # it there, so on a face with no descent every descender was cut off at
+  # the rule. It is set in the typeface itself, on one line, and the line
+  # sits inside the box with room under it.
+  test "a control's text is off the faces and inside its box" do
+    [ ".field input", ".field select", ".field textarea" ].each do |selector|
+      assert_no_match(/its-swiss-\d+/, computed(selector, "font-family"), "#{selector} is set on a face")
+    end
+    # A select's line is the browser's own — Chromium reports normal whatever
+    # is set — so the line is asked only of the two that honour it.
+    [ ".field input", ".field textarea" ].each do |selector|
+      assert_equal baseline, computed(selector, "line-height").to_f, "#{selector} is not set on one line"
+    end
+
+    input = rect_of(".field input")
+    room = evaluate_script(<<~JS)
+      (() => {
+        const input = document.querySelector(".field input")
+        const style = getComputedStyle(input)
+        const content = input.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom)
+        return content - parseFloat(style.lineHeight)
+      })()
+    JS
+
+    assert_equal 2 * baseline, input["height"].round(2), "the box is two lines"
+    assert_operator room, :>=, 0, "the line of type does not fit inside the control's content box"
+  end
+
   # The masthead in particular, because it is where a page most often puts a
   # block of type beside a flex container, and because for as long as this
   # row aligned on a baseline nothing measured where its two halves actually
