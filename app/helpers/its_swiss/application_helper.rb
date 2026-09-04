@@ -40,21 +40,29 @@ module ItsSwiss
     #
     #   <%= its_swiss_typeface regular: "inter-regular.woff2", bold: "inter-bold.woff2" %>
     #   <%= its_swiss_typeface variable: "inter.woff2", mono: "jetbrains-mono.woff2" %>
+    #   <%= its_swiss_typeface variable: "inter.woff2", family: "Inter" %>
+    #
+    # family: declares the same files under the font's own name as well, with
+    # the font's own metrics. A control's text is set in --font-family rather
+    # than on a face, so an application that names its typeface there needs
+    # the name to resolve — or its fields are set in the machine's grotesque
+    # while the page around them is set in its own.
     #
     # Unlayered, which is how it wins: a name defined outside a layer beats
     # the same name defined inside one, the way the application's rules beat
     # the library's. Put it after the library's stylesheets all the same, for
     # a browser that resolves a name by order rather than by layer.
-    def its_swiss_typeface(regular: nil, bold: nil, variable: nil, mono: nil)
+    def its_swiss_typeface(regular: nil, bold: nil, variable: nil, mono: nil, family: nil)
       raise ArgumentError, "a regular file or a variable one" unless regular || variable
       raise ArgumentError, "a variable file carries both weights" if variable && (regular || bold)
 
       weights = variable ? { "100 900" => variable } : { "400" => regular, "700" => bold }.compact
 
-      faces = ItsSwiss::FACES.flat_map do |family, ratio|
-        weights.map { |weight, file| its_swiss_face(family, file, ratio, weight: weight) }
+      faces = ItsSwiss::FACES.flat_map do |family_name, ratio|
+        weights.map { |weight, file| its_swiss_face(family_name, file, ratio, weight: weight) }
       end
-      faces += ItsSwiss::MONO_FACE.map { |family, ratio| its_swiss_face(family, mono, ratio) } if mono
+      faces += ItsSwiss::MONO_FACE.map { |family_name, ratio| its_swiss_face(family_name, mono, ratio) } if mono
+      faces += weights.map { |weight, file| its_swiss_face(family, file, nil, weight: weight) } if family
 
       tag.style(faces.join("\n").html_safe) # rubocop:disable Rails/OutputSafety -- every value is a number or a JSON-quoted path
     end
@@ -107,18 +115,20 @@ module ItsSwiss
 
     FONT_FORMATS = { ".woff2" => "woff2", ".woff" => "woff", ".ttf" => "truetype", ".otf" => "opentype" }.freeze
 
+    # With a ratio, a face whose ascent is that ratio and whose descent is
+    # nothing; without one, the font under its own name with its own metrics.
     def its_swiss_face(family, file, ratio, weight: nil)
       source = "url(#{asset_path(file).to_json})"
       source += %( format("#{FONT_FORMATS[File.extname(file)]}")) if FONT_FORMATS[File.extname(file)]
-      ascent = (ratio * 100).to_f.round(4).to_s.sub(/\.0\z/, "")
+      ascent = (ratio * 100).to_f.round(4).to_s.sub(/\.0\z/, "") if ratio
 
       [ "@font-face {",
         "  font-family: #{family.to_json};",
         ("  font-weight: #{weight};" if weight),
         "  src: #{source};",
-        "  ascent-override: #{ascent}%;",
-        "  descent-override: 0%;",
-        "  line-gap-override: 0%;",
+        ("  ascent-override: #{ascent}%;" if ratio),
+        ("  descent-override: 0%;" if ratio),
+        ("  line-gap-override: 0%;" if ratio),
         "}" ].compact.join("\n")
     end
     private :its_swiss_face

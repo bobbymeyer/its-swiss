@@ -2,9 +2,20 @@
 
 Semver. Consumers pin `~> 0.1`.
 
-## Unreleased
+## 0.7.1 — 2026-09-04
 
 ### Fixed
+
+- **A control's text was clipped at the rule.** The faces put every
+  baseline on the under edge of its line by giving the type no descent, and
+  a browser centres an input's text in a box of its own and clips it there
+  — so with `font: inherit` every descender in a field, a select or a
+  textarea was cut off. A control's text is now set in `--font-family`
+  itself, with the font's own metrics, on one line inside the two-line box:
+  the box stays on the grid and the type is deliberately off the baseline,
+  the way a button's label is. `its_swiss_typeface` takes `family:` and
+  declares the typeface under its own name as well, so that `--font-family`
+  resolves to it.
 
 - **A pinned specimen stopped existing.** Pages replaces the whole site on
   every deploy, so a version-stamped page survives only if the run writes it

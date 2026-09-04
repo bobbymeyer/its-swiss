@@ -177,11 +177,18 @@ its label centred in it, and its label's baseline is the one baseline in the
 library that is not on a line — on purpose, since a label set on the second
 line of a two-line box reads as a field with a rule under it. Its keyline is
 an inset shadow rather than a border, so the box is the label's line and two
-paddings and nothing else. A control's own text is the one thing neither
-mechanism reaches in Safari: an input, a select or a textarea cannot be
-trimmed, and with the faces ignored its text sits where the font puts it, a
-few pixels above the line. The box is on the grid; the type in it is the
-font's until WebKit honours the descriptors.
+paddings and nothing else.
+
+A control's own text — an input, a select, a textarea — is the other run of
+type the library takes off the baseline, and it does so on purpose too. A
+browser sets that text in a box of its own, centres it there and clips it
+there, and on a face with no descent every descender was cut off at the
+rule. So the text is set in `--font-family` itself, with the font's own
+metrics, on one line inside the two-line box: the box is on the grid, the
+line is the ladder's, and where the baseline falls inside the line is the
+font's. Which means the typeface has to exist under its own name as well as
+under the faces; `its_swiss_typeface` declares it there when given
+`family:`, and `--font-family` names it.
 
 #### Your own typeface
 
@@ -191,6 +198,7 @@ it:
 ```erb
 <%= its_swiss_typeface regular: "inter-regular.woff2", bold: "inter-bold.woff2" %>
 <%= its_swiss_typeface variable: "inter.woff2", mono: "jetbrains-mono.woff2" %>
+<%= its_swiss_typeface variable: "inter.woff2", family: "Inter" %>
 ```
 
 Put it after the library's stylesheets. The declarations are unlayered, and a

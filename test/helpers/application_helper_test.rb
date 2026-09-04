@@ -67,6 +67,20 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_match(/format\("truetype"\)/, faces.last["src"])
   end
 
+  # A control's text is set in --font-family rather than on a face, so the
+  # typeface has to exist under its own name too, or a field is set in the
+  # machine's grotesque while the page around it is set in the application's.
+  test "declares the typeface under its own name as well, when asked" do
+    css = Nokogiri::HTML5.fragment(its_swiss_typeface(variable: "inter.woff2", family: "Inter")).at("style").text
+    faces = css.scan(/@font-face \{([^}]*)\}/m).flatten.map { |body| body.scan(/([a-z-]+): ([^;]+);/).to_h }
+
+    assert_equal ItsSwiss::FACES.keys + [ "Inter" ], faces.map { |face| face["font-family"].delete('"') }
+    plain = faces.last
+    assert_equal "100 900", plain["font-weight"]
+    assert_nil plain["ascent-override"], "under its own name the font keeps its own metrics"
+    assert_match(/inter\.woff2/, plain["src"])
+  end
+
   test "refuses a typeface it cannot declare" do
     assert_raises(ArgumentError) { its_swiss_typeface }
     assert_raises(ArgumentError) { its_swiss_typeface(variable: "inter.woff2", bold: "inter-bold.woff2") }

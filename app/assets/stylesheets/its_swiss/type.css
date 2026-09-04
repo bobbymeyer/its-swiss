@@ -202,8 +202,9 @@
      trimmed through its first and last child and would be corrected twice.
      A list item or a definition holds either, so they are trimmed only when
      they hold text. A control's own text — an input, a select, a textarea —
-     cannot be trimmed, and in a browser without the faces it sits where the
-     font puts it.
+     is not trimmed and not on a face: components.css sets it in the typeface
+     itself, on one line, because a browser centres it in a box of its own
+     and clips it there.
 
      The correction is written for the browser that uses it. WebKit trims a
      line to its cap height rounded to a whole pixel while its cap unit is
