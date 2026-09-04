@@ -48,7 +48,6 @@ for (const name of named.length ? named : Object.keys(engines)) {
     Array.from(document.fonts).filter((face) => face.family.startsWith("its-swiss") && face.status === "loaded")
       .map((face) => `${face.family}/${face.weight}`))
   const { boxes, type } = await page.evaluate(`(${onTheGrid})(${unit})`)
-  await browser.close()
 
   const verdict = boxes.length || type.length ? "off the grid" : "on the grid"
   console.log(`${name}: ${verdict} — ${boxes.length} boxes, ${type.length} runs of type; faces loaded: ${faces.join(" ") || "none"}`)
@@ -80,6 +79,7 @@ for (const name of named.length ? named : Object.keys(engines)) {
     })
     for (const line of where) console.log(`  ${line}`)
   }
+  await browser.close()
   if (!faces.includes("its-swiss-150/400")) {
     console.log("  the body's face did not load, so nothing here is registered")
     failed = true
