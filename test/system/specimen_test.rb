@@ -157,17 +157,18 @@ class SpecimenSystemTest < ApplicationSystemTestCase
     end
 
     input = rect_of(".field input")
-    room = evaluate_script(<<~JS)
+    geometry = evaluate_script(<<~JS)
       (() => {
         const input = document.querySelector(".field input")
         const style = getComputedStyle(input)
         const content = input.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom)
-        return content - parseFloat(style.lineHeight)
+        return { room: content - parseFloat(style.lineHeight), below: parseFloat(style.paddingBottom) }
       })()
     JS
 
     assert_equal 2 * baseline, input["height"].round(2), "the box is two lines"
-    assert_operator room, :>=, 0, "the line of type does not fit inside the control's content box"
+    assert_operator geometry["room"], :>=, 0, "the line of type does not fit inside the control's content box"
+    assert_equal 0, geometry["below"], "the text sits on the rule, not a line above it"
   end
 
   # The masthead in particular, because it is where a page most often puts a

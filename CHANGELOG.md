@@ -2,6 +2,16 @@
 
 Semver. Consumers pin `~> 0.1`.
 
+## 0.7.2 — 2026-09-04
+
+### Changed
+
+- **A control's text sits on its rule.** 0.7.1 took the text off the faces
+  and left it on the first of the control's two lines, a whole line above
+  the rule. It is set on the second line now, the one the rule closes, so
+  the type stands on its rule; the first line is air under the label. The
+  box is still two lines and still on the grid.
+
 ## 0.7.1 — 2026-09-04
 
 ### Fixed
