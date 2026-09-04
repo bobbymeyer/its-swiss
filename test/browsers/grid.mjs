@@ -23,7 +23,7 @@
 // run at a browser already on the machine instead of the one Playwright
 // would download.
 import { chromium, webkit, firefox } from "playwright"
-import { readFileSync } from "node:fs"
+import { readFileSync, existsSync } from "node:fs"
 import { resolve } from "node:path"
 
 const [file, ...named] = process.argv.slice(2)
@@ -79,12 +79,35 @@ for (const name of named.length ? named : Object.keys(engines)) {
         `fonts: ${document.fonts.size} faces, ${checks.join(", ")}` ]
     })
     for (const line of where) console.log(`  ${line}`)
+
+    // The same face over url() rather than local(), which is what an
+    // application's own typeface is: whether an engine that ignores the
+    // descriptors on a local font honours them on a fetched one.
+    const liberation = "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf"
+    if (existsSync(liberation)) {
+      const data = readFileSync(liberation).toString("base64")
+      await page.addStyleTag({ content: `@font-face { font-family: "its-swiss-150"; src: url("data:font/ttf;base64,${data}") format("truetype");
+        ascent-override: 150%; descent-override: 0%; line-gap-override: 0%; }` })
+      await page.evaluate(() => document.fonts.ready)
+      const again = await page.evaluate(() => {
+        const el = document.querySelector("p.lede")
+        const span = document.createElement("span")
+        span.style.cssText = "display: inline-block; width: 0; height: 0; vertical-align: baseline"
+        el.appendChild(span)
+        const box = el.getBoundingClientRect()
+        const range = document.createRange()
+        range.selectNodeContents(el.firstChild)
+        const rect = range.getClientRects()[0]
+        return `p.lede over url(): box ${box.top + scrollY}..${box.bottom + scrollY}, probe baseline ${span.getBoundingClientRect().bottom + scrollY}, first text rect ${rect.top + scrollY}..${rect.bottom + scrollY}`
+      })
+      console.log(`  ${again}`)
+    }
   }
   await browser.close()
-  if (!faces.includes("its-swiss-150/400")) {
-    console.log("  the body's face did not load, so nothing here is registered")
-    failed = true
-  }
+  // Whether the faces loaded is reported rather than asserted: Firefox lists
+  // none of them in document.fonts and lays the page out on them all the
+  // same, and the type check above is the proof that counts — a face that
+  // did not take leaves every run of text the font's height, not its leading.
   if (boxes.length || type.length) failed = true
 }
 
