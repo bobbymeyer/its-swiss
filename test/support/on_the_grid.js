@@ -86,7 +86,16 @@
   const known = probe.getBoundingClientRect()
   const scale = known.height / 1000 || 1
   const shift = known.top + window.scrollY
+  // A browser that perturbs what it reports — Brave's Shields add a little
+  // to every rectangle so a script cannot fingerprint the fonts by measuring
+  // text — cannot be measured by a script at all. A second probe a line tall
+  // says so: an engine lays out in 64ths of a pixel, and a box declared one
+  // line tall that comes back a hair off a 64th is not layout, it is noise.
+  probe.style.height = "24px"
+  const line = probe.getBoundingClientRect().height / scale
+  const perturbed = Math.abs(line * 64 - Math.round(line * 64)) > 0.001
   probe.remove()
+  if (perturbed) return { boxes: [], type: [], scale, shift, perturbed }
   const y = (visual) => (visual + window.scrollY - shift) / scale
 
   const name = (el) => {
@@ -188,5 +197,5 @@
     }
   }
 
-  return { boxes: worst(boxes), type: worst(type), scale, shift }
+  return { boxes: worst(boxes), type: worst(type), scale, shift, perturbed: false }
 }

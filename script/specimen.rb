@@ -102,7 +102,7 @@ module ItsSwiss
       // browsers somebody checked is a page with a button for the others.
       document.getElementById("measure").addEventListener("click", () => {
         const unit = parseFloat(getComputedStyle(document.documentElement).fontSize) * 1.5
-        const { boxes, type, scale, shift } = (__GRID__)(unit)
+        const { boxes, type, scale, shift, perturbed } = (__GRID__)(unit)
         const faces = Array.from(document.fonts).filter((face) => face.family.startsWith("its-swiss"))
           .map((face) => `${face.family} ${face.weight} ${face.status}`)
         const report = [
@@ -110,8 +110,11 @@ module ItsSwiss
           `its-swiss ${document.documentElement.dataset.version}, ${document.documentElement.classList.contains("no-metric-overrides") ? "trimmed" : "on the faces"}` +
             `, ${CSS.supports("text-box", "trim-both cap alphabetic") ? "can trim" : "cannot trim"}`,
           `faces: ${faces.join("; ") || "none listed"}`,
-          `${boxes.length} boxes and ${type.length} runs of type off the ${unit}px grid` +
-            (scale !== 1 || shift !== 0 ? `, read through a scale of ${scale.toFixed(6)} and a shift of ${shift.toFixed(4)}px` : ""),
+          perturbed
+            ? "this browser adds noise to every rectangle a script reads, so the grid cannot be measured here; " +
+              "Brave does this with Shields up — turn them off for this page, or measure in Chrome or Firefox"
+            : `${boxes.length} boxes and ${type.length} runs of type off the ${unit}px grid` +
+              (scale !== 1 || shift !== 0 ? `, read through a scale of ${scale.toFixed(6)} and a shift of ${shift.toFixed(4)}px` : ""),
           ...boxes.slice(0, 20), ...type.slice(0, 20)
         ].join("\\n")
         let out = document.getElementById("grid-report")
