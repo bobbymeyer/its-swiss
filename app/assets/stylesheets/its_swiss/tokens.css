@@ -76,6 +76,14 @@
     --rule-hair: 1px;
     --rule-heavy: 2px;
 
+    /* What a trimmed block adds above its cap to reach its own leading. Zero
+       here and given a value in type.css where the browser can trim, so a
+       component that puts padding above its type writes the same arithmetic
+       in both directions. Deliberately not resolved here: a custom property
+       is substituted where it is used, so the cap and the line inside it are
+       the element's that reads it rather than the root's. */
+    --cap-correction: 0px;
+
     /* --- Type --------------------------------------------------------------
        Five sizes on an alternating 1.33 / 1.5 ratio, every one a multiple of
        four. Five is the count an interface actually uses: labels, body, a

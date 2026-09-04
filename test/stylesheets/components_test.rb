@@ -82,11 +82,11 @@ class ComponentsTest < ActiveSupport::TestCase
   test "a button is the shape of a control, with its keyline drawn rather than laid out" do
     button = declarations_for(".button")
 
-    assert_match(/padding-block: 0 var\(--line\)/, button)
+    assert_match(/padding-block: var\(--cap-correction\) var\(--line\)/, button)
     assert_match(/border: 0/, button)
     assert_match(/box-shadow: inset 0 0 0 var\(--rule-hair\)/, button)
-    assert_match(/padding-block: 0 calc\(var\(--line\) - var\(--rule-hair\)\)/, declarations_for(".table th"),
-      "a cell puts nothing above its type, or the baseline is not one line down")
+    assert_match(/padding-block: var\(--cap-correction\) calc\(var\(--line\) - var\(--rule-hair\)\)/, declarations_for(".table th"),
+      "a cell puts nothing but the correction above its type, or the baseline is not one line down")
   end
 
   # A component that placed itself on the page's field would break the moment

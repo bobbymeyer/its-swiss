@@ -127,6 +127,20 @@ class SpecimenSystemTest < ApplicationSystemTestCase
       "a run of type whose baseline is not on a #{baseline}px line is type in its own rhythm"
   end
 
+  # And the same page in a browser that ignores what a face says about its
+  # metrics — Safari, which loads the face and keeps the font's own ascent
+  # and descent. There the trim is the whole of the grid, and it is a
+  # different mechanism with different failure modes: a block that holds a
+  # block is corrected twice, a control's text cannot be trimmed at all. The
+  # two are never both at work, so each is measured on its own.
+  test "every box and every baseline is on the grid without the faces too" do
+    without_metric_overrides do
+      assert_equal "trim-both", computed("p.lede", "text-box-trim"), "the trim did not stand in for the faces"
+      assert_empty boxes_off_the_grid, "the column only holds on the faces, which is a column in two browsers"
+      assert_empty type_off_the_grid, "the type only registers on the faces, which is type in two browsers"
+    end
+  end
+
   # The masthead in particular, because it is where a page most often puts a
   # block of type beside a flex container, and because for as long as this
   # row aligned on a baseline nothing measured where its two halves actually

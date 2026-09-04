@@ -8,15 +8,18 @@
 // Two lists come back. `boxes` holds every block box whose over or under
 // edge is not on a line: the column is a stack of these, and one that is a
 // pixel tall too many puts everything below it off the grid. `type` holds
-// every run of text whose baseline is not on a line, or whose height is not
-// its leading — the second is how a face that did not take shows up, since
-// a face with the leading for its ascent and no descent is exactly one
-// leading tall, and a font with its own metrics is not.
+// every run of text whose baseline is not on a line.
 //
-// Nothing is probed. A span inserted to find a baseline re-lays out the page
-// it was inserted into; a text run's client rect is the browser's own answer
-// for where that run already is, and with no descent its under edge is its
-// baseline.
+// Where the baseline is depends on which of the library's two mechanisms
+// the engine is using, and both are read off what the engine laid out
+// rather than probed for — a span put into a trimmed block to find its
+// baseline re-lays the block out and moves the thing it was measuring. A
+// trimmed block ends on the baseline of its last line, so its under edge
+// less its padding is that baseline. An untrimmed run of text is set in a
+// face with no descent, so the under edge of the rectangle the engine
+// reports for it is its baseline; in an engine that ignores the face and
+// does not trim, that rectangle ends a descent below the baseline, which
+// is off the grid, which is the truth.
 (unit) => {
   // A browser lays out in 64ths of a pixel. The tolerance is a layout unit
   // or two, not a fudge: a real error is a whole pixel, because that is the
@@ -24,6 +27,32 @@
   const off = (value, u) => {
     const over = ((value % u) + u) % u
     return Math.min(over, u - over) > 0.05
+  }
+
+  // Where a page is measured from. On the faces every box is exact, and it
+  // is measured from the top of the page: a box a pixel out puts everything
+  // below it a pixel out, and that is what is asked. A trimmed box is its
+  // cap and a padding that is a leading less its cap, each snapped to a
+  // 64th on its own, so it comes out a 64th short as often as not — under
+  // a pixel down the whole of a long page, and invisible, but down the
+  // whole of a long page, and a container of such boxes is the sum of
+  // their 64ths. So a page that trims is measured box by box: each against
+  // the under edge of the sibling above it or the over edge of its parent,
+  // a box that holds blocks by what it puts under the last of them, a box
+  // that holds lines by its height, and each baseline against its own
+  // block. Every rule's pixel and every leading led off the ladder is still
+  // a whole pixel in that measure; only the 64ths are let go.
+  const exact = document.documentElement.classList.contains("metric-overrides")
+  const inFlow = (el) => {
+    const style = getComputedStyle(el)
+    return style.display !== "none" && style.position !== "absolute" && style.position !== "fixed"
+  }
+  const blockLevel = (el) => !getComputedStyle(el).display.startsWith("inline")
+  const origin = (el) => {
+    let previous = el.previousElementSibling
+    while (previous && !inFlow(previous)) previous = previous.previousElementSibling
+    const reference = previous ? previous.getBoundingClientRect().bottom : el.parentElement.getBoundingClientRect().top
+    return reference + window.scrollY
   }
 
   // A block of small type may sit on a half-line — that is what .subgrid
@@ -52,38 +81,71 @@
     const u = unitFor(el)
     const top = box.top + window.scrollY
     const bottom = box.bottom + window.scrollY
-    if (off(top, u) || off(bottom, u)) boxes.push(`${name(el)} from ${top} to ${bottom}`)
+    const where = `${name(el)} from ${top} to ${bottom}`
+
+    if (exact) {
+      if (off(top, u) || off(bottom, u)) boxes.push(where)
+      continue
+    }
+
+    // An inline-block sits on its line rather than under a sibling, so only
+    // its height is the ladder's business.
+    if (blockLevel(el) && off(top - origin(el), u)) boxes.push(where)
+    // A control is a leaf whatever its options say they are, and what a box
+    // puts under its last block is measured in that block's unit: the space
+    // under a subgrid's last row may be a half-line.
+    const blocks = el.matches("select") ? [] : Array.from(el.children).filter((child) => inFlow(child) && blockLevel(child))
+    const last = blocks.at(-1)
+    const under = last ? bottom - (last.getBoundingClientRect().bottom + window.scrollY) : box.height
+    if (off(under, last ? unitFor(last) : u)) boxes.push(where)
   }
 
   const type = []
   // A superscript and a subscript are moved off the baseline on purpose;
-  // everything else that is not on the page is not on the grid either.
-  const unmeasured = "script, style, sup, sub, [hidden], .visually-hidden, .skip-link"
+  // a control's text is not in the document at all; everything else that is
+  // not on the page is not on the grid either.
+  const unmeasured = "script, style, title, select, textarea, sup, sub, [hidden], .visually-hidden, .skip-link"
+  const trimmed = (el) => getComputedStyle(el).textBoxTrim === "trim-both"
+  const blockOf = (el) => {
+    while (el && el !== document.body) {
+      const display = getComputedStyle(el).display
+      if (!display.startsWith("inline") || display.startsWith("inline-")) return el
+      el = el.parentElement
+    }
+    return document.body
+  }
+  const measured = new Set()
+
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT)
   let node
   while ((node = walker.nextNode())) {
     const text = node.textContent.trim()
     if (!text) continue
     const parent = node.parentElement
-    if (parent.closest(unmeasured)) continue
-    const style = getComputedStyle(parent)
-    if (style.display === "none") continue
+    if (parent.closest(unmeasured) || getComputedStyle(parent).display === "none") continue
 
+    const u = unitFor(parent)
+    const label = `${name(parent)} "${text.slice(0, 32)}"`
+    const block = blockOf(parent)
+
+    if (trimmed(block)) {
+      if (measured.has(block)) continue
+      measured.add(block)
+      const style = getComputedStyle(block)
+      const box = block.getBoundingClientRect()
+      const baseline = box.bottom + window.scrollY - parseFloat(style.paddingBottom) - parseFloat(style.borderBottomWidth)
+      const from = exact ? 0 : box.top + window.scrollY
+      if (off(baseline - from, u)) type.push(`${label} ends on a baseline at ${baseline}`)
+      continue
+    }
+
+    const from = exact ? 0 : block.getBoundingClientRect().top + window.scrollY
     const range = document.createRange()
     range.selectNodeContents(node)
-    const u = unitFor(parent)
-    // Zero leading is an inline that has given the line back to the strut —
-    // code, a small — and its height is its own font's, not the line's.
-    const leading = parseFloat(style.lineHeight)
-    const label = `${name(parent)} "${text.slice(0, 32)}"`
-
     for (const rect of range.getClientRects()) {
       if (rect.width === 0 || rect.height === 0) continue
       const baseline = rect.bottom + window.scrollY
-      if (off(baseline, u)) type.push(`${label} has a baseline at ${baseline}`)
-      else if (leading > 0 && Math.abs(rect.height - leading) > 0.05) {
-        type.push(`${label} is ${rect.height} tall on a leading of ${leading}, so the face did not take`)
-      }
+      if (off(baseline - from, u)) type.push(`${label} has a baseline at ${baseline}`)
     }
   }
 

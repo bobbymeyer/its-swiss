@@ -106,6 +106,8 @@ module ItsSwiss
              and the markup is the engine's own specimen page — the library's
              documentation and its regression fixture. Regenerate; never patch. -->
 
+        <script>#{ItsSwiss::METRIC_OVERRIDES_SCRIPT}</script>
+
         <style>
         #{stylesheets}
         </style>

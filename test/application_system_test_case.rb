@@ -145,7 +145,29 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   # everything below it off the grid.
   def boxes_off_the_grid(unit = baseline) = off_the_grid(unit).fetch("boxes")
 
-  # Every run of text whose baseline is not on a line, or whose height says
-  # the face for its register did not take.
+  # Every run of text whose baseline is not on a line.
   def type_off_the_grid(unit = baseline) = off_the_grid(unit).fetch("type")
+
+  # The page as a browser that ignores what a face says about its metrics
+  # lays it out — Safari, which loads the face and keeps the font's own
+  # ascent and descent, and which the script ahead of the stylesheets does
+  # not mark. The faces are named through tokens, so pointing the tokens at
+  # the font underneath is the same page with the font's metrics, and taking
+  # the mark off the document is the trim doing the whole job. Unlayered,
+  # which is how an application's own CSS wins over the library's.
+  def without_metric_overrides
+    execute_script(%(document.documentElement.classList.remove("metric-overrides")))
+    adopt ":root { --face-150: \"Liberation Sans\"; --face-200: \"Liberation Sans\"; " \
+      "--face-100: \"Liberation Sans\"; --face-mono: \"Liberation Mono\" }"
+
+    yield
+  end
+
+  def adopt(css)
+    execute_script(<<~JS)
+      const sheet = new CSSStyleSheet()
+      sheet.replaceSync(#{css.to_json})
+      document.adoptedStyleSheets = [ ...document.adoptedStyleSheets, sheet ]
+    JS
+  end
 end

@@ -111,32 +111,72 @@ nothing:
 
 A line box is then exactly the ascent tall, there is no half-leading for the
 type to sit inside, and the baseline is the under edge of the line box — in
-every line, in every browser that honours a `@font-face` descriptor, whatever
-the font underneath. The ladder produces three ratios and there are three
-faces: body, subhead and page title are set on one and a half times their
-size, the small register and the section on twice it, and the subgrid puts the
-small register on its own size. A register is three declarations, and the
-third is what makes the first two a grid:
+every line, whatever the font underneath, in a browser that honours the
+descriptors. Chromium and Firefox do. The ladder produces three ratios and
+there are three faces: body, subhead and page title are set on one and a half
+times their size, the small register and the section on twice it, and the
+subgrid puts the small register on its own size. A register is three
+declarations, and the third is what makes the first two a grid:
 
 ```css
 .micro { font-family: var(--face-200), var(--font-family); font-size: var(--size-1); line-height: var(--line); }
 ```
 
-Two things follow. Anything that changes size *inside* a line — `code`, a
-`small`, a superscript — is given no leading at all, so it never asks the line
-for room; its glyphs still sit on the strut's baseline, which is the grid's.
-And no row asks the browser to find a baseline. Every box's baselines are whole
+Safari loads the faces and ignores what they say about their metrics, so
+there every text block is also trimmed to its type: `text-box: trim-both cap
+alphabetic` makes the block's over edge the cap of its first line and its
+under edge the baseline of its last, and one padding rounds the cap up to the
+block's own leading —
+
+```css
+padding-block-start: calc(round(up, 1cap, 1lh) - 1cap);
+```
+
+— measured by the browser in cap and line units, so the library still never
+has to be told the font's metrics. It is published as `--cap-correction`: a
+component that puts padding above its type adds it. Only where it is needed,
+though. A trimmed box is a 64th of a pixel short as often as not, which down
+a long column is a pixel, so one line of script ahead of the stylesheets marks
+the document `metric-overrides` where the faces are honoured and the trim
+stands down; `its_swiss_stylesheet_tags` writes it, and anything linking the
+stylesheets by hand should too:
+
+```html
+<script>if ("ascentOverride" in FontFace.prototype) document.documentElement.classList.add("metric-overrides")</script>
+```
+
+Without it the page trims everywhere, which is exact in Safari, a 64th out
+per block in Chromium, and nothing either way in Firefox, which does not trim
+and honours the faces. Three things follow.
+
+Anything that changes size *inside* a line — `code`, a `small`, a
+superscript — is given no leading at all, so it never asks the line for room;
+its glyphs still sit on the strut's baseline, which is the grid's.
+
+No row asks the browser to find a baseline. Every box's baselines are whole
 lines below its own over edge, so a row that starts its items on one line has
 put their baselines on one line; `.run` aligns on `flex-start`, the masthead
 and the nav on `end`, a table cell on `top`, and none of them on `baseline`,
 which is a question three kinds of box answer three ways.
+
+Text lives in text elements. The trim is asked of headings, paragraphs,
+terms, cells, captions, labels, list items and definitions that hold text,
+nav links, pagination, buttons — and not of the boxes that hold those, since
+a box that holds blocks is trimmed through its first and last child and would
+be corrected twice. Plain text dropped straight into a `<footer>` or a `<div>`
+is in step and, in Safari, off the baseline; put it in a paragraph. The shell
+does, for the `:footer` slot.
 
 A control is two lines: one the type is set on, one the rule closes, with the
 rule's width taken out of the second. A button is the same shape, so a button
 beside a field has its label on the field's text and its under edge on the
 field's rule, and its keyline is an inset shadow rather than a border — a
 border is a pixel of box above the label, and a pixel above the label is a
-baseline a pixel off the grid.
+baseline a pixel off the grid. A control's own text is the one thing neither
+mechanism reaches in Safari: an input, a select or a textarea cannot be
+trimmed, and with the faces ignored its text sits where the font puts it, a
+few pixels above the line. The box is on the grid; the type in it is the
+font's until WebKit honours the descriptors.
 
 #### Your own typeface
 
@@ -379,14 +419,17 @@ in the CSS and does nothing on a page. Those assert what Chromium actually
 resolved: that an unlayered declaration beats the library's layered one, that
 the accent unset is ink, that quiet ink clears 4.5:1, that every box on the
 specimen starts and ends on a line, that every run of type on it has its
-baseline on one and is exactly its leading tall, that nothing escapes the page
-at 390px, and that the measure lands on a field line the browser really laid
-out. They skip loudly rather than pretending to have checked.
+baseline on one, that nothing escapes the page at 390px, and that the measure
+lands on a field line the browser really laid out. They skip loudly rather
+than pretending to have checked.
 
 The two grid questions are one function, `test/support/on_the_grid.js`, and
 `test/browsers/grid.mjs` asks it of the published specimen in Chromium, WebKit
 and Firefox through Playwright. CI runs all three; a grid checked in one
-browser is a claim about that browser.
+browser is a claim about that browser. Chromium is also asked with the faces
+taken away and the mark taken off the document, which is the page as Safari
+lays it out, so the trim is measured on every push and not only in the one
+job that has WebKit.
 
 There are no pixel tests.
 

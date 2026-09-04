@@ -9,10 +9,10 @@
     <% (0..5).each do |step| %>
       <dt data-value="<%= step %>"><code>--value-<%= step %></code></dt>
       <dd>
-        <span class="specimen__value" style="background: var(--value-<%= step %>)"></span>
+        <div class="specimen__value" style="background: var(--value-<%= step %>)"></div>
       </dd>
     <% end %>
     <dt><code>--accent</code></dt>
-    <dd><span class="specimen__value" style="background: var(--accent)"></span></dd>
+    <dd><div class="specimen__value" style="background: var(--accent)"></div></dd>
   </dl>
 </section>

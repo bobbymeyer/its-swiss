@@ -23,6 +23,19 @@ class ApplicationHelperTest < ActionView::TestCase
       Nokogiri::HTML5.fragment(its_swiss_stylesheet_tags).css("link[data-turbo-track='reload']").size
   end
 
+  # The faces rely on a @font-face's metric descriptors, and one browser
+  # ignores them. One line of script, ahead of the stylesheets, marks the
+  # document where they are honoured so that the trim that does the same job
+  # the long way can stand down — inline and first, because a class added
+  # after the first layout is a page that moves.
+  test "writes the metric-override mark ahead of the stylesheets" do
+    fragment = Nokogiri::HTML5.fragment(its_swiss_stylesheet_tags)
+
+    assert_equal "script", fragment.children.reject { |node| node.text? && node.text.blank? }.first.name
+    assert_includes fragment.at("script").text, "metric-overrides"
+    assert_includes fragment.at("script").text, "ascentOverride"
+  end
+
   # --- The typeface --------------------------------------------------------
 
   # The faces are what put every baseline on the under edge of its line, and

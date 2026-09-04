@@ -22,8 +22,16 @@
 // CHROME_BINARY, the same variable the Ruby suite reads, points the Chromium
 // run at a browser already on the machine instead of the one Playwright
 // would download.
+//
+// The faces each engine loaded are reported rather than asserted: Firefox
+// lists none of them in document.fonts and lays the page out on them all
+// the same, and WebKit lists them and keeps the font's own metrics. What
+// counts is the grid, and which of the two mechanisms an engine is on is
+// read off the document: the script ahead of the stylesheets marks it when
+// the engine honours a face's metrics, and the trim is doing the work
+// otherwise.
 import { chromium, webkit, firefox } from "playwright"
-import { readFileSync, existsSync } from "node:fs"
+import { readFileSync } from "node:fs"
 import { resolve } from "node:path"
 
 const [file, ...named] = process.argv.slice(2)
@@ -49,65 +57,12 @@ for (const name of named.length ? named : Object.keys(engines)) {
       .map((face) => `${face.family}/${face.weight}`))
   const { boxes, type } = await page.evaluate(`(${onTheGrid})(${unit})`)
 
+  const mechanism = await page.evaluate(() => document.documentElement.classList.contains("metric-overrides") ? "on the faces" : "trimmed")
   const verdict = boxes.length || type.length ? "off the grid" : "on the grid"
-  console.log(`${name}: ${verdict} — ${boxes.length} boxes, ${type.length} runs of type; faces loaded: ${faces.join(" ") || "none"}`)
+  console.log(`${name}: ${verdict}, ${mechanism} — ${boxes.length} boxes, ${type.length} runs of type; faces loaded: ${faces.join(" ") || "none"}`)
   for (const line of [ ...boxes, ...type ].slice(0, 20)) console.log(`  ${line}`)
 
-  // Where the type actually is, as distinct from where the engine says a run
-  // of it is: a zero-size inline-block sits on the baseline of the line it
-  // is appended to, so its under edge is that baseline whatever the engine
-  // reports for the text beside it. Appended after everything above was
-  // measured, because a probe is a change to the page.
-  if (boxes.length || type.length || process.env.DIAGNOSE) {
-    const where = await page.evaluate(() => {
-      const probe = (selector) => {
-        const el = document.querySelector(selector)
-        if (!el) return `${selector}: not on the page`
-        const span = document.createElement("span")
-        span.style.cssText = "display: inline-block; width: 0; height: 0; vertical-align: baseline"
-        el.appendChild(span)
-        const box = el.getBoundingClientRect()
-        const range = document.createRange()
-        range.selectNodeContents(el.firstChild)
-        const rects = Array.from(range.getClientRects()).map((r) => `${r.top + scrollY}..${r.bottom + scrollY}`)
-        const style = getComputedStyle(el)
-        return `${selector}: box ${box.top + scrollY}..${box.bottom + scrollY}, probe baseline ${span.getBoundingClientRect().bottom + scrollY}, ` +
-          `text rects ${rects.slice(0, 2).join(" ")}, font ${style.fontFamily} ${style.fontSize}/${style.lineHeight}`
-      }
-      const checks = [ "16px its-swiss-150", "12px its-swiss-200", "bold 16px its-swiss-150" ].map((f) => `${f}: ${document.fonts.check(f)}`)
-      return [ ...[ "h1.page-title", "p.lede", "p.hint", ".button", ".table td", ".field label", ".footer" ].map(probe),
-        `fonts: ${document.fonts.size} faces, ${checks.join(", ")}` ]
-    })
-    for (const line of where) console.log(`  ${line}`)
-
-    // The same face over url() rather than local(), which is what an
-    // application's own typeface is: whether an engine that ignores the
-    // descriptors on a local font honours them on a fetched one.
-    const liberation = "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf"
-    if (existsSync(liberation)) {
-      const data = readFileSync(liberation).toString("base64")
-      await page.addStyleTag({ content: `@font-face { font-family: "its-swiss-150"; src: url("data:font/ttf;base64,${data}") format("truetype");
-        ascent-override: 150%; descent-override: 0%; line-gap-override: 0%; }` })
-      await page.evaluate(() => document.fonts.ready)
-      const again = await page.evaluate(() => {
-        const el = document.querySelector("p.lede")
-        const span = document.createElement("span")
-        span.style.cssText = "display: inline-block; width: 0; height: 0; vertical-align: baseline"
-        el.appendChild(span)
-        const box = el.getBoundingClientRect()
-        const range = document.createRange()
-        range.selectNodeContents(el.firstChild)
-        const rect = range.getClientRects()[0]
-        return `p.lede over url(): box ${box.top + scrollY}..${box.bottom + scrollY}, probe baseline ${span.getBoundingClientRect().bottom + scrollY}, first text rect ${rect.top + scrollY}..${rect.bottom + scrollY}`
-      })
-      console.log(`  ${again}`)
-    }
-  }
   await browser.close()
-  // Whether the faces loaded is reported rather than asserted: Firefox lists
-  // none of them in document.fonts and lays the page out on them all the
-  // same, and the type check above is the proof that counts — a face that
-  // did not take leaves every run of text the font's height, not its leading.
   if (boxes.length || type.length) failed = true
 }
 

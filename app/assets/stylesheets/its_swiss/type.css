@@ -5,12 +5,15 @@
  *
  * Every line box is a whole number of baselines, taken from the one ladder in
  * tokens.css, so a line of type and the space beneath it are measured in the
- * same units. And every baseline is the under edge of its line box, because
- * each register is set in the face for its ratio of leading to size: the
- * faces in faces.css carry an ascent equal to that leading and no descent, so
- * there is no half-leading for the type to sit inside and nothing about the
- * font left to the font. A register is three declarations — a size, a leading
- * and the face for the two — and the third is what makes the first two a grid.
+ * same units. And every baseline is the under edge of its line box, two ways
+ * at once: each register is set in the face for its ratio of leading to size,
+ * whose ascent is that leading and whose descent is nothing, so there is no
+ * half-leading for the type to sit inside; and each text block is trimmed to
+ * its cap and its baseline and padded back up to its own leading, for the
+ * browser that ignores what a face says about its metrics. Where both work
+ * the second is exactly nothing; where only one does, the baseline is still
+ * the under edge. A register is three declarations — a size, a leading and
+ * the face for the two — and the third is what makes the first two a grid.
  */
 
 @layer its-swiss.type {
@@ -165,6 +168,68 @@
   sub { top: 0.25em; }
 
   pre { line-height: var(--line); }
+
+  /* --- Trimmed, as well ---------------------------------------------------
+     The faces above put the baseline on the under edge of the line in any
+     browser that honours a @font-face descriptor, and WebKit does not: it
+     loads the face and keeps the font's own ascent and descent, which is a
+     page in step and out of register — the one everything here exists to
+     prevent. So each text block is also trimmed to its type. text-box makes
+     the block's over edge the cap of its first line and its under edge the
+     baseline of its last; the cap is then all that separates the box from
+     the grid, and one padding rounds it up to the block's own leading —
+     measured by the browser, in cap and line units, so the library still
+     never has to be told the font's metrics. Its own leading rather than the
+     baseline unit, or a subhead set on two lines would be trimmed to one.
+
+     Where the faces work this would be almost nothing — the trim takes the
+     leading above the cap away and the padding puts the same amount back —
+     but almost: a cap height is a fraction, the browser lays out in 64ths of
+     a pixel, and a trimmed block comes out a 64th short as often as not,
+     which down a long column is a pixel. So it is only asked of a browser
+     that needs it. The one line of script its_swiss_stylesheet_tags writes
+     ahead of the stylesheets marks the document `metric-overrides` when the
+     browser honours the descriptors, and the trim stands down; without the
+     script the page trims everywhere, which is exact in Safari and a 64th
+     out per block in Chromium, and in Firefox, which does not trim, is
+     nothing either way.
+
+     Text elements, and only those: a block that holds other blocks is
+     trimmed through its first and last child and would be corrected twice.
+     A list item or a definition holds either, so they are trimmed only when
+     they hold text. A control's own text — an input, a select, a textarea —
+     cannot be trimmed, and in a browser without the faces it sits where the
+     font puts it. */
+  @supports (text-box: trim-both cap alphabetic) and (padding-top: round(up, 1cap, 1lh)) {
+    html:not(.metric-overrides) { --cap-correction: calc(round(up, 1cap, 1lh) - 1cap); }
+
+    .page-title,
+    h1, h2, h3, h4,
+    p, dt, th, td, figcaption, caption, legend, label,
+    li:not(:has(> :is(p, ul, ol, dl, div, figure, table, pre, blockquote))),
+    dd:not(:has(> :is(p, ul, ol, dl, div, figure, table, pre, blockquote))),
+    .micro, .hint, .lede, .empty, .masthead__mark, .field__error, .errors__title,
+    /* Flex items are blockified, so the text in a row is trimmable too. */
+    .nav a,
+    .pagination a,
+    .pagination [aria-current],
+    .pagination__gap,
+    /* A button is a block of one line with a keyline drawn inside it, and
+       trims like any other; its paddings are written in components.css
+       with the correction already in them. */
+    .button,
+    .copy,
+    .skip-link {
+      text-box: trim-both cap alphabetic;
+      padding-block-start: var(--cap-correction);
+    }
+
+    html.metric-overrides :is(.page-title, h1, h2, h3, h4, p, dt, dd, li, th, td, figcaption, caption, legend, label,
+      .micro, .hint, .lede, .empty, .masthead__mark, .field__error, .errors__title,
+      .nav a, .pagination a, .pagination [aria-current], .pagination__gap, .button, .copy, .skip-link) {
+      text-box: normal;
+    }
+  }
 
   /* --- The one subgrid ----------------------------------------------------
      A block of small type may sit on a half-line rather than a whole one — a
