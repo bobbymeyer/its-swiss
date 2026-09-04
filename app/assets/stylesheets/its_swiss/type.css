@@ -199,9 +199,17 @@
      A list item or a definition holds either, so they are trimmed only when
      they hold text. A control's own text — an input, a select, a textarea —
      cannot be trimmed, and in a browser without the faces it sits where the
-     font puts it. */
+     font puts it.
+
+     The correction is written for the browser that uses it. WebKit trims a
+     line to its cap height rounded to a whole pixel while its cap unit is
+     the exact height, so a small register trimmed and padded with the exact
+     cap came out a quarter of a pixel short and the section register half
+     a pixel long; the padding is a leading less the cap as WebKit trims it.
+     Chromium, which trims to the exact cap, only ever trims here without
+     the script, and lands within half a pixel of the line. */
   @supports (text-box: trim-both cap alphabetic) and (padding-top: round(up, 1cap, 1lh)) {
-    html:not(.metric-overrides) { --cap-correction: calc(round(up, 1cap, 1lh) - 1cap); }
+    html:not(.metric-overrides) { --cap-correction: calc(round(up, 1cap, 1lh) - round(1cap, 1px)); }
 
     .page-title,
     h1, h2, h3, h4,

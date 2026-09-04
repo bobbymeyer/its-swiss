@@ -48,8 +48,8 @@ class TypeTest < ActiveSupport::TestCase
   test "text is trimmed to its type where the faces are not honoured, and only there" do
     type = rules_in("type")
 
-    assert_match(/html:not\(\.metric-overrides\) \{ --cap-correction: calc\(round\(up, 1cap, 1lh\) - 1cap\); \}/, type,
-      "the correction rounds the cap up to the block's own leading, in a browser that has to trim")
+    assert_match(/html:not\(\.metric-overrides\) \{ --cap-correction: calc\(round\(up, 1cap, 1lh\) - round\(1cap, 1px\)\); \}/, type,
+      "the correction rounds the cap up to the block's own leading, less the cap as WebKit trims it")
     assert_match(/text-box: trim-both cap alphabetic;\s*padding-block-start: var\(--cap-correction\);/, type)
     assert_match(/html\.metric-overrides :is\([^)]*\) \{\s*text-box: normal;\s*\}/m, type,
       "a browser on the faces still trims, which is a 64th off a block")

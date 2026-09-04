@@ -41,7 +41,8 @@ Every baseline on the grid, in every browser, whatever the font.
   and keeps the font's own metrics. Every text block is still trimmed to its
   cap and its baseline and padded back up — to its *own* leading now,
   `round(up, 1cap, 1lh)`, so a subhead set on two lines is no longer trimmed
-  to one — and only where it is needed: a trimmed box is a 64th short as
+  to one, and less the cap as WebKit trims it, which is rounded to a pixel —
+  and only where it is needed: a trimmed box is a 64th short as
   often as not, which down a long column is a pixel, so one line of script
   ahead of the stylesheets marks the document `metric-overrides` where the
   faces are honoured and the trim stands down. `its_swiss_stylesheet_tags`

@@ -21,12 +21,19 @@
 // does not trim, that rectangle ends a descent below the baseline, which
 // is off the grid, which is the truth.
 (unit) => {
-  // A browser lays out in 64ths of a pixel. The tolerance is a layout unit
-  // or two, not a fudge: a real error is a whole pixel, because that is the
-  // smallest thing a rule or a border can be.
+  // A browser lays out in 64ths of a pixel, and on the faces every box is
+  // exact: the tolerance is a layout unit or two. A trimmed box is its cap
+  // as the engine trims it and a padding that is a leading less its cap as
+  // the engine measures it, and the two are not the same number — WebKit
+  // trims to the cap rounded to a pixel, and the correction is written for
+  // that, so Chromium trimming to the exact cap lands within half a pixel.
+  // Neither tolerance is a fudge: a real error is a whole pixel, because
+  // that is the smallest thing a rule or a border can be.
+  const exact = document.documentElement.classList.contains("metric-overrides")
+  const tolerance = exact ? 0.05 : 0.5
   const off = (value, u) => {
     const over = ((value % u) + u) % u
-    return Math.min(over, u - over) > 0.05
+    return Math.min(over, u - over) > tolerance
   }
 
   // Where a page is measured from. On the faces every box is exact, and it
@@ -42,7 +49,6 @@
   // that holds lines by its height, and each baseline against its own
   // block. Every rule's pixel and every leading led off the ladder is still
   // a whole pixel in that measure; only the 64ths are let go.
-  const exact = document.documentElement.classList.contains("metric-overrides")
   const inFlow = (el) => {
     const style = getComputedStyle(el)
     return style.display !== "none" && style.position !== "absolute" && style.position !== "fixed"

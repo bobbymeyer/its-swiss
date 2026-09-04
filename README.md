@@ -129,11 +129,12 @@ under edge the baseline of its last, and one padding rounds the cap up to the
 block's own leading —
 
 ```css
-padding-block-start: calc(round(up, 1cap, 1lh) - 1cap);
+padding-block-start: calc(round(up, 1cap, 1lh) - round(1cap, 1px));
 ```
 
 — measured by the browser in cap and line units, so the library still never
-has to be told the font's metrics. It is published as `--cap-correction`: a
+has to be told the font's metrics. The cap is rounded to a pixel because that
+is the cap WebKit trims to, and WebKit is the browser this is for. It is published as `--cap-correction`: a
 component that puts padding above its type adds it. Only where it is needed,
 though. A trimmed box is a 64th of a pixel short as often as not, which down
 a long column is a pixel, so one line of script ahead of the stylesheets marks
