@@ -21,6 +21,11 @@
     padding: 0;
   }
 
+  /* A control brings a margin of its own in one browser and not another —
+     Firefox gives a textarea a pixel above and below — and a pixel above a
+     control is a column a pixel off the grid from that control down. */
+  button, input, select, textarea { margin: 0; }
+
   ul, ol { list-style: none; }
 
   fieldset { border: 0; }
