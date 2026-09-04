@@ -34,10 +34,14 @@
   // that is the smallest thing a rule or a border can be.
   const exact = !document.documentElement.classList.contains("no-metric-overrides")
   const tolerance = exact ? 0.05 : 0.5
-  const off = (value, u) => {
+  const by = (value, u) => {
     const over = ((value % u) + u) % u
-    return Math.min(over, u - over) > tolerance
+    return Math.min(over, u - over)
   }
+  const off = (value, u) => by(value, u) > tolerance
+  // Worst first, with how far off it is: the first line of the list is the
+  // thing to look at, and a page off by a 64th everywhere reads as one.
+  const worst = (list) => list.sort((a, b) => b.by - a.by).map((entry) => `${entry.where} (${entry.by.toFixed(3)}px off)`)
 
   // Where a page is measured from. On the faces every box is exact, and it
   // is measured from the top of the page: a box a pixel out puts everything
@@ -112,7 +116,8 @@
     const last = blocks.at(-1)
 
     if (exact) {
-      if (off(bottom, u) || (last && off(top, u))) boxes.push(where)
+      const worstBy = Math.max(by(bottom, u), last ? by(top, u) : 0)
+      if (worstBy > tolerance) boxes.push({ where, by: worstBy })
       continue
     }
 
@@ -121,14 +126,16 @@
     // box that holds blocks starts where the box before it ended and puts
     // whole lines under its last block, measured in that block's unit, since
     // the space under a subgrid's last row may be a half-line.
+    let worstBy = 0
     if (!blockLevel(el)) {
-      if (off(bottom - top, u)) boxes.push(where)
+      worstBy = by(bottom - top, u)
     } else if (last) {
       const under = bottom - y(last.getBoundingClientRect().bottom)
-      if (off(top - origin(el), u) || off(under, unitFor(last))) boxes.push(where)
-    } else if (off(bottom - origin(el), u)) {
-      boxes.push(where)
+      worstBy = Math.max(by(top - origin(el), u), by(under, unitFor(last)))
+    } else {
+      worstBy = by(bottom - origin(el), u)
     }
+    if (worstBy > tolerance) boxes.push({ where, by: worstBy })
   }
 
   const type = []
@@ -136,7 +143,7 @@
   // so is a button's label, centred in a box that is itself on the grid; a
   // control's text is not in the document at all; everything else that is
   // not on the page is not on the grid either.
-  const unmeasured = "script, style, title, select, textarea, sup, sub, .button, [hidden], .visually-hidden, .skip-link"
+  const unmeasured = "script, style, title, select, textarea, sup, sub, .button, [hidden], .visually-hidden, .skip-link, #grid-report"
   const trimmed = (el) => getComputedStyle(el).textBoxTrim === "trim-both"
   const blockOf = (el) => {
     while (el && el !== document.body) {
@@ -167,7 +174,7 @@
       const box = block.getBoundingClientRect()
       const baseline = y(box.bottom) - parseFloat(style.paddingBottom) - parseFloat(style.borderBottomWidth)
       const from = exact ? 0 : y(box.top)
-      if (off(baseline - from, u)) type.push(`${label} ends on a baseline at ${baseline}`)
+      if (off(baseline - from, u)) type.push({ where: `${label} ends on a baseline at ${baseline}`, by: by(baseline - from, u) })
       continue
     }
 
@@ -177,9 +184,9 @@
     for (const rect of range.getClientRects()) {
       if (rect.width === 0 || rect.height === 0) continue
       const baseline = y(rect.bottom)
-      if (off(baseline - from, u)) type.push(`${label} has a baseline at ${baseline}`)
+      if (off(baseline - from, u)) type.push({ where: `${label} has a baseline at ${baseline}`, by: by(baseline - from, u) })
     }
   }
 
-  return { boxes, type, scale, shift }
+  return { boxes: worst(boxes), type: worst(type), scale, shift }
 }
