@@ -20,7 +20,7 @@ Semver. Consumers pin `~> 0.1`.
   from itself. `0.6.0.html` is restored there, rendered from the 0.6.0 commit
   by that version's own `bin/specimen`.
 
-## 0.7.0 — Unreleased
+## 0.7.0 — 2026-09-04
 
 Every baseline on the grid, in every browser, whatever the font.
 
