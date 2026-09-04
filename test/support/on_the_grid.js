@@ -107,10 +107,11 @@
   }
 
   const type = []
-  // A superscript and a subscript are moved off the baseline on purpose;
-  // a control's text is not in the document at all; everything else that is
+  // A superscript and a subscript are moved off the baseline on purpose, and
+  // so is a button's label, centred in a box that is itself on the grid; a
+  // control's text is not in the document at all; everything else that is
   // not on the page is not on the grid either.
-  const unmeasured = "script, style, title, select, textarea, sup, sub, [hidden], .visually-hidden, .skip-link"
+  const unmeasured = "script, style, title, select, textarea, sup, sub, .button, [hidden], .visually-hidden, .skip-link"
   const trimmed = (el) => getComputedStyle(el).textBoxTrim === "trim-both"
   const blockOf = (el) => {
     while (el && el !== document.body) {

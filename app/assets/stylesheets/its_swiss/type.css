@@ -222,19 +222,17 @@
     .pagination a,
     .pagination [aria-current],
     .pagination__gap,
-    /* A button is a block of one line with a keyline drawn inside it, and
-       trims like any other; its paddings are written in components.css
-       with the correction already in them. */
-    .button,
-    .copy,
-    .skip-link {
+    /* The copy button is a value set in a line of prose, and sits on that
+       line's baseline like the rest of it. A .button is a box with its label
+       centred, and is not trimmed: see components.css. */
+    .copy {
       text-box: trim-both cap alphabetic;
       padding-block-start: var(--cap-correction);
     }
 
     html.metric-overrides :is(.page-title, h1, h2, h3, h4, p, dt, dd, li, th, td, figcaption, caption, legend, label,
       .micro, .hint, .lede, .empty, .masthead__mark, .field__error, .errors__title,
-      .nav a, .pagination a, .pagination [aria-current], .pagination__gap, .button, .copy, .skip-link) {
+      .nav a, .pagination a, .pagination [aria-current], .pagination__gap, .copy) {
       text-box: normal;
     }
   }

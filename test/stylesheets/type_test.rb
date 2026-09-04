@@ -56,18 +56,16 @@ class TypeTest < ActiveSupport::TestCase
     assert_match(/--cap-correction: 0px;/, rules_in("tokens"), "a browser that cannot trim is owed a correction of nothing")
   end
 
-  # A component that puts anything above its type puts the correction there,
-  # or the type is on the grid in one browser and a cap short of it in the
-  # other.
-  test "every padding above type carries the correction" do
+  # A component that puts anything above trimmed type puts the correction
+  # there, or the type is on the grid in one browser and a cap short of it in
+  # the other. A button is not trimmed — its label is centred in a box — and
+  # so is the one text-bearing component with no correction to carry.
+  test "every padding above trimmed type carries the correction" do
     components = rules_in("components")
 
-    [ ".button", ".skip-link" ].each do |selector|
-      assert_match(/#{Regexp.escape(selector)} \{[^}]*padding-block: var\(--cap-correction\) var\(--line\)/m, components,
-        "#{selector} puts nothing, rather than the correction, above its label")
-    end
     assert_match(/padding-block: var\(--cap-correction\) calc\(var\(--line\) - var\(--rule-hair\)\)/, components, "a cell")
     assert_match(/\.copy \{[^}]*padding: var\(--cap-correction\) 0 0/m, components)
+    assert_no_match(/\.button,\s*\.copy,\s*\.skip-link \{/, rules_in("type"), "a button is a box, and is not trimmed")
   end
 
   test "nothing is set in capitals" do

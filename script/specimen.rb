@@ -46,6 +46,10 @@ module ItsSwiss
       }
 
       .specimen-controls { margin-block: var(--line) var(--line-2); }
+
+      /* What the measure button says. Wrapped, or a user agent string scrolls
+         the page sideways; a whole number of lines, like anything else. */
+      #grid-report { margin-block: 0 var(--line-2); white-space: pre-wrap; overflow-wrap: anywhere; }
     CSS
 
     SCRIPT = <<~JS
@@ -60,6 +64,32 @@ module ItsSwiss
 
       toggle("accent-toggle", "no-accent", "Unset the accent", "Set the accent")
       toggle("baseline-toggle", "show-baseline", "Show the baseline", "Hide the baseline")
+
+      // The same question the test suite asks, asked of this browser: which
+      // mechanism it is on, which faces it loaded, and every box and run of
+      // type it laid out off the grid. A page that only looks right in the
+      // browsers somebody checked is a page with a button for the others.
+      document.getElementById("measure").addEventListener("click", () => {
+        const unit = parseFloat(getComputedStyle(document.documentElement).fontSize) * 1.5
+        const { boxes, type } = (__GRID__)(unit)
+        const faces = Array.from(document.fonts).filter((face) => face.family.startsWith("its-swiss"))
+          .map((face) => `${face.family} ${face.weight} ${face.status}`)
+        const report = [
+          navigator.userAgent,
+          `its-swiss ${document.documentElement.dataset.version}, ${document.documentElement.classList.contains("metric-overrides") ? "on the faces" : "trimmed"}` +
+            `, ${CSS.supports("text-box", "trim-both cap alphabetic") ? "can trim" : "cannot trim"}`,
+          `faces: ${faces.join("; ") || "none listed"}`,
+          `${boxes.length} boxes and ${type.length} runs of type off the ${unit}px grid`,
+          ...boxes.slice(0, 20), ...type.slice(0, 20)
+        ].join("\\n")
+        let out = document.getElementById("grid-report")
+        if (!out) {
+          out = document.createElement("pre")
+          out.id = "grid-report"
+          document.querySelector(".specimen-controls").after(out)
+        }
+        out.textContent = report
+      })
 
       // The library's one piece of JavaScript, which the gem ships as a
       // Stimulus controller. Written plainly here because this page has no
@@ -130,13 +160,14 @@ module ItsSwiss
           <div class="run specimen-controls">
             <button type="button" class="button" id="accent-toggle">Unset the accent</button>
             <button type="button" class="button" id="baseline-toggle">Show the baseline</button>
+            <button type="button" class="button button--quiet" id="measure">Measure the grid</button>
           </div>
 
         #{sections}
         </main>
 
         <script>
-        #{SCRIPT}
+        #{SCRIPT.sub("__GRID__", grid_script)}
         </script>
         </body>
         </html>
@@ -173,6 +204,9 @@ module ItsSwiss
 
         session.response.body
       end
+
+      # The grid guard, verbatim, so the page asks exactly what the suite asks.
+      def grid_script = gem_root.join("test/support/on_the_grid.js").read.gsub(%r{^//.*\n}, "").strip
 
       def gem_root = Pathname.new(File.expand_path("..", __dir__))
   end

@@ -73,18 +73,21 @@ class ComponentsTest < ActiveSupport::TestCase
       "a cell is aligned on a baseline the browser has to find")
   end
 
-  # A control is two lines: one the type is set on, one the rule closes, with
-  # the rule's width taken out of the second. A button is the same shape, so
-  # a button beside a field has its label on the field's text and its under
-  # edge on the field's rule — and its keyline is drawn inside the box rather
-  # than laid out around it, because a border is a pixel above the label and
-  # a pixel above the label is a baseline a pixel off the grid.
-  test "a button is the shape of a control, with its keyline drawn rather than laid out" do
+  # A button is a box with its label centred in it: two lines tall, on the
+  # grid, and the one place in the library whose baseline is off a line on
+  # purpose. Its keyline is drawn inside the box rather than laid out around
+  # it, so the box is the label's line and two paddings and nothing else; and
+  # where the faces put the label's baseline on the under edge of its line,
+  # the line is let down by half a cap so the cap sits across the middle.
+  test "a button is a box with its label centred, and its keyline drawn rather than laid out" do
     button = declarations_for(".button")
 
-    assert_match(/padding-block: var\(--cap-correction\) var\(--line\)/, button)
+    assert_match(/min-block-size: var\(--line-2\)/, button)
+    assert_match(/padding-block: var\(--half-line\)/, button)
     assert_match(/border: 0/, button)
     assert_match(/box-shadow: inset 0 0 0 var\(--rule-hair\)/, button)
+    assert_match(/html\.metric-overrides \.button,\s*html\.metric-overrides \.skip-link \{[^}]*padding-block: var\(--lift\) calc\(var\(--line\) - var\(--lift\)\)/m,
+      rules_in("components"), "on the faces the label is let down by half its cap")
     assert_match(/padding-block: var\(--cap-correction\) calc\(var\(--line\) - var\(--rule-hair\)\)/, declarations_for(".table th"),
       "a cell puts nothing but the correction above its type, or the baseline is not one line down")
   end

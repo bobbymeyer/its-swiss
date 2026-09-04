@@ -169,11 +169,12 @@ is in step and, in Safari, off the baseline; put it in a paragraph. The shell
 does, for the `:footer` slot.
 
 A control is two lines: one the type is set on, one the rule closes, with the
-rule's width taken out of the second. A button is the same shape, so a button
-beside a field has its label on the field's text and its under edge on the
-field's rule, and its keyline is an inset shadow rather than a border — a
-border is a pixel of box above the label, and a pixel above the label is a
-baseline a pixel off the grid. A control's own text is the one thing neither
+rule's width taken out of the second. A button is a box, two lines tall with
+its label centred in it, and its label's baseline is the one baseline in the
+library that is not on a line — on purpose, since a label set on the second
+line of a two-line box reads as a field with a rule under it. Its keyline is
+an inset shadow rather than a border, so the box is the label's line and two
+paddings and nothing else. A control's own text is the one thing neither
 mechanism reaches in Safari: an input, a select or a textarea cannot be
 trimmed, and with the faces ignored its text sits where the font puts it, a
 few pixels above the line. The box is on the grid; the type in it is the

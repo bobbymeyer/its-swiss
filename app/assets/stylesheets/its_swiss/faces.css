@@ -31,6 +31,14 @@
  * with the font's own metrics and whatever baseline they produce — the page
  * is still readable, and still in step, and no longer registered.
  *
+ * Each bold face names the regular ones after its own. A face whose every
+ * local() fails is a face that does not load, and the browser goes on to
+ * the next family in the list — the grotesque stack, with its own metrics —
+ * for every heading on the page, while the body stays on the grid. Falling
+ * through to the regular file instead keeps the metrics and loses the
+ * weight, which with synthesis off is a heading set regular: visible, and
+ * still registered.
+ *
  * The application's own @font-face under these names wins: they are
  * unlayered, and a name defined outside a layer beats one defined inside
  * it, just as its rules do.
@@ -64,7 +72,19 @@
          local("Liberation Sans Bold"), local("LiberationSans-Bold"),
          local("Roboto Bold"), local("Roboto-Bold"),
          local("Noto Sans Bold"), local("NotoSans-Bold"),
-         local("DejaVu Sans Bold"), local("DejaVuSans-Bold");
+         local("DejaVu Sans Bold"), local("DejaVuSans-Bold"),
+         /* And the regular faces after them: a machine with no bold the
+            browser can name is better served by the same face at one weight,
+            with the metrics that put it on the grid, than by another family
+            with its own. Synthesis is off, so it renders regular. */
+         local("Helvetica Neue"), local("HelveticaNeue"),
+         local("Helvetica"),
+         local("Segoe UI"), local("SegoeUI"),
+         local("Arial"), local("ArialMT"),
+         local("Liberation Sans"), local("LiberationSans"),
+         local("Roboto"), local("Roboto-Regular"),
+         local("Noto Sans"), local("NotoSans-Regular"),
+         local("DejaVu Sans"), local("DejaVuSans");
     ascent-override: 150%;
     descent-override: 0%;
     line-gap-override: 0%;
@@ -97,7 +117,19 @@
          local("Liberation Sans Bold"), local("LiberationSans-Bold"),
          local("Roboto Bold"), local("Roboto-Bold"),
          local("Noto Sans Bold"), local("NotoSans-Bold"),
-         local("DejaVu Sans Bold"), local("DejaVuSans-Bold");
+         local("DejaVu Sans Bold"), local("DejaVuSans-Bold"),
+         /* And the regular faces after them: a machine with no bold the
+            browser can name is better served by the same face at one weight,
+            with the metrics that put it on the grid, than by another family
+            with its own. Synthesis is off, so it renders regular. */
+         local("Helvetica Neue"), local("HelveticaNeue"),
+         local("Helvetica"),
+         local("Segoe UI"), local("SegoeUI"),
+         local("Arial"), local("ArialMT"),
+         local("Liberation Sans"), local("LiberationSans"),
+         local("Roboto"), local("Roboto-Regular"),
+         local("Noto Sans"), local("NotoSans-Regular"),
+         local("DejaVu Sans"), local("DejaVuSans");
     ascent-override: 200%;
     descent-override: 0%;
     line-gap-override: 0%;
@@ -130,7 +162,19 @@
          local("Liberation Sans Bold"), local("LiberationSans-Bold"),
          local("Roboto Bold"), local("Roboto-Bold"),
          local("Noto Sans Bold"), local("NotoSans-Bold"),
-         local("DejaVu Sans Bold"), local("DejaVuSans-Bold");
+         local("DejaVu Sans Bold"), local("DejaVuSans-Bold"),
+         /* And the regular faces after them: a machine with no bold the
+            browser can name is better served by the same face at one weight,
+            with the metrics that put it on the grid, than by another family
+            with its own. Synthesis is off, so it renders regular. */
+         local("Helvetica Neue"), local("HelveticaNeue"),
+         local("Helvetica"),
+         local("Segoe UI"), local("SegoeUI"),
+         local("Arial"), local("ArialMT"),
+         local("Liberation Sans"), local("LiberationSans"),
+         local("Roboto"), local("Roboto-Regular"),
+         local("Noto Sans"), local("NotoSans-Regular"),
+         local("DejaVu Sans"), local("DejaVuSans");
     ascent-override: 100%;
     descent-override: 0%;
     line-gap-override: 0%;
