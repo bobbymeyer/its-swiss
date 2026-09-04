@@ -71,11 +71,19 @@
 
   // A page shown at a scale — an embed fitted to a panel, a zoomed window —
   // reports every rectangle at that scale while its layout is in CSS pixels,
-  // and a grid of 24 measured against boxes of 23.98 is off everywhere and
-  // nowhere. The scale is the body's rectangle over its layout width, and
-  // every position below is read through it.
-  const scale = document.body.getBoundingClientRect().width / document.body.offsetWidth || 1
-  const y = (visual) => (visual + window.scrollY) / scale
+  // and a grid of 24 measured against boxes of 24.002 is off everywhere by
+  // the page's height. The scale is read off a probe of a known size at the
+  // document's origin: a thousand pixels tall, so the scale is exact to the
+  // float, and at the top, so a shift of the whole page is read with it.
+  // Every position below is read through both.
+  const probe = document.createElement("div")
+  probe.style.cssText = "position: absolute; top: 0; left: 0; width: 1000px; height: 1000px; visibility: hidden; pointer-events: none"
+  document.body.append(probe)
+  const known = probe.getBoundingClientRect()
+  const scale = known.height / 1000 || 1
+  const shift = known.top + window.scrollY
+  probe.remove()
+  const y = (visual) => (visual + window.scrollY - shift) / scale
 
   const name = (el) => {
     const classes = typeof el.className === "string" && el.className.trim()
@@ -173,5 +181,5 @@
     }
   }
 
-  return { boxes, type, scale }
+  return { boxes, type, scale, shift }
 }

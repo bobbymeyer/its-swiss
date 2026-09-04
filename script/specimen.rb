@@ -102,7 +102,7 @@ module ItsSwiss
       // browsers somebody checked is a page with a button for the others.
       document.getElementById("measure").addEventListener("click", () => {
         const unit = parseFloat(getComputedStyle(document.documentElement).fontSize) * 1.5
-        const { boxes, type, scale } = (__GRID__)(unit)
+        const { boxes, type, scale, shift } = (__GRID__)(unit)
         const faces = Array.from(document.fonts).filter((face) => face.family.startsWith("its-swiss"))
           .map((face) => `${face.family} ${face.weight} ${face.status}`)
         const report = [
@@ -111,7 +111,7 @@ module ItsSwiss
             `, ${CSS.supports("text-box", "trim-both cap alphabetic") ? "can trim" : "cannot trim"}`,
           `faces: ${faces.join("; ") || "none listed"}`,
           `${boxes.length} boxes and ${type.length} runs of type off the ${unit}px grid` +
-            (Math.abs(scale - 1) > 0.0001 ? `, measured through a scale of ${scale.toFixed(5)}` : ""),
+            (scale !== 1 || shift !== 0 ? `, read through a scale of ${scale.toFixed(6)} and a shift of ${shift.toFixed(4)}px` : ""),
           ...boxes.slice(0, 20), ...type.slice(0, 20)
         ].join("\\n")
         let out = document.getElementById("grid-report")
