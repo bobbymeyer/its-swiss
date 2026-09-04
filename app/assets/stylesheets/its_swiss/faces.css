@@ -1,0 +1,159 @@
+/* Faces.
+ *
+ * Where the baseline actually comes from. A line box puts its baseline
+ * wherever the font's ascent and descent leave it: half the leading either
+ * side of the ascent-plus-descent, and then the ascent down. Those two
+ * numbers are the font file's, so every line of type on the page sat on a
+ * baseline the library had never been told and could not move, and a page
+ * that was on the grid in one font was off it in the next.
+ *
+ * These faces replace the numbers. Each one is the application's typeface —
+ * or, until the application names one, the grotesque that is on the machine
+ * — declared again with its ascent set to the leading it will be set on and
+ * its descent set to nothing. A line box is then exactly the ascent tall, the
+ * half-leading either side of it is zero, and the baseline is the under edge
+ * of the line box: a block of type ends on its last baseline, every earlier
+ * baseline is a whole number of lines above it, and none of it depends on a
+ * metric the library cannot see.
+ *
+ * One face per ratio of leading to size, because that ratio is the ascent.
+ * The ladder in tokens.css produces three: body, subhead and title are set
+ * on one and a half times their size, the small register and the section on
+ * twice it, and the subgrid puts the small register on its own size. The
+ * name is the ratio, and the number in it is the ascent-override — so an
+ * application declaring its own font under the same names (the helper
+ * its_swiss_typeface writes them) has nothing to work out.
+ *
+ * Nothing here is downloaded. src: local() is the font already on the
+ * machine, named by the names the machine knows it by, and the chain runs
+ * from the Helveticas through the system grotesques to the ones a Linux
+ * ships with. A machine with none of them falls through to --font-family,
+ * with the font's own metrics and whatever baseline they produce — the page
+ * is still readable, and still in step, and no longer registered.
+ *
+ * The application's own @font-face under these names wins: they are
+ * unlayered, and a name defined outside a layer beats one defined inside
+ * it, just as its rules do.
+ */
+
+@layer its-swiss.faces {
+  /* Body, subhead, page title: the size and a half of it again. */
+  @font-face {
+    font-family: "its-swiss-150";
+    font-weight: 400;
+    src: local("Helvetica Neue"), local("HelveticaNeue"),
+         local("Helvetica"),
+         local("Segoe UI"), local("SegoeUI"),
+         local("Arial"), local("ArialMT"),
+         local("Liberation Sans"), local("LiberationSans"),
+         local("Roboto"), local("Roboto-Regular"),
+         local("Noto Sans"), local("NotoSans-Regular"),
+         local("DejaVu Sans"), local("DejaVuSans");
+    ascent-override: 150%;
+    descent-override: 0%;
+    line-gap-override: 0%;
+  }
+
+  @font-face {
+    font-family: "its-swiss-150";
+    font-weight: 700;
+    src: local("Helvetica Neue Bold"), local("HelveticaNeue-Bold"),
+         local("Helvetica Bold"), local("Helvetica-Bold"),
+         local("Segoe UI Bold"), local("SegoeUI-Bold"),
+         local("Arial Bold"), local("Arial-BoldMT"),
+         local("Liberation Sans Bold"), local("LiberationSans-Bold"),
+         local("Roboto Bold"), local("Roboto-Bold"),
+         local("Noto Sans Bold"), local("NotoSans-Bold"),
+         local("DejaVu Sans Bold"), local("DejaVuSans-Bold");
+    ascent-override: 150%;
+    descent-override: 0%;
+    line-gap-override: 0%;
+  }
+
+  /* The small register and the section: twice the size. */
+  @font-face {
+    font-family: "its-swiss-200";
+    font-weight: 400;
+    src: local("Helvetica Neue"), local("HelveticaNeue"),
+         local("Helvetica"),
+         local("Segoe UI"), local("SegoeUI"),
+         local("Arial"), local("ArialMT"),
+         local("Liberation Sans"), local("LiberationSans"),
+         local("Roboto"), local("Roboto-Regular"),
+         local("Noto Sans"), local("NotoSans-Regular"),
+         local("DejaVu Sans"), local("DejaVuSans");
+    ascent-override: 200%;
+    descent-override: 0%;
+    line-gap-override: 0%;
+  }
+
+  @font-face {
+    font-family: "its-swiss-200";
+    font-weight: 700;
+    src: local("Helvetica Neue Bold"), local("HelveticaNeue-Bold"),
+         local("Helvetica Bold"), local("Helvetica-Bold"),
+         local("Segoe UI Bold"), local("SegoeUI-Bold"),
+         local("Arial Bold"), local("Arial-BoldMT"),
+         local("Liberation Sans Bold"), local("LiberationSans-Bold"),
+         local("Roboto Bold"), local("Roboto-Bold"),
+         local("Noto Sans Bold"), local("NotoSans-Bold"),
+         local("DejaVu Sans Bold"), local("DejaVuSans-Bold");
+    ascent-override: 200%;
+    descent-override: 0%;
+    line-gap-override: 0%;
+  }
+
+  /* The subgrid: the small register on a half-line, which is its own size. */
+  @font-face {
+    font-family: "its-swiss-100";
+    font-weight: 400;
+    src: local("Helvetica Neue"), local("HelveticaNeue"),
+         local("Helvetica"),
+         local("Segoe UI"), local("SegoeUI"),
+         local("Arial"), local("ArialMT"),
+         local("Liberation Sans"), local("LiberationSans"),
+         local("Roboto"), local("Roboto-Regular"),
+         local("Noto Sans"), local("NotoSans-Regular"),
+         local("DejaVu Sans"), local("DejaVuSans");
+    ascent-override: 100%;
+    descent-override: 0%;
+    line-gap-override: 0%;
+  }
+
+  @font-face {
+    font-family: "its-swiss-100";
+    font-weight: 700;
+    src: local("Helvetica Neue Bold"), local("HelveticaNeue-Bold"),
+         local("Helvetica Bold"), local("Helvetica-Bold"),
+         local("Segoe UI Bold"), local("SegoeUI-Bold"),
+         local("Arial Bold"), local("Arial-BoldMT"),
+         local("Liberation Sans Bold"), local("LiberationSans-Bold"),
+         local("Roboto Bold"), local("Roboto-Bold"),
+         local("Noto Sans Bold"), local("NotoSans-Bold"),
+         local("DejaVu Sans Bold"), local("DejaVuSans-Bold");
+    ascent-override: 100%;
+    descent-override: 0%;
+    line-gap-override: 0%;
+  }
+
+  /* Code. Inline, it is given no leading at all and so never asks the line
+     for room, and the ascent is beside the point; the descent still has to
+     be nothing, so that what the browser reports as the under edge of a run
+     of it is its baseline. As a block — a <pre> — it is set at nine tenths
+     of the body on the body's line, and five thirds of nine tenths is the
+     one and a half the body is set on. */
+  @font-face {
+    font-family: "its-swiss-mono";
+    src: local("SF Mono"), local("SFMono-Regular"),
+         local("Menlo"), local("Menlo-Regular"),
+         local("Consolas"),
+         local("Cascadia Mono"), local("CascadiaMono"),
+         local("Liberation Mono"), local("LiberationMono"),
+         local("Roboto Mono"), local("RobotoMono-Regular"),
+         local("Noto Sans Mono"), local("NotoSansMono-Regular"),
+         local("DejaVu Sans Mono"), local("DejaVuSansMono");
+    ascent-override: 166.6667%;
+    descent-override: 0%;
+    line-gap-override: 0%;
+  }
+}

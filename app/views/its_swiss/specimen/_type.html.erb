@@ -4,16 +4,15 @@
     Five sizes on an alternating 1.33 / 1.5 ratio. Every line box is a whole
     number of lines, so a heading never lands the type under it off the grid.
   </p>
-  <%# The rung and the line box it is set on. Written out rather than derived,
-      because the ladder is not every whole number: there is no --space-7, and
-      asking for one silently drops the line box back to the browser's. %>
-  <%# The rung and the number of lines it is set on. Every one is a whole
-      number of them, which is the whole of the grid. %>
-  <% { 1 => [ "--line", "Labels and metadata" ], 2 => [ "--line", "Body copy" ],
-       3 => [ "--line-2", "Section" ], 4 => [ "--line-2", "Subhead" ],
-       5 => [ "--line-3", "Page title" ] }.each do |step, (leading, name)| %>
-    <p data-size="<%= step %>" style="font-size: var(--size-<%= step %>); line-height: var(<%= leading %>)">
-      <%= name %> — <code>--size-<%= step %></code> on <code><%= leading %></code>
+  <%# The rung, the number of lines it is set on, and the face for the ratio
+      of the two. Every leading is a whole number of lines, which is the grid
+      in step; the face puts each baseline on the under edge of its line,
+      which is the grid registered. %>
+  <% { 1 => [ "--line", "--face-200", "Labels and metadata" ], 2 => [ "--line", "--face-150", "Body copy" ],
+       3 => [ "--line-2", "--face-200", "Section" ], 4 => [ "--line-2", "--face-150", "Subhead" ],
+       5 => [ "--line-3", "--face-150", "Page title" ] }.each do |step, (leading, face, name)| %>
+    <p data-size="<%= step %>" style="font-family: var(<%= face %>), var(--font-family); font-size: var(--size-<%= step %>); line-height: var(<%= leading %>)">
+      <%= name %> — <code>--size-<%= step %></code> on <code><%= leading %></code> in <code><%= face %></code>
     </p>
   <% end %>
 

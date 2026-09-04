@@ -18,14 +18,14 @@
      that it does not break and that the nav sits beside it. */
 
   /* Aligned on the under edge rather than on a baseline. Every child of this
-     row is a block of one line, and a trimmed block's under edge is the
-     baseline of its last line — so aligning the edges aligns the baselines,
-     and does it by construction rather than by asking the browser where the
-     baseline is. That question has more than one answer: the mark is a block
-     and the nav is a flex container, browsers synthesize a flex container's
-     baseline differently from a block's under trimming, and one that put the
-     two a few pixels apart grew this row past its three lines and carried
-     the error down the rest of the page. Nothing here needs the answer. */
+     row is a block of one line, and a block's under edge is the baseline of
+     its last line — so aligning the edges aligns the baselines, and does it
+     by construction rather than by asking the browser where the baseline is.
+     That question has more than one answer: the mark is a block and the nav
+     is a flex container, browsers synthesize a flex container's baseline
+     differently from a block's, and one that put the two a few pixels apart
+     grew this row past its three lines and carried the error down the rest
+     of the page. Nothing here needs the answer. */
   .masthead {
     display: flex;
     flex-wrap: wrap;
@@ -73,12 +73,18 @@
   /* --- Footer -------------------------------------------------------------
      A hairline, the micro register, and whatever the application has to say
      after the page. It carries no links of its own: what belongs down there
-     is not something a library can know. */
+     is not something a library can know.
+
+     A container, not a text block: what it holds goes in a paragraph, which
+     the shell writes when it is handed plain text. Trimmed text has to be in
+     an element that is trimmed, and a footer that held text directly would
+     be in step and off the baseline in a browser that ignores the faces. */
 
   .footer {
     margin-top: var(--line-4);
     padding-block: calc(var(--line) - var(--rule-hair)) var(--line);
     border-top: var(--rule-hair) solid var(--rule);
+    font-family: var(--face-200), var(--font-family);
     font-size: var(--size-1);
     line-height: var(--line);
   }
@@ -161,12 +167,21 @@
     margin-bottom: var(--line);
   }
 
+  /* A cell is the shape a control is: a line the type is set on, and a line
+     the rule closes, with the rule's width taken out of the second. Nothing
+     above the type but the cap correction, which is nothing where the faces
+     work: the type's baseline is the under edge of its line and the cell's
+     over edge is on the grid, and anything else put between the two moves
+     the baseline off it. Aligned to the top for the same reason:
+     every cell in a row starts where the row does, so every cell's first
+     baseline is one line down, and a row is as tall as its tallest cell,
+     which is whole lines. */
   .table th,
   .table td {
-    padding-block: calc(var(--half-line) + var(--cap-correction)) calc(var(--half-line) - var(--rule-hair));
+    padding-block: var(--cap-correction) calc(var(--line) - var(--rule-hair));
     padding-inline-end: var(--space-3);
     border-bottom: var(--rule-hair) solid var(--rule);
-    vertical-align: baseline;
+    vertical-align: top;
   }
 
   .table th {
@@ -240,9 +255,13 @@
     width: 100%;
   }
 
+  /* On the over edge. The label is a line and the control is two, and both
+     put their baseline one line below their own top — so starting them on
+     the same line puts the label's baseline on the control's, without the
+     browser being asked where either baseline is. */
   .field--inline {
     flex-direction: row;
-    align-items: baseline;
+    align-items: flex-start;
     gap: var(--line) var(--space-2);
   }
 
@@ -264,21 +283,18 @@
     padding-block: 0 calc(var(--line) - var(--rule-hair));
   }
 
-  /* A select takes its height from the browser rather than from the leading
-     it was given — `font: inherit` hands it the family and the size and puts
-     the line box back to normal — so it is the one control told what it is:
-     the same four baselines the others come out at. */
-
-
   .field textarea {
     block-size: var(--line-4);
     resize: vertical;
   }
 
-  /* A checkbox or a radio is the one control whose label sits beside it. */
+  /* A checkbox or a radio is the one control whose label sits beside it. On
+     the under edge: the label's under edge is its baseline, and the box the
+     browser draws then stands on that baseline the way a glyph does, at
+     whatever size the browser drew it. */
   .choice {
     display: inline-flex;
-    align-items: baseline;
+    align-items: flex-end;
     gap: var(--line) var(--space-1);
   }
 
@@ -300,6 +316,7 @@
 
   .field__error {
     color: var(--accent);
+    font-family: var(--face-200), var(--font-family);
     font-size: var(--size-1);
     line-height: var(--line);
   }
@@ -310,37 +327,46 @@
 
      Every one of them is the same box, so a row of them sits on one line and
      the only difference between them is what fills it. No radius, no shadow,
-     and the keyline is the hairline drawn everywhere else. */
+     and the keyline is the hairline drawn everywhere else.
+
+     The box is the shape a text control is: two lines, the label set on the
+     first and the keyline closing the second, so a button beside a field has
+     its label on the field's text and its under edge on the field's rule.
+     The keyline is drawn inside the box rather than laid out around it. A
+     border is a pixel of box above the label, and a pixel above the label is
+     a baseline a pixel off the grid; an inset shadow is the same hairline
+     and no box at all. */
 
   .button {
+    --keyline: var(--rule);
     display: inline-block;
-    border: var(--rule-hair) solid var(--rule);
+    border: 0;
+    box-shadow: inset 0 0 0 var(--rule-hair) var(--keyline);
     background: transparent;
     color: var(--ink);
-    font-family: inherit;
-    padding-block: calc(var(--half-line) - var(--rule-hair));
+    padding-block: var(--cap-correction) var(--line);
     padding-inline: var(--space-2);
     cursor: pointer;
     text-decoration: none;
   }
 
-  .button:hover { border-color: var(--ink); }
+  .button:hover { --keyline: var(--ink); }
 
   /* A solid block, the way a Swiss poster sets a call to action. Ink rather
      than the accent: the primary action is the one you were going to take,
      and the accent is for the one you have to be told about. */
   .button--primary {
-    border-color: var(--ink);
+    --keyline: var(--ink);
     background: var(--ink);
     color: var(--paper);
   }
 
-  .button--primary:hover { border-color: var(--ink-quiet); background: var(--ink-quiet); }
+  .button--primary:hover { --keyline: var(--ink-quiet); background: var(--ink-quiet); }
 
   /* The one filled area the accent gets, for the action a page exists to
      offer. Used once per page or not at all. */
   .button--accent {
-    border-color: var(--accent);
+    --keyline: var(--accent);
     background: var(--accent);
     color: var(--accent-ink);
   }
@@ -353,7 +379,7 @@
      because a keyboard reaches this button and touch never hovers at all. */
   .button--danger:hover,
   .button--danger:focus-visible {
-    border-color: var(--accent);
+    --keyline: var(--accent);
     color: var(--accent);
   }
 
@@ -384,7 +410,7 @@
 
   .copy {
     border: 0;
-    padding: 0;
+    padding: var(--cap-correction) 0 0;
     background: none;
     color: inherit;
     cursor: pointer;
@@ -482,10 +508,10 @@
     left: var(--space-2);
     top: var(--space-2);
     z-index: 1;
-    padding-block: calc(var(--half-line) - var(--rule-hair));
+    padding-block: var(--cap-correction) var(--line);
     padding-inline: var(--space-2);
     background: var(--paper);
-    border: var(--rule-hair) solid var(--ink);
+    box-shadow: inset 0 0 0 var(--rule-hair) var(--ink);
     transform: translateY(calc(-100% - var(--space-4)));
   }
 

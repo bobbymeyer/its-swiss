@@ -12,9 +12,52 @@ module ItsSwiss
     # own cascade layer, so these resolve the same way whatever order they
     # arrive in. It is written in order anyway, because a file that has not
     # arrived yet is a file whose layer has not been declared.
+    #
+    # Ahead of them, one line of script: whether this browser honours what a
+    # @font-face says about its metrics, which is what puts the baseline on
+    # the under edge of every line. Where it does, the document is marked and
+    # the trim in type.css that does the same job the long way stands down;
+    # where it does not — Safari — the trim is the grid. Inline and first,
+    # because it has to have run before the first layout, and a class added
+    # after paint is a page that moves.
     def its_swiss_stylesheet_tags(**options)
-      stylesheet_link_tag(*ItsSwiss::STYLESHEETS.map { |name| "its_swiss/#{name}" },
-        **{ "data-turbo-track": "reload" }.merge(options))
+      safe_join([
+        tag.script(ItsSwiss::METRIC_OVERRIDES_SCRIPT.html_safe), # rubocop:disable Rails/OutputSafety -- a constant
+        stylesheet_link_tag(*ItsSwiss::STYLESHEETS.map { |name| "its_swiss/#{name}" },
+          **{ "data-turbo-track": "reload" }.merge(options))
+      ], "\n")
+    end
+
+    # The application's typeface, declared under the library's face names.
+    #
+    # The library sets every register in a face named for its ratio of
+    # leading to size — its-swiss-150, its-swiss-200, its-swiss-100 — each an
+    # @font-face over the machine's own grotesque with its ascent set to that
+    # ratio, so the baseline is the under edge of the line box. An
+    # application that has a typeface declares it under the same names with
+    # the same descriptors, and this writes those declarations: one file for
+    # the regular and one for the bold, or one variable file carrying both,
+    # and a monospace if there is one.
+    #
+    #   <%= its_swiss_typeface regular: "inter-regular.woff2", bold: "inter-bold.woff2" %>
+    #   <%= its_swiss_typeface variable: "inter.woff2", mono: "jetbrains-mono.woff2" %>
+    #
+    # Unlayered, which is how it wins: a name defined outside a layer beats
+    # the same name defined inside one, the way the application's rules beat
+    # the library's. Put it after the library's stylesheets all the same, for
+    # a browser that resolves a name by order rather than by layer.
+    def its_swiss_typeface(regular: nil, bold: nil, variable: nil, mono: nil)
+      raise ArgumentError, "a regular file or a variable one" unless regular || variable
+      raise ArgumentError, "a variable file carries both weights" if variable && (regular || bold)
+
+      weights = variable ? { "100 900" => variable } : { "400" => regular, "700" => bold }.compact
+
+      faces = ItsSwiss::FACES.flat_map do |family, ratio|
+        weights.map { |weight, file| its_swiss_face(family, file, ratio, weight: weight) }
+      end
+      faces += ItsSwiss::MONO_FACE.map { |family, ratio| its_swiss_face(family, mono, ratio) } if mono
+
+      tag.style(faces.join("\n").html_safe) # rubocop:disable Rails/OutputSafety -- every value is a number or a JSON-quoted path
     end
 
     # A destination, and whether you are already there. aria-current rather
@@ -62,6 +105,24 @@ module ItsSwiss
         run << number
       end
     end
+
+    FONT_FORMATS = { ".woff2" => "woff2", ".woff" => "woff", ".ttf" => "truetype", ".otf" => "opentype" }.freeze
+
+    def its_swiss_face(family, file, ratio, weight: nil)
+      source = "url(#{asset_path(file).to_json})"
+      source += %( format("#{FONT_FORMATS[File.extname(file)]}")) if FONT_FORMATS[File.extname(file)]
+      ascent = (ratio * 100).to_f.round(4).to_s.sub(/\.0\z/, "")
+
+      [ "@font-face {",
+        "  font-family: #{family.to_json};",
+        ("  font-weight: #{weight};" if weight),
+        "  src: #{source};",
+        "  ascent-override: #{ascent}%;",
+        "  descent-override: 0%;",
+        "  line-gap-override: 0%;",
+        "}" ].compact.join("\n")
+    end
+    private :its_swiss_face
 
     # form_with, already holding the library's builder. An application that
     # wants its own builder still can; this is the shorthand for the case

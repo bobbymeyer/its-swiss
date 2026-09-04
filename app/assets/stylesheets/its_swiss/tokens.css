@@ -76,13 +76,12 @@
     --rule-hair: 1px;
     --rule-heavy: 2px;
 
-    /* What a trimmed block adds above its cap to reach the next baseline.
-       Zero here and given a value in type.css where the browser can trim, so
-       a component that sets its own padding writes the same arithmetic in
-       both directions — calc(var(--space-1) + var(--cap-correction)) is the
-       padding either way. It is deliberately not resolved here: a custom
-       property is substituted where it is used, so 1cap inside it is the cap
-       height of the element that reads it rather than of the root. */
+    /* What a trimmed block adds above its cap to reach its own leading. Zero
+       here and given a value in type.css where the browser can trim, so a
+       component that puts padding above its type writes the same arithmetic
+       in both directions. Deliberately not resolved here: a custom property
+       is substituted where it is used, so the cap and the line inside it are
+       the element's that reads it rather than the root's. */
     --cap-correction: 0px;
 
     /* --- Type --------------------------------------------------------------
@@ -93,8 +92,19 @@
 
        The family is the application's, for the same reason the accent is. A
        library that ships a typeface ships a voice, and ships a binary with
-       it. The fallback stack below is what an application gets until it says
-       otherwise, and it is a grotesque, which is the tradition. */
+       it. What the library does ship is the family declared again, three
+       times, in faces.css: once per ratio of leading to size the ladder
+       below produces, each with its ascent set to that ratio so the baseline
+       is the under edge of the line box. A register names the face for its
+       ratio through one of these three, and names --font-family after it
+       for the machine that has none of the local fonts the faces are drawn
+       from — which gets the grotesque stack, the font's own metrics, and a
+       page in step but not registered. */
+    --face-150: "its-swiss-150";   /* 16 on 24, 32 on 48, 48 on 72 */
+    --face-200: "its-swiss-200";   /* 12 on 24, 24 on 48 */
+    --face-100: "its-swiss-100";   /* 12 on 12: the subgrid */
+    --face-mono: "its-swiss-mono";
+
     --font-family: ui-sans-serif, system-ui, "Helvetica Neue", Helvetica, Arial, sans-serif;
     --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 
@@ -128,7 +138,8 @@
        only a block: leading belongs to a text role, not to an inline element,
        so a <small> inside a paragraph must not change that paragraph's
        leading. Switched on with .subgrid, which redefines --line for its
-       subtree, and everything measured in lines follows it down. */
+       subtree and moves the small register onto the face for its new ratio,
+       and everything measured in lines follows it down. */
     --half-line: calc(var(--line) / 2);    /* 12 */
 
     /* --- Space -------------------------------------------------------------

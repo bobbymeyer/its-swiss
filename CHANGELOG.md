@@ -20,6 +20,79 @@ Semver. Consumers pin `~> 0.1`.
   from itself. `0.6.0.html` is restored there, rendered from the 0.6.0 commit
   by that version's own `bin/specimen`.
 
+## 0.7.0 — Unreleased
+
+Every baseline on the grid, in every browser, whatever the font.
+
+- **The type is set in faces the library declares.** A line box puts its
+  baseline half the leading down and then the font's ascent, and the ascent
+  is a number in the font file the library has never been told — so every
+  line of type sat on a baseline the library could not move, and a page on
+  the grid in one font was off it in the next. `faces.css` declares the
+  machine's grotesque three times over `src: local()`, once per ratio of
+  leading to size the ladder produces, each with `ascent-override` set to
+  that ratio and `descent-override` and `line-gap-override` set to nothing.
+  The baseline is then the under edge of the line box, in every line and in
+  any browser that honours a `@font-face` descriptor. A register names its
+  face — `font-family: var(--face-200), var(--font-family)` — and the tokens
+  `--face-150`, `--face-200` and `--face-100` are the three. Chromium and
+  Firefox honour the descriptors.
+- **Safari does not, so there the trim is the grid.** WebKit loads the face
+  and keeps the font's own metrics. Every text block is still trimmed to its
+  cap and its baseline and padded back up — to its *own* leading now,
+  `round(up, 1cap, 1lh)`, so a subhead set on two lines is no longer trimmed
+  to one, and less the cap as WebKit trims it, which is rounded to a pixel —
+  and only where it is needed: a trimmed box is a 64th short as
+  often as not, which down a long column is a pixel, so one line of script
+  ahead of the stylesheets marks the document `metric-overrides` where the
+  faces are honoured and the trim stands down. `its_swiss_stylesheet_tags`
+  writes it; anything linking the stylesheets by hand should too, and the
+  README has the line. Buttons, cells and the copy button are trimmed as
+  well now, with the correction in their own paddings. A control's own text
+  is the one thing neither mechanism reaches in Safari.
+- **Text lives in text elements.** A box that holds blocks is trimmed
+  through its first and last child and would be corrected twice, so the trim
+  is asked of headings, paragraphs, cells, labels, buttons and the like, and
+  of list items and definitions only when they hold text. The shell puts
+  the `:footer` slot's text in a paragraph.
+- **Nothing inside a line changes the line.** `code`, `kbd`, `samp`, `small`,
+  `sup` and `sub` are given no leading, so a second size on a line never
+  asks it for room; the glyphs still sit on the strut's baseline.
+- **No row asks the browser to find a baseline.** `.run` and `.field--inline`
+  align on their over edge and `.choice` on its under edge, and a table cell
+  on `top`: every box's baselines are whole lines below its own over edge,
+  so starting items on one line puts their baselines on one line, without a
+  question that a button, a form and a block of text answer three ways.
+- **A button is the shape of a control** — two lines, the label on the first
+  and the keyline closing the second — so a button beside a field has its
+  label on the field's text and its under edge on the field's rule. The
+  keyline is an inset shadow rather than a border, because a border is a
+  pixel of box above the label and a pixel above the label is a baseline a
+  pixel off the grid. A table cell is the same shape, with nothing above its
+  type.
+- **`its_swiss_typeface`** writes an application's own font under the
+  library's face names with the library's descriptors, from a regular and a
+  bold file or one variable file, and a monospace if there is one.
+- **The guards measure type, not boxes standing in for it.** Every run of
+  text on the page has its baseline on a line: the under edge of a trimmed
+  block less its padding, or the under edge of the rectangle the engine
+  reports for an untrimmed run, which with no descent is the baseline and
+  with the font's own is a descent off it. The question is one function; a
+  Playwright job asks it of the published specimen in Chromium, WebKit and
+  Firefox, and the Chromium suite asks it again with the faces taken away,
+  which is Safari's page. A page that trims is measured box by box rather
+  than from the top, so the 64ths are let go and every whole pixel is not.
+
+Why: 0.5.0 made the baseline real with a property one engine had, and 0.6.1
+found three ways the page came apart in the others and fixed the three. The
+faces replace the font's metrics with the ladder's, which is the only thing
+that was ever going to hold in a browser nobody had checked.
+
+A consumer that set a register of its own with a size and a leading should
+add the face for their ratio; a consumer that declared `--font-family` and
+nothing else keeps a readable page in step, and adds `its_swiss_typeface` to
+register it.
+
 ## 0.6.1 — 2026-09-02
 
 Three ways the column came apart in a browser that was not Chromium.

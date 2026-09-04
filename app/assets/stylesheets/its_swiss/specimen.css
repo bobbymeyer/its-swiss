@@ -22,12 +22,6 @@
     box-shadow: inset 0 0 0 var(--rule-hair) color-mix(in oklch, var(--ink) 12%, transparent);
   }
 
-  /* A swatch is not a line of type. The type registers carry a padding that
-     rounds their cap height up to a baseline; a dd whose whole content is a
-     block of value has no cap to correct, and the padding would just make the
-     row four pixels taller than the ladder says. */
-  .pairs dd:has(> .specimen__value) { text-box: normal; padding-block-start: 0; }
-
   /* The field, drawn. Each child is one span, and the bar inside it shows
      where that span starts and stops against the page. */
   /* Three rows of a half-line, and a half-line under the last, so the

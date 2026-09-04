@@ -36,13 +36,24 @@ class StaticSpecimenSystemTest < ApplicationSystemTestCase
       "the page that gets published is off the grid, whatever the engine's copy of it does"
   end
 
-  test "and without trimming too" do
-    unit = baseline
+  test "every baseline on the published page is on the grid" do
+    assert_empty type_off_the_grid,
+      "the page that gets published has type off the grid, whatever the engine's copy of it does"
+  end
 
-    without_trimmed_text_boxes do
-      assert_empty boxes_off_the_grid(unit),
-        "a reader whose browser does not trim gets a different page"
+  test "and without the faces too" do
+    without_metric_overrides do
+      assert_empty boxes_off_the_grid, "a reader whose browser ignores the faces gets a different page"
+      assert_empty type_off_the_grid
     end
+  end
+
+  # The mark the trim stands down on has to be there before the first layout
+  # or the page moves under the reader, and a static file has nowhere to get
+  # it from but itself.
+  test "carries the script that tells the trim to stand down" do
+    assert evaluate_script(%(document.documentElement.classList.contains("metric-overrides"))),
+      "the published page did not mark itself, so it is trimmed in a browser that did not need it"
   end
 
   # The overlay is the only reason to trust the page by eye, so it has to be

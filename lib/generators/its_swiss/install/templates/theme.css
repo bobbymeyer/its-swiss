@@ -18,8 +18,17 @@
   --accent-ink: var(--paper);
 
   /* --- The typeface ------------------------------------------------------
-     The library ships none. Declare an @font-face below and name it here, or
-     leave this out and take the grotesque stack the library falls back to. */
+     The library ships none, and takes the grotesque already on the machine
+     until told otherwise. It sets every register in a face named for its
+     ratio of leading to size — its-swiss-150, its-swiss-200, its-swiss-100
+     — declared with that ratio as the ascent and no descent, which is what
+     puts every baseline on the grid. A typeface of your own is declared the
+     same way under the same names, and the helper writes it:
+
+       <%%= its_swiss_typeface regular: "inter-regular.woff2", bold: "inter-bold.woff2" %%>
+
+     in the layout, after the library's stylesheets. --font-family is what
+     a machine with none of the faces falls through to. */
   /* --font-family: "Your Face", ui-sans-serif, system-ui, sans-serif; */
 
   /* --- The value scale ---------------------------------------------------

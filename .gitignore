@@ -7,3 +7,4 @@ log/
 test/dummy/log/
 test/dummy/tmp/
 test/dummy/storage/
+node_modules/

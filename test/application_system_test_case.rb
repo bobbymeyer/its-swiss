@@ -131,76 +131,43 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     evaluate_script("parseFloat(getComputedStyle(document.documentElement).fontSize) * 1.5")
   end
 
-  # Every box the page laid out that is not a whole number of baselines. The
-  # question is asked of whatever page is open, so the engine's specimen and
-  # the published one answer it the same way.
-  def boxes_off_the_grid(unit = baseline)
-    evaluate_script(<<~JS)
-      (() => {
-        const baseline = #{unit}
-        // A browser lays out in 64ths of a pixel, and a cap height rounded up
-        // to the ladder can land a 64th short of it depending on the font's
-        // metrics. The tolerance is a layout unit or two, not a fudge: a real
-        // error here is a whole pixel, because that is the smallest thing a
-        // rule or a border can be.
-        const off = (value, unit) => {
-          const over = ((value % unit) + unit) % unit
-          return Math.min(over, unit - over) > 0.05
-        }
-        // A block of small type may sit on a half-line — that is what
-        // .subgrid declares, and the whole point of declaring it. The block
-        // itself still owes the column whole lines; only what is inside it
-        // may halve them.
-        const unitFor = (el) =>
-          el.parentElement && el.parentElement.closest(".subgrid") ? baseline / 2 : baseline
-        return Array.from(document.querySelectorAll("body *")).filter((el) => {
-          const style = getComputedStyle(el)
-          // A line box is another assertion's business, an out-of-flow box
-          // sits on no column at all, and a checkbox is drawn by the browser
-          // at a size of its own on a row that is measured here regardless.
-          if (style.display.startsWith("inline") && style.display !== "inline-block") return false
-          if (style.position === "absolute" || style.position === "fixed") return false
-          if (el.matches("input[type=checkbox], input[type=radio]")) return false
+  # The one question asked of every page: where is it off the grid? Kept in
+  # a file so the cross-engine job in CI asks a browser that is not Chromium
+  # exactly the same thing.
+  ON_THE_GRID = ROOT.join("test/support/on_the_grid.js").read.freeze
 
-          const box = el.getBoundingClientRect()
-          if (box.height === 0) return false
-          // Two kinds of box are placed by something other than the column,
-          // so only their height is the ladder's business: an inline-block,
-          // which sits on its line, and a flex item in a row that aligns on
-          // the baseline, which sits on that baseline. The row itself is
-          // still measured, so a row that breaks the column still fails —
-          // what is exempt is where the item sits inside a row that does not.
-          const parent = el.parentElement && getComputedStyle(el.parentElement)
-          const placedByARow = parent &&
-            parent.display.includes("flex") &&
-            parent.alignItems === "baseline"
-          const inline = style.display === "inline-block" || placedByARow
-          const unit = unitFor(el)
-          return (!inline && off(box.top + window.scrollY, unit)) || off(box.height, unit)
-        }).map((el) => {
-          const box = el.getBoundingClientRect()
-          return el.tagName.toLowerCase() + (el.className ? "." + String(el.className).trim().split(/\\s+/).join(".") : "") +
-            " starts at " + (box.top + window.scrollY) + " and is " + box.height + " tall"
-        }).slice(0, 10)
-      })()
-    JS
+  def off_the_grid(unit = baseline)
+    evaluate_script("(#{ON_THE_GRID})(#{unit})")
   end
 
-  # The page as a browser without text-box-trim lays it out. Trimming rounds
-  # a block up to a whole line whatever the leading under it says, so it hides
-  # a register leaded off the ladder: a footer led on the space step and a
-  # field error led on sixteen both read correctly under it and put eight
-  # pixels into the column without. The library declares the 0px fallback for
-  # --cap-correction outside the @supports block, so this is what those
-  # browsers actually get — and the sheet is unlayered, which is how an
-  # application's own CSS wins over the library's.
-  def without_trimmed_text_boxes
-    execute_script(<<~JS)
-      const sheet = new CSSStyleSheet()
-      sheet.replaceSync(":root { --cap-correction: 0px } * { text-box: normal }")
-      document.adoptedStyleSheets = [ ...document.adoptedStyleSheets, sheet ]
-    JS
+  # Every block box the page laid out whose over or under edge is not on a
+  # line. The column is a stack of these, and one a pixel too tall puts
+  # everything below it off the grid.
+  def boxes_off_the_grid(unit = baseline) = off_the_grid(unit).fetch("boxes")
+
+  # Every run of text whose baseline is not on a line.
+  def type_off_the_grid(unit = baseline) = off_the_grid(unit).fetch("type")
+
+  # The page as a browser that ignores what a face says about its metrics
+  # lays it out — Safari, which loads the face and keeps the font's own
+  # ascent and descent, and which the script ahead of the stylesheets does
+  # not mark. The faces are named through tokens, so pointing the tokens at
+  # the font underneath is the same page with the font's metrics, and taking
+  # the mark off the document is the trim doing the whole job. Unlayered,
+  # which is how an application's own CSS wins over the library's.
+  def without_metric_overrides
+    execute_script(%(document.documentElement.classList.remove("metric-overrides")))
+    adopt ":root { --face-150: \"Liberation Sans\"; --face-200: \"Liberation Sans\"; " \
+      "--face-100: \"Liberation Sans\"; --face-mono: \"Liberation Mono\" }"
 
     yield
+  end
+
+  def adopt(css)
+    execute_script(<<~JS)
+      const sheet = new CSSStyleSheet()
+      sheet.replaceSync(#{css.to_json})
+      document.adoptedStyleSheets = [ ...document.adoptedStyleSheets, sheet ]
+    JS
   end
 end
