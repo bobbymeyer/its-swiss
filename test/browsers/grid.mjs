@@ -58,10 +58,11 @@ for (const name of named.length ? named : Object.keys(engines)) {
   // is appended to, so its under edge is that baseline whatever the engine
   // reports for the text beside it. Appended after everything above was
   // measured, because a probe is a change to the page.
-  if (boxes.length || type.length) {
+  if (boxes.length || type.length || process.env.DIAGNOSE) {
     const where = await page.evaluate(() => {
       const probe = (selector) => {
         const el = document.querySelector(selector)
+        if (!el) return `${selector}: not on the page`
         const span = document.createElement("span")
         span.style.cssText = "display: inline-block; width: 0; height: 0; vertical-align: baseline"
         el.appendChild(span)
@@ -74,7 +75,7 @@ for (const name of named.length ? named : Object.keys(engines)) {
           `text rects ${rects.slice(0, 2).join(" ")}, font ${style.fontFamily} ${style.fontSize}/${style.lineHeight}`
       }
       const checks = [ "16px its-swiss-150", "12px its-swiss-200", "bold 16px its-swiss-150" ].map((f) => `${f}: ${document.fonts.check(f)}`)
-      return [ ...[ "h1.page-title", "p.lede", "p.hint", ".button", ".table td", ".field label", ".footer p" ].map(probe),
+      return [ ...[ "h1.page-title", "p.lede", "p.hint", ".button", ".table td", ".field label", ".footer" ].map(probe),
         `fonts: ${document.fonts.size} faces, ${checks.join(", ")}` ]
     })
     for (const line of where) console.log(`  ${line}`)
