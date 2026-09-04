@@ -2,7 +2,7 @@
 
 Semver. Consumers pin `~> 0.1`.
 
-## Unreleased
+## 0.7.1 — 2026-09-04
 
 ### Fixed
 
