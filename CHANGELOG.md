@@ -20,6 +20,61 @@ Semver. Consumers pin `~> 0.1`.
   from itself. `0.6.0.html` is restored there, rendered from the 0.6.0 commit
   by that version's own `bin/specimen`.
 
+## 0.7.0 — Unreleased
+
+Every baseline on the grid, in every browser, whatever the font.
+
+- **The type is set in faces the library declares.** A line box puts its
+  baseline half the leading down and then the font's ascent, and the ascent
+  is a number in the font file the library has never been told — so every
+  line of type sat on a baseline the library could not move, and a page on
+  the grid in one font was off it in the next. `faces.css` declares the
+  machine's grotesque three times over `src: local()`, once per ratio of
+  leading to size the ladder produces, each with `ascent-override` set to
+  that ratio and `descent-override` and `line-gap-override` set to nothing.
+  The baseline is then the under edge of the line box, in every line and in
+  any browser that honours a `@font-face` descriptor. A register names its
+  face — `font-family: var(--face-200), var(--font-family)` — and the tokens
+  `--face-150`, `--face-200` and `--face-100` are the three.
+- **`text-box-trim` and `--cap-correction` are gone.** They registered the
+  page in the one browser that trims and left the rest to their fonts; the
+  faces do the job everywhere, and a trim left behind would be applied on
+  top of them. `--cap-correction` was documented as read-only; a component
+  that added it to a padding now adds nothing.
+- **Nothing inside a line changes the line.** `code`, `kbd`, `samp`, `small`,
+  `sup` and `sub` are given no leading, so a second size on a line never
+  asks it for room; the glyphs still sit on the strut's baseline.
+- **No row asks the browser to find a baseline.** `.run` and `.field--inline`
+  align on their over edge and `.choice` on its under edge, and a table cell
+  on `top`: every box's baselines are whole lines below its own over edge,
+  so starting items on one line puts their baselines on one line, without a
+  question that a button, a form and a block of text answer three ways.
+- **A button is the shape of a control** — two lines, the label on the first
+  and the keyline closing the second — so a button beside a field has its
+  label on the field's text and its under edge on the field's rule. The
+  keyline is an inset shadow rather than a border, because a border is a
+  pixel of box above the label and a pixel above the label is a baseline a
+  pixel off the grid. A table cell is the same shape, with nothing above its
+  type.
+- **`its_swiss_typeface`** writes an application's own font under the
+  library's face names with the library's descriptors, from a regular and a
+  bold file or one variable file, and a monospace if there is one.
+- **The guards measure type, not boxes standing in for it.** Every run of
+  text on the page has its under edge on a line — with no descent that is
+  its baseline — and is exactly its leading tall, which is how a face that
+  did not take shows up. The question is one function, and a Playwright job
+  asks it of the published specimen in Chromium, WebKit and Firefox.
+
+Why: 0.5.0 made the baseline real with a property one engine had, and 0.6.1
+found three ways the page came apart in the others and fixed the three. The
+faces replace the font's metrics with the ladder's, which is the only thing
+that was ever going to hold in a browser nobody had checked.
+
+A consumer that set a register of its own with a size and a leading should
+add the face for their ratio; a consumer that declared `--font-family` and
+nothing else keeps a readable page in step, and adds `its_swiss_typeface` to
+register it.
+
 ## 0.6.1 — 2026-09-02
 
 Three ways the column came apart in a browser that was not Chromium.

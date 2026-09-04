@@ -50,11 +50,19 @@
      Almost every horizontal arrangement in an interface is one thing: items
      on a shared baseline, a space apart, wrapping when they must. Said once
      here the way the field's tracks are, so a component below says only how
-     it differs. */
+     it differs.
+
+     Aligned on the over edge, and the baselines follow. Every item starts on
+     the line the row does, every item's baselines are whole lines below its
+     own top, so every item's first baseline is the same line — a word beside
+     a button beside a field — and the row is as tall as its tallest item,
+     which is whole lines. Asking for `baseline` instead asks the browser to
+     find one in each item, and a button, a form and a block of text are
+     three answers. */
   .run {
     display: flex;
     flex-wrap: wrap;
-    align-items: baseline;
+    align-items: flex-start;
     gap: var(--line) var(--space-2);
   }
 

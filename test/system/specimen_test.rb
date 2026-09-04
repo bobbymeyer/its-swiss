@@ -104,33 +104,33 @@ class SpecimenSystemTest < ApplicationSystemTestCase
   # out. This measures what the browser actually laid out, on a page that
   # holds one of everything.
   test "every box on the page is a whole number of baselines" do
-    unit = baseline
-
-    assert_empty boxes_off_the_grid(unit),
-      "a box that is not a whole number of #{unit}px baselines puts everything below it off the grid"
+    assert_empty boxes_off_the_grid,
+      "a box that is not a whole number of #{baseline}px baselines puts everything below it off the grid"
   end
 
-  # And the same page in a browser that does not trim. Trimming rounds a
-  # block's box up to a whole line whatever the leading under it says, which
-  # makes it a very good way to not notice that a register is leaded off the
-  # ladder: .footer was led on the space step and .field__error on sixteen,
-  # both read correctly under trimming, and both put eight pixels into the
-  # column in a browser without it. The grid is the library's claim in every
-  # browser or it is a claim about Chromium.
-  test "every box is a whole number of baselines without trimming too" do
-    unit = baseline
-
-    without_trimmed_text_boxes do
-      assert_empty boxes_off_the_grid(unit),
-        "the column only holds while the browser trims, which is not a column"
-    end
+  # What the grid is actually for. Boxes in step are not a baseline grid: a
+  # line's baseline falls wherever the font's ascent and the leading either
+  # side of it put it inside the line box, so at 0.2.0 a paragraph's baselines
+  # sat a pixel off the grid, a caption's four, and the two were three pixels
+  # out of register with each other. 0.5.0 trimmed the boxes to the type,
+  # which put the type on the grid in the one browser that trims and left the
+  # others to their fonts.
+  #
+  # Now the face carries the leading as its ascent and no descent, so the
+  # baseline is the under edge of the line box in any browser that honours a
+  # @font-face descriptor — and the run of text a browser reports is exactly
+  # one leading tall with its under edge on the baseline, which is what this
+  # reads. Every run of text on the page, not a list of registers: a
+  # register missed here is a register nobody measured.
+  test "every baseline on the page is on the grid" do
+    assert_empty type_off_the_grid,
+      "a run of type whose baseline is not on a #{baseline}px line is type in its own rhythm"
   end
 
   # The masthead in particular, because it is where a page most often puts a
-  # block of type beside a flex container, and because the sweep above can
-  # only measure what is not exempt from it: an item placed by a baseline row
-  # is exempt, so for as long as this row aligned on a baseline nothing
-  # measured where its two halves actually landed.
+  # block of type beside a flex container, and because for as long as this
+  # row aligned on a baseline nothing measured where its two halves actually
+  # landed.
   test "the wordmark and the nav end on the same line" do
     unit = baseline
     mark = rect_of(".masthead__mark")
@@ -142,47 +142,20 @@ class SpecimenSystemTest < ApplicationSystemTestCase
       "the masthead is not a whole number of lines, so everything below it is off the grid"
   end
 
-  # What the grid is actually for. Boxes in step are not a baseline grid: a
-  # line's baseline falls wherever the font's ascent and the leading either
-  # side of it put it inside the line box, so at 0.2.0 a paragraph's baselines
-  # sat a pixel off the grid, a caption's four, and the two were three pixels
-  # out of register with each other.
-  #
-  # Trimming makes the block's under edge the baseline of its last line — that
-  # is what `alphabetic` means — so measuring the box measures the baseline,
-  # and every earlier line is a whole number of baselines above it because the
-  # leading is. Measured rather than probed on purpose: inserting a span to
-  # read a baseline directly re-lays out a trimmed page and moves the thing it
-  # was measuring.
-  test "the type sits on the baseline, not merely in step with it" do
-    skip "this browser does not trim text boxes" unless evaluate_script(
-      %(CSS.supports("text-box", "trim-both cap alphabetic"))
-    )
-
-    baseline = evaluate_script("parseFloat(getComputedStyle(document.documentElement).fontSize) * 1.5")
-
-    offenders = evaluate_script(<<~JS)
-      (() => {
-        const baseline = #{baseline}
-        const registers = ".page-title, h1, h2, h3, h4, p, li, dt, dd, .micro, .hint, .lede"
-        return Array.from(document.querySelectorAll(registers)).filter((el) => {
-          if (!el.textContent.trim()) return false
-          const style = getComputedStyle(el)
-          if (style.textBoxTrim !== "trim-both") return true
-          const bottom = el.getBoundingClientRect().bottom + window.scrollY
-          const over = ((bottom % baseline) + baseline) % baseline
-          return Math.min(over, baseline - over) > 0.05
-        }).map((el) => {
-          const style = getComputedStyle(el)
-          const bottom = el.getBoundingClientRect().bottom + window.scrollY
-          return el.tagName.toLowerCase() + (el.className ? "." + String(el.className).trim().split(/\\s+/).join(".") : "") +
-            " at " + el.style.fontSize + " trim=" + style.textBoxTrim + " baseline at " + bottom
-        }).slice(0, 10)
-      })()
+  # The faces are what put the baseline on the under edge, and a face is a
+  # thing a browser can decline: a local() it cannot match, a descriptor it
+  # does not know. Both leave the page readable and in step and quietly
+  # unregistered — so the type check above would catch it, and this says
+  # which of the two it was.
+  test "the faces the page is set in loaded" do
+    faces = evaluate_script(<<~JS)
+      Array.from(document.fonts).filter((face) => face.family.startsWith("its-swiss")).map((face) =>
+        [ face.family, face.weight, face.status ])
     JS
 
-    assert_empty offenders,
-      "a register whose last baseline is not on a #{baseline}px line is a register in its own rhythm"
+    assert_includes faces, [ "its-swiss-150", "400", "loaded" ], "the body's own face did not load: #{faces.inspect}"
+    assert_includes faces, [ "its-swiss-200", "400", "loaded" ], "the small register's face did not load: #{faces.inspect}"
+    assert_empty faces.select { |_, _, status| status == "error" }, "a face the page asked for failed"
   end
 
   # A figure is read right-aligned against its own heading, which is what

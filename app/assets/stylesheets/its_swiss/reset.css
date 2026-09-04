@@ -16,7 +16,7 @@
     color: var(--ink);
   }
 
-  h1, h2, h3, h4, p, ul, ol, dl, dd, figure, fieldset, legend, blockquote {
+  h1, h2, h3, h4, p, ul, ol, dl, dd, figure, fieldset, legend, blockquote, pre {
     margin: 0;
     padding: 0;
   }

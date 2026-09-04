@@ -23,6 +23,42 @@ class ApplicationHelperTest < ActionView::TestCase
       Nokogiri::HTML5.fragment(its_swiss_stylesheet_tags).css("link[data-turbo-track='reload']").size
   end
 
+  # --- The typeface --------------------------------------------------------
+
+  # The faces are what put every baseline on the under edge of its line, and
+  # an application with a typeface of its own has to declare it the same way
+  # under the same names, or its type is back in the font's hands. This
+  # writes those declarations so nothing has to be worked out by hand.
+  test "declares the application's typeface under the library's face names, with the library's ascents" do
+    css = Nokogiri::HTML5.fragment(its_swiss_typeface(regular: "inter-regular.woff2", bold: "inter-bold.woff2")).at("style").text
+    faces = css.scan(/@font-face \{([^}]*)\}/m).flatten.map { |body| body.scan(/([a-z-]+): ([^;]+);/).to_h }
+
+    assert_equal ItsSwiss::FACES.keys.flat_map { |family| [ family ] * 2 }, faces.map { |face| face["font-family"].delete('"') }
+    assert_equal %w[ 400 700 ] * 3, faces.map { |face| face["font-weight"] }
+    faces.each do |face|
+      ratio = ItsSwiss::FACES.fetch(face["font-family"].delete('"'))
+      assert_equal "#{(ratio * 100).round}%", face["ascent-override"]
+      assert_equal "0%", face["descent-override"]
+      assert_equal "0%", face["line-gap-override"]
+      assert_match(%r{\Aurl\("/[^"]*inter-(regular|bold)[^"]*\.woff2"\) format\("woff2"\)\z}, face["src"])
+    end
+  end
+
+  test "declares a variable font once per face, across the weights" do
+    css = Nokogiri::HTML5.fragment(its_swiss_typeface(variable: "inter.woff2", mono: "mono.ttf")).at("style").text
+    faces = css.scan(/@font-face \{([^}]*)\}/m).flatten.map { |body| body.scan(/([a-z-]+): ([^;]+);/).to_h }
+
+    assert_equal ItsSwiss::FACES.keys + ItsSwiss::MONO_FACE.keys, faces.map { |face| face["font-family"].delete('"') }
+    assert_equal [ "100 900" ] * 3 + [ nil ], faces.map { |face| face["font-weight"] }
+    assert_equal "166.6667%", faces.last["ascent-override"], "a pre is set at nine tenths of the body on the body's line"
+    assert_match(/format\("truetype"\)/, faces.last["src"])
+  end
+
+  test "refuses a typeface it cannot declare" do
+    assert_raises(ArgumentError) { its_swiss_typeface }
+    assert_raises(ArgumentError) { its_swiss_typeface(variable: "inter.woff2", bold: "inter-bold.woff2") }
+  end
+
   # --- Navigation ----------------------------------------------------------
 
   test "marks the current destination for a screen reader as well as an eye" do

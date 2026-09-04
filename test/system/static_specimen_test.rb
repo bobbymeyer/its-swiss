@@ -36,13 +36,9 @@ class StaticSpecimenSystemTest < ApplicationSystemTestCase
       "the page that gets published is off the grid, whatever the engine's copy of it does"
   end
 
-  test "and without trimming too" do
-    unit = baseline
-
-    without_trimmed_text_boxes do
-      assert_empty boxes_off_the_grid(unit),
-        "a reader whose browser does not trim gets a different page"
-    end
+  test "every baseline on the published page is on the grid" do
+    assert_empty type_off_the_grid,
+      "the page that gets published has type off the grid, whatever the engine's copy of it does"
   end
 
   # The overlay is the only reason to trust the page by eye, so it has to be

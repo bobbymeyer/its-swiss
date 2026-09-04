@@ -58,3 +58,23 @@ jobs:
           # start a session at all.
           CHROME_BINARY: ${{ steps.chrome.outputs.chrome-path }}
           CHROMEDRIVER: ${{ steps.chrome.outputs.chromedriver-path }}
+
+  # The same page, in the two engines the job above cannot ask. The faces are
+  # supposed to hold wherever a @font-face descriptor is honoured, and a grid
+  # checked in one browser is a claim about that browser — which is what the
+  # library was until 0.7.0.
+  engines:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: bin/specimen tmp/specimen
+      - run: npm install --no-save --no-package-lock playwright@1.56.1
+      - run: npx playwright install --with-deps chromium webkit firefox
+      - run: node test/browsers/grid.mjs tmp/specimen/index.html

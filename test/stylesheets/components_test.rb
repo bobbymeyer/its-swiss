@@ -44,20 +44,49 @@ class ComponentsTest < ActiveSupport::TestCase
     end
   end
 
-  # A row of one-line blocks has a shared baseline already: the trim makes a
-  # block's under edge the baseline of its last line, so aligning the edges
-  # aligns the baselines. Asking for `baseline` instead asks the browser where
-  # the baseline is, and browsers answer differently once trimming is involved
-  # — the masthead puts a block beside a flex container, and a browser that
-  # synthesized the two a few pixels apart grew the row past its three lines
-  # and carried the error down the whole page. The rows that keep `baseline`
-  # are the ones that need it, where a line of type sits beside something
-  # taller: a control, a button, a checkbox.
+  # A row of one-line blocks has a shared baseline already: a block's under
+  # edge is the baseline of its last line, so aligning the edges aligns the
+  # baselines. Asking for `baseline` instead asks the browser where the
+  # baseline is, and browsers answer differently — the masthead puts a block
+  # beside a flex container, and a browser that synthesized the two a few
+  # pixels apart grew the row past its three lines and carried the error down
+  # the whole page.
   test "a row of single-line blocks aligns on its under edge, not on a baseline" do
     [ ".masthead", ".nav", ".pagination" ].each do |selector|
       assert_match(/align-items: end/, declarations_for(selector),
         "#{selector} holds one line per child and has no reason to ask a browser to find a baseline")
     end
+  end
+
+  # And no row at all asks for one. Every box's baselines are whole lines
+  # below its own over edge, so a row that starts its items on the same line
+  # has put their baselines on the same line, and a row that ends them on
+  # the same line has too. A row aligned on `baseline` is a row whose height
+  # is the browser's answer to a question the library already knows the
+  # answer to — and a button, a form and a block of text are three answers.
+  test "no row asks the browser to find a baseline" do
+    every_stylesheet.each do |name, css|
+      assert_no_match(/align-items: baseline/, css.gsub(%r{/\*.*?\*/}m, ""),
+        "#{name}.css aligns a row on a baseline the browser has to find")
+    end
+    assert_no_match(/vertical-align: baseline/, rules_in("components"),
+      "a cell is aligned on a baseline the browser has to find")
+  end
+
+  # A control is two lines: one the type is set on, one the rule closes, with
+  # the rule's width taken out of the second. A button is the same shape, so
+  # a button beside a field has its label on the field's text and its under
+  # edge on the field's rule — and its keyline is drawn inside the box rather
+  # than laid out around it, because a border is a pixel above the label and
+  # a pixel above the label is a baseline a pixel off the grid.
+  test "a button is the shape of a control, with its keyline drawn rather than laid out" do
+    button = declarations_for(".button")
+
+    assert_match(/padding-block: 0 var\(--line\)/, button)
+    assert_match(/border: 0/, button)
+    assert_match(/box-shadow: inset 0 0 0 var\(--rule-hair\)/, button)
+    assert_match(/padding-block: 0 calc\(var\(--line\) - var\(--rule-hair\)\)/, declarations_for(".table th"),
+      "a cell puts nothing above its type, or the baseline is not one line down")
   end
 
   # A component that placed itself on the page's field would break the moment

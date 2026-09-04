@@ -2,9 +2,9 @@
 
 A Swiss typographic style for Rails applications, in two layers.
 
-The **core** is plain CSS and one small piece of JavaScript: tokens, a reset,
-typography, grid primitives, components and view transition rules. It needs
-nothing but a `<link>` tag.
+The **core** is plain CSS and one small piece of JavaScript: tokens, faces, a
+reset, typography, grid primitives, components and view transition rules. It
+needs nothing but a `<link>` tag.
 
 The **engine** ships that core through `app/assets`, plus a base layout shell,
 partials, a form builder, helpers and an install generator.
@@ -38,7 +38,7 @@ current one at `/<version>.html` for anything that needs to pin.
 | A base layout shell with `content_for` slots | Page layouts beyond the shell |
 | View transition names and durations | Which pages transition to which |
 | The value scale and the accent slot | Any hue, any palette knowledge |
-| A fallback grotesque stack | The typeface |
+| The machine's grotesque, declared to sit on the baseline | The typeface |
 
 A pattern enters the gem after it appears in two applications, not before.
 
@@ -50,11 +50,11 @@ specificity — so the application always wins, without having to out-specify
 anything or reach for `!important`.
 
 ```
-@layer its-swiss.tokens, its-swiss.reset, its-swiss.type,
+@layer its-swiss.tokens, its-swiss.faces, its-swiss.reset, its-swiss.type,
        its-swiss.grid, its-swiss.components, its-swiss.transitions;
 ```
 
-Each file declares its own layer, so linking the six files individually (what
+Each file declares its own layer, so linking the seven files individually (what
 `its_swiss_stylesheet_tags` does) and linking the single `its-swiss.css` that
 imports them resolve identically.
 
@@ -66,12 +66,12 @@ holding all of them. Nothing here has a default the gem could pick honestly.
 | Slot | What it is |
 | --- | --- |
 | `--accent`, `--accent-ink` | State and emphasis only. Unset, the accent is ink |
-| `--font-family` | The typeface. The gem ships none — declare `@font-face` and name it |
+| `--font-family` | The typeface. The gem ships none — declare yours with `its_swiss_typeface`, and this is what a machine without it falls through to |
 | `--value-chroma`, `--value-hue` | Warms the whole value scale together. Neutral as shipped |
 | `--columns`, `--gutter` | How many fields this problem has |
 | `--line` | The baseline: the interval everything vertical registers to |
 | `--ratio` | A picture's aspect ratio, per figure — the library cannot read one |
-| `--cap-correction` | Read, not set: what a trimmed register adds above its cap to reach the next baseline |
+| `--face-150`, `--face-200`, `--face-100` | Read, not set: the face a register names for its ratio of leading to size |
 
 ### The baseline
 
@@ -86,31 +86,78 @@ vertical axis is too. `--space-*` survives as the **horizontal** step: an
 inline gap has no baseline to miss.
 
 Boxes in step are only the easy half. Where a line's baseline falls inside its
-line box depends on the font's ascent and the leading either side of it, so a
-caption and a paragraph can both be in step and still be out of register with
-each other. So every text register is trimmed to its own type: `text-box:
-trim-both cap alphabetic` makes a block's over edge the cap of its first line
-and its under edge the baseline of its last, and one padding rounds the cap
-height up to the next line —
+line box is the font's decision: half the leading down, then the font's own
+ascent, and the ascent is a number in the font file that the library has never
+been told. A caption and a paragraph can both be in step and still be out of
+register with each other, and a page on the grid in one font is off it in the
+next. 0.5.0 trimmed every register to its type with `text-box-trim`, which
+registered the page in the one browser that trims and left the rest to their
+fonts.
+
+So the library sets every register in a face of its own. `faces.css` declares
+the machine's grotesque three times over `src: local()`, each time with its
+ascent set to a ratio of leading to size and its descent and line gap set to
+nothing:
 
 ```css
-padding-block-start: calc(round(up, 1cap, var(--line)) - 1cap);
+@font-face {
+  font-family: "its-swiss-150";
+  src: local("Helvetica Neue"), local("Arial"), local("Liberation Sans"), …;
+  ascent-override: 150%;
+  descent-override: 0%;
+  line-gap-override: 0%;
+}
 ```
 
-— which the browser computes in cap units, so the library still never has to
-be told the font's metrics. It is published as `--cap-correction`: a component
-that sets its own padding on trimmed text adds it, as
-`calc(var(--half-line) + var(--cap-correction))`, which is the right padding
-whether or not the browser trims.
+A line box is then exactly the ascent tall, there is no half-leading for the
+type to sit inside, and the baseline is the under edge of the line box — in
+every line, in every browser that honours a `@font-face` descriptor, whatever
+the font underneath. The ladder produces three ratios and there are three
+faces: body, subhead and page title are set on one and a half times their
+size, the small register and the section on twice it, and the subgrid puts the
+small register on its own size. A register is three declarations, and the
+third is what makes the first two a grid:
 
-Two things opt out, with `text-box: normal; padding-block-start: 0`: a control,
-whose box is the target and whose label is centred in it, and any block whose
-content is not type — an image, a swatch, a diagram.
+```css
+.micro { font-family: var(--face-200), var(--font-family); font-size: var(--size-1); line-height: var(--line); }
+```
 
-It is behind `@supports`, and the fallback is the box rhythm above. Chromium
-and Safari trim; Firefox does not yet. The two do not render identically:
-trimming takes the leading out of a block's own box, so a trimmed page is a
-few pixels tighter per block. Both stay on the grid.
+Two things follow. Anything that changes size *inside* a line — `code`, a
+`small`, a superscript — is given no leading at all, so it never asks the line
+for room; its glyphs still sit on the strut's baseline, which is the grid's.
+And no row asks the browser to find a baseline. Every box's baselines are whole
+lines below its own over edge, so a row that starts its items on one line has
+put their baselines on one line; `.run` aligns on `flex-start`, the masthead
+and the nav on `end`, a table cell on `top`, and none of them on `baseline`,
+which is a question three kinds of box answer three ways.
+
+A control is two lines: one the type is set on, one the rule closes, with the
+rule's width taken out of the second. A button is the same shape, so a button
+beside a field has its label on the field's text and its under edge on the
+field's rule, and its keyline is an inset shadow rather than a border — a
+border is a pixel of box above the label, and a pixel above the label is a
+baseline a pixel off the grid.
+
+#### Your own typeface
+
+Declared under the same names with the same descriptors, and the helper writes
+it:
+
+```erb
+<%= its_swiss_typeface regular: "inter-regular.woff2", bold: "inter-bold.woff2" %>
+<%= its_swiss_typeface variable: "inter.woff2", mono: "jetbrains-mono.woff2" %>
+```
+
+Put it after the library's stylesheets. The declarations are unlayered, and a
+name defined outside a layer beats the same name defined inside one — the way
+the application's rules beat the library's — but a browser that resolves a
+name by order rather than by layer wants it last too. `--font-family` is only
+what a machine with none of the faces falls through to: the page is still
+readable and still in step, and no longer registered.
+
+The faces are the ladder's. Re-proportion `--line` or a size and the ratios
+move with them, and the faces have to be declared again for the ratios the new
+ladder produces.
 
 #### The one subgrid
 
@@ -121,8 +168,9 @@ table of figures:
 <div class="subgrid">…</div>
 ```
 
-It halves `--line` for the block's **children**, and the leadings, the spacing
-and the cap correction all follow. The children, not the block: a block's own
+It halves `--line` for the block's **children** and moves the small register
+onto the face for its new ratio, and the leadings and the spacing follow. The
+children, not the block: a block's own
 margins belong to the column outside it and are owed whole lines. Set on the
 block itself it halves the gap above it and lands the column half a line out.
 
@@ -231,7 +279,7 @@ run while a view is rendering, and these slots are set once for the whole
 application — naming the shell on the controller renders it but leaves
 nowhere to fill it, so every view ends up writing the same masthead.
 
-Note the `:head` slot links `theme.css`. The shell links the library's six
+Note the `:head` slot links `theme.css`. The shell links the library's seven
 stylesheets and stops; the accent and the grid live in yours, and nothing
 links it but this.
 
@@ -246,7 +294,7 @@ Slots, all optional:
 | `:main_class` | What the page's main region is, if it is a grid |
 | `:footer` | Whatever belongs after the page |
 
-The shell writes the view transition opt-in, the six stylesheet links, the
+The shell writes the view transition opt-in, the seven stylesheet links, the
 importmap tags, a skip link, and the flash. It stops there — a page layout
 beyond the shell is the application's, for the same reason its grid is.
 
@@ -254,7 +302,8 @@ beyond the shell is the application's, for the same reason its grid is.
 
 | | |
 | --- | --- |
-| `its_swiss_stylesheet_tags` | The six links, tracked for Turbo |
+| `its_swiss_stylesheet_tags` | The seven links, tracked for Turbo |
+| `its_swiss_typeface(regular:, bold:)` | The application's typeface, declared under the library's face names |
 | `nav_link_to(name, url, current:)` | A destination, with `aria-current` when you are at it |
 | `copy_button(value)` | A value that copies itself |
 | `its_swiss_form_with(...)` | `form_with`, already holding the library's builder |
@@ -312,8 +361,9 @@ It is the documentation and the regression fixture.
 ## Tests
 
 ```sh
-bin/test                                  # everything; browser tests skip
+bin/test                                     # everything; browser tests skip
 CHROME_BINARY=... CHROMEDRIVER=... bin/test   # including the browser tests
+bin/specimen tmp/specimen && node test/browsers/grid.mjs tmp/specimen/index.html   # chromium, webkit, firefox
 ```
 
 Tests come first, and a guard is only kept if removing what it guards makes it
@@ -328,10 +378,15 @@ The rest needs a browser, because a rule on the wrong selector reads correctly
 in the CSS and does nothing on a page. Those assert what Chromium actually
 resolved: that an unlayered declaration beats the library's layered one, that
 the accent unset is ink, that quiet ink clears 4.5:1, that every box on the
-specimen starts on a baseline and is a whole number of them tall, that every
-register's last baseline lands on one, that nothing escapes the page at 390px,
-and that the measure lands on a field line the browser really laid out. They
-skip loudly rather than pretending to have checked.
+specimen starts and ends on a line, that every run of type on it has its
+baseline on one and is exactly its leading tall, that nothing escapes the page
+at 390px, and that the measure lands on a field line the browser really laid
+out. They skip loudly rather than pretending to have checked.
+
+The two grid questions are one function, `test/support/on_the_grid.js`, and
+`test/browsers/grid.mjs` asks it of the published specimen in Chromium, WebKit
+and Firefox through Playwright. CI runs all three; a grid checked in one
+browser is a claim about that browser.
 
 There are no pixel tests.
 

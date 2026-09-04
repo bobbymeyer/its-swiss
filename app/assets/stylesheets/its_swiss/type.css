@@ -5,12 +5,17 @@
  *
  * Every line box is a whole number of baselines, taken from the one ladder in
  * tokens.css, so a line of type and the space beneath it are measured in the
- * same units.
+ * same units. And every baseline is the under edge of its line box, because
+ * each register is set in the face for its ratio of leading to size: the
+ * faces in faces.css carry an ascent equal to that leading and no descent, so
+ * there is no half-leading for the type to sit inside and nothing about the
+ * font left to the font. A register is three declarations — a size, a leading
+ * and the face for the two — and the third is what makes the first two a grid.
  */
 
 @layer its-swiss.type {
   body {
-    font-family: var(--font-family);
+    font-family: var(--face-150), var(--font-family);
     font-size: var(--size-2);
     font-weight: 400;
     line-height: var(--line);
@@ -27,9 +32,15 @@
   /* --- The five registers -------------------------------------------------
      Named for what they are rather than for the elements that happen to use
      them, so an application can put a page title in an <h2> when the outline
-     calls for it without the type changing under it. */
+     calls for it without the type changing under it.
+
+     Every one names its face, even the three set on the body's ratio and
+     so already in it by inheritance: a register is the three declarations
+     together, and one that changed its leading without changing its face
+     would be a register with its type back in the font's hands. */
 
   .page-title {
+    font-family: var(--face-150), var(--font-family);
     font-size: var(--size-5);
     line-height: var(--line-3);
     font-weight: 700;
@@ -37,11 +48,28 @@
     text-wrap: balance;
   }
 
-  h1 { font-size: var(--size-4); line-height: var(--line-2); font-weight: 700; letter-spacing: -0.02em; }
+  h1 {
+    font-family: var(--face-150), var(--font-family);
+    font-size: var(--size-4);
+    line-height: var(--line-2);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
 
-  h2 { font-size: var(--size-3); line-height: var(--line-2); font-weight: 700; letter-spacing: -0.015em; }
+  h2 {
+    font-family: var(--face-200), var(--font-family);
+    font-size: var(--size-3);
+    line-height: var(--line-2);
+    font-weight: 700;
+    letter-spacing: -0.015em;
+  }
 
-  h3, h4 { font-size: var(--size-2); line-height: var(--line); font-weight: 700; }
+  h3, h4 {
+    font-family: var(--face-150), var(--font-family);
+    font-size: var(--size-2);
+    line-height: var(--line);
+    font-weight: 700;
+  }
 
   /* The micro register: labels, metadata, captions. Size and value carry it.
      Nothing here is set in capitals — that is a different tradition, and in
@@ -51,6 +79,7 @@
   legend,
   label,
   .field label {
+    font-family: var(--face-200), var(--font-family);
     font-size: var(--size-1);
     line-height: var(--line);
     letter-spacing: 0.01em;
@@ -69,6 +98,7 @@
   .link-quiet { color: var(--ink-quiet); }
 
   .hint {
+    font-family: var(--face-200), var(--font-family);
     font-size: var(--size-1);
     line-height: var(--line);
     max-width: var(--measure);
@@ -82,9 +112,15 @@
   .lede { margin-top: var(--line); }
 
   /* Navigation and actions read at body size. They are how an application is
-     used, not annotations on it. */
+     used, not annotations on it. The face is said again rather than
+     inherited, because a button does not inherit a font and a nav may sit
+     inside a register that is not the body's. */
   .nav a,
-  .button { font-size: var(--size-2); line-height: var(--line); }
+  .button {
+    font-family: var(--face-150), var(--font-family);
+    font-size: var(--size-2);
+    line-height: var(--line);
+  }
 
   /* Anything read as a column of digits rather than as a word. */
   .tabular,
@@ -98,73 +134,47 @@
      shorthand after them would flatten every one. */
   .copy { font: inherit; }
 
-  code, pre, kbd, samp { font-family: var(--font-mono); font-size: 0.9em; }
+  code, pre, kbd, samp { font-family: var(--face-mono), var(--font-mono); font-size: 0.9em; }
 
-  /* --- The baseline, actually -------------------------------------------
-     Everything above puts whole baselines between one line box and the next,
-     which keeps blocks in step but is not yet a baseline grid: where a line's
-     baseline falls inside its line box depends on the font's ascent and the
-     leading either side of it, so a caption's baselines and a paragraph's are
-     both 24 apart and 3px out of register with each other. The grid was the
-     boxes' and the type sat wherever the font left it.
-
-     Trimming makes the box the type's: the block's over edge becomes the cap
-     of its first line and its under edge the baseline of its last. The cap
-     height is then all that separates the box from the grid, and one padding
-     rounds it up to a whole baseline — measured by the browser, in cap units,
-     so a library that leaves the family to the application still never has to
-     be told the font's metrics. Every baseline in the block lands on a line,
-     because the rest are a whole number of them above the last.
-
-     Behind @supports, and the fallback is the rhythm above: Chromium and
-     Safari trim, Firefox does not yet, and a page that keeps its boxes on the
-     ladder is what the two have in common. */
-  @supports (text-box: trim-both cap alphabetic) and (padding-top: round(up, 1cap, 8px)) {
-    :root { --cap-correction: calc(round(up, 1cap, var(--line)) - 1cap); }
-
-    .page-title,
-    h1, h2, h3, h4,
-    p, li, dt, dd, th, td, blockquote, figcaption, caption, legend, label,
-    .micro, .hint, .lede, .empty,
-    /* Flex items are blockified, so the text in a row is trimmable too — and
-       has to be, or a row that aligns on the baseline is aligning a trimmed
-       box against an untrimmed one. */
-    .nav a,
-    .pagination a,
-    .pagination [aria-current],
-    .pagination__gap {
-      text-box: trim-both cap alphabetic;
-      padding-block-start: var(--cap-correction);
-    }
-
-    /* A control's box is the target, not the type in it: a button is five
-       baselines of box with its label centred, and trimming the label would
-       take the box with it. */
-    .button,
-    .copy,
-    /* The labels that sit beside a control rather than above it. Both share a
-       row with a box the browser draws at a size of its own, and a row that
-       aligns on the baseline cannot align a trimmed box against an untrimmed
-       one — it lands on a half pixel and takes the column with it. The row is
-       held to a line by the leading instead. */
-    .choice label,
-    .field--inline label { text-box: normal; padding-block-start: 0; }
-  }
-
-  /* A token set in a line of prose is a second font on that line, and a
-     second font brings its own ascent and descent. Both inline boxes align on
-     the baseline and the line box has to hold both, so the line grows — by a
+  /* --- Inside a line ------------------------------------------------------
+     A token set in a line of prose is a second font on that line, and a
+     second font brings its own ascent. Both inline boxes align on the
+     baseline and the line box has to hold both, so the line grows — by a
      pixel at body size, by four under the page title, and only on the lines
      that happen to mention a token. Zero leading takes the inline box out of
      that calculation and leaves the line to the strut, which is the one thing
      on the line already measured in baselines. The glyphs are unaffected:
-     leading has never been what draws them.
+     leading has never been what draws them, and they still sit on the
+     strut's baseline, which is the grid's.
+
+     The same for anything else that changes size inside a line. A
+     superscript and a subscript are moved off the baseline on purpose and
+     are the one kind of type that is; they still must not move the line,
+     so they are moved after layout rather than by it — vertical-align
+     raises the inline box and the line has to hold it wherever it went,
+     and a box below a strut with no descent is a line grown by that much.
+     A relative position moves the glyphs and nothing else.
 
      Inline only. A pre is a block, and a block with no leading has no lines. */
-  /* The one subgrid. A block of small type may sit on a half-line rather
-     than a whole one — a dense run of captions, a table of figures. It works
-     by redefining --line for the subtree, so the leadings, the spacing and
-     the cap correction all follow it down without any of them being told.
+  code, kbd, samp, small, sup, sub { line-height: 0; }
+
+  sup, sub { vertical-align: baseline; position: relative; }
+
+  sup { top: -0.4em; }
+
+  sub { top: 0.25em; }
+
+  pre { line-height: var(--line); }
+
+  /* --- The one subgrid ----------------------------------------------------
+     A block of small type may sit on a half-line rather than a whole one — a
+     dense run of captions, a table of figures. It works by redefining --line
+     for the subtree, so the leadings and the spacing follow it down without
+     any of them being told; and by moving the small register onto the face
+     for its new ratio, since twelve on twelve is the size itself. Nothing set
+     at body size belongs inside one: sixteen on twelve is a line box its own
+     type does not fit, and no face can put a baseline where there is no room
+     for it.
 
      A block, and only a block. An inline <small> inside a paragraph shares
      that paragraph's line and must not change it.
@@ -174,9 +184,8 @@
      what is inside it may halve them. Set on the block, a .subgrid halves the
      gap above itself and lands the column half a line out — which is exactly
      what it did, and what the specimen caught. */
-  .subgrid > * { --line: var(--half-line); }
-
-  code, kbd, samp { line-height: 0; }
-
-  pre { line-height: var(--line); }
+  .subgrid > * {
+    --line: var(--half-line);
+    --face-200: var(--face-100);
+  }
 }

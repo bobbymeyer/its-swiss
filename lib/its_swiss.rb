@@ -12,9 +12,20 @@ module ItsSwiss
   # tags: an application that loads type before tokens should still get the
   # cascade the library was designed with.
   #
-  # Every file states its own layer, so linking these six individually and
+  # Every file states its own layer, so linking these seven individually and
   # linking the single its-swiss.css that imports them resolve identically.
-  STYLESHEETS = %w[ tokens reset type grid components transitions ].freeze
+  STYLESHEETS = %w[ tokens faces reset type grid components transitions ].freeze
+
+  # The faces the library sets type in, and the ascent each is declared with
+  # as a ratio of its size. A face's ascent is the leading it will be set on:
+  # with no descent and no line gap, that puts the baseline of every line on
+  # the under edge of its line box, which is what registers a block of type
+  # to the grid. Three, because the ladder in tokens.css produces three
+  # ratios of leading to size, and one for code. The names are the ratios,
+  # and the helper that declares an application's own typeface under them
+  # reads the numbers from here.
+  FACES = { "its-swiss-150" => 1.5, "its-swiss-200" => 2.0, "its-swiss-100" => 1.0 }.freeze
+  MONO_FACE = { "its-swiss-mono" => 5 / 3r }.freeze
 
   # The cascade layer everything the gem ships lives in. An application's own
   # CSS is unlayered, and unlayered rules beat every layered one regardless of

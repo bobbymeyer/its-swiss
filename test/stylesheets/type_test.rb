@@ -29,6 +29,30 @@ class TypeTest < ActiveSupport::TestCase
     assert_not_empty rules_in("type").scan(/line-height: ([^;]+);/).flatten
   end
 
+  # A second font on a line brings its own ascent, and the line grows to hold
+  # it — by a pixel at body size, by four under the page title, and only on
+  # the lines that happen to mention a token. Zero leading takes the inline
+  # box out of that calculation; the glyphs still sit on the strut's
+  # baseline, which is the grid's.
+  test "anything that changes size inside a line gives the line back to the strut" do
+    assert_match(/code, kbd, samp, small, sup, sub \{ line-height: 0; \}/, rules_in("type"))
+    assert_match(/pre \{ line-height: var\(--line\); \}/, rules_in("type"), "a pre is a block, and a block with no leading has no lines")
+  end
+
+  # 0.5.0 trimmed every register to its cap and its baseline and rounded the
+  # cap up to a line, which registered the type in the one browser that
+  # trims and left the rest to their fonts. The faces do the same job in
+  # every browser, and a trim left behind would be applied on top of them —
+  # to a box that is already exactly its type.
+  test "nothing is trimmed and nothing is corrected" do
+    every_stylesheet.each do |name, css|
+      css = css.gsub(%r{/\*.*?\*/}m, "")
+
+      assert_no_match(/text-box/, css, "#{name}.css trims a text box the faces already register")
+      assert_no_match(/cap-correction|1cap/, css, "#{name}.css still measures a cap the faces made irrelevant")
+    end
+  end
+
   test "nothing is set in capitals" do
     offenders = every_stylesheet.select { |_, css| css.match?(/text-transform:\s*uppercase/) }
 
