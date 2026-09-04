@@ -24,9 +24,10 @@
 
   /* The field, drawn. Each child is one span, and the bar inside it shows
      where that span starts and stops against the page. */
-  /* Three rows of a half-line, and a half-line under the last, so the
-     diagram is a whole number of lines however many rows it draws. */
-  .specimen__grid { row-gap: var(--half-line); padding-block-end: var(--half-line); }
+  /* A row of the diagram is a line, and the bar in it is half a line tall
+     and stands on the row's under edge: a box ends on a baseline, whatever
+     its height. Three rows are three lines. */
+  .specimen__grid { grid-auto-rows: var(--line); align-items: end; }
 
   .specimen__field {
     display: block;
@@ -34,6 +35,6 @@
     background: var(--value-2);
   }
 
-  .specimen__grid > [style*="--span: 2"] .specimen__field,
-  .specimen__grid > [style*="--span: 4"] .specimen__field { background: var(--value-3); }
+  .specimen__field[style*="--span: 2"],
+  .specimen__field[style*="--span: 4"] { background: var(--value-3); }
 }

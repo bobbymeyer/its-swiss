@@ -5,10 +5,13 @@
 // read by the Ruby system tests and by the cross-engine job in CI, which is
 // why it is a file rather than a heredoc in either.
 //
-// Two lists come back. `boxes` holds every block box whose over or under
-// edge is not on a line: the column is a stack of these, and one that is a
-// pixel tall too many puts everything below it off the grid. `type` holds
-// every run of text whose baseline is not on a line.
+// Two lists come back. `boxes` holds every block box off the grid: a box
+// that holds lines or nothing ends on a line whatever its height — a
+// paragraph, a cell, a half-line swatch standing on a baseline — and a box
+// that holds blocks starts on a line and puts whole lines under the last of
+// them. The column is a stack of these, and one that ends a pixel late puts
+// everything below it a pixel late. `type` holds every run of text whose
+// baseline is not on a line.
 //
 // Where the baseline is depends on which of the library's two mechanisms
 // the engine is using, and both are read off what the engine laid out
@@ -88,22 +91,28 @@
     const top = box.top + window.scrollY
     const bottom = box.bottom + window.scrollY
     const where = `${name(el)} from ${top} to ${bottom}`
+    // A control is a leaf whatever its options say they are.
+    const blocks = el.matches("select") ? [] : Array.from(el.children).filter((child) => inFlow(child) && blockLevel(child))
+    const last = blocks.at(-1)
 
     if (exact) {
-      if (off(top, u) || off(bottom, u)) boxes.push(where)
+      if (off(bottom, u) || (last && off(top, u))) boxes.push(where)
       continue
     }
 
-    // An inline-block sits on its line rather than under a sibling, so only
-    // its height is the ladder's business.
-    if (blockLevel(el) && off(top - origin(el), u)) boxes.push(where)
-    // A control is a leaf whatever its options say they are, and what a box
-    // puts under its last block is measured in that block's unit: the space
-    // under a subgrid's last row may be a half-line.
-    const blocks = el.matches("select") ? [] : Array.from(el.children).filter((child) => inFlow(child) && blockLevel(child))
-    const last = blocks.at(-1)
-    const under = last ? bottom - (last.getBoundingClientRect().bottom + window.scrollY) : box.height
-    if (off(under, last ? unitFor(last) : u)) boxes.push(where)
+    // Measured from the box before. An inline-block sits on its line rather
+    // than under a sibling, so only its height is the ladder's business; a
+    // box that holds blocks starts where the box before it ended and puts
+    // whole lines under its last block, measured in that block's unit, since
+    // the space under a subgrid's last row may be a half-line.
+    if (!blockLevel(el)) {
+      if (off(box.height, u)) boxes.push(where)
+    } else if (last) {
+      const under = bottom - (last.getBoundingClientRect().bottom + window.scrollY)
+      if (off(top - origin(el), u) || off(under, unitFor(last))) boxes.push(where)
+    } else if (off(bottom - origin(el), u)) {
+      boxes.push(where)
+    }
   }
 
   const type = []
