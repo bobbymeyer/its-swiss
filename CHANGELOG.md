@@ -2,6 +2,18 @@
 
 Semver. Consumers pin `~> 0.1`.
 
+## 0.9.1 — 2026-09-07
+
+### Fixed
+
+- **The suite, and so the release, under json 3.0.0.** json 3.0.0 came out
+  twenty minutes after 0.9.0's pull request went green and changed the
+  signature of `JSON.parse`; Active Support 8.1.3.1 still calls it the old
+  way when it reads a signed cookie, so the session and the flash raised on
+  every request and the release of 0.9.0 stopped at its own tests. The
+  Gemfile holds json below 3 until a Rails that takes it. Nothing in the
+  library changed; 0.9.1 is 0.9.0 released.
+
 ## 0.9.0 — 2026-09-07
 
 A day of use, and what a day asks of a style: less talk and one red.
