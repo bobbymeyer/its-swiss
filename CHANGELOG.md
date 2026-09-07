@@ -32,6 +32,15 @@ The third consumer, and what it and the second found in common.
   `.card__link`, `.card__figure`, `.card__name`, `.card__meta` are the
   parts. No box: the picture is the only filled area a card has.
 
+- **A menu in the nav, and a subnav under the masthead.** `nav_menu(label,
+  current:) { links }` is a destination that opens into destinations — a
+  details element, so it opens with no script — and carries the accent and
+  the weight when where you are is inside it. The shell renders `:subnav`,
+  when an application fills it, as a shaded band under the masthead: a
+  second layer of destinations, inside the one you are in. A host that
+  carries several tools puts the tools in the menu and each tool's own
+  sections in the band.
+
 - **A live search controller.** `its_swiss/live_search_controller.js`,
   pinned by the engine like the clipboard, submits a search form as you
   type and takes away the button it makes redundant. The host registers it

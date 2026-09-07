@@ -98,6 +98,8 @@
   .filter__label,
   .card__meta,
   .nav a,
+  .menu > summary,
+  .subnav a,
   .footer,
   .pairs dt,
   .button--quiet,
@@ -123,6 +125,8 @@
      inherited, because a button does not inherit a font and a nav may sit
      inside a register that is not the body's. */
   .nav a,
+  .menu > summary,
+  .subnav a,
   .button {
     font-family: var(--face-150), var(--font-family);
     font-size: var(--size-2);
@@ -230,6 +234,9 @@
       .filter__label, .card__name, .card__meta,
       /* Flex items are blockified, so the text in a row is trimmable too. */
       .nav a,
+      .menu > summary,
+      .menu__list a,
+      .subnav a,
       .filter__choices a,
       .pagination a,
       .pagination [aria-current],

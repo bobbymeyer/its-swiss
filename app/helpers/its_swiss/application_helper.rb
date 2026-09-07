@@ -80,6 +80,21 @@ module ItsSwiss
       link_to(name, url, **options, &block)
     end
 
+    # A destination in the nav that opens into destinations: a details
+    # element with the label as its summary and the block as its list, so it
+    # opens and closes with no script. current: when one of the destinations
+    # inside is where you are, the summary carries the accent and the weight
+    # the way a current link does.
+    #
+    #   <%= nav_menu "Tools", current: in_a_tool? do %>
+    #     <%= nav_link_to "Pandatone", "/pandatone", current: in_engine?(pandatone) %>
+    #   <% end %>
+    def nav_menu(label, current: false, &block)
+      tag.details(class: token_list("menu", ("menu--current" if current))) do
+        safe_join([ tag.summary(label), tag.div(capture(&block), class: "menu__list") ])
+      end
+    end
+
     # A value on screen exists to be taken somewhere else, so it is a button
     # that copies itself. The value stays visible text inside it, which is
     # what keeps it usable when the clipboard is not available at all.

@@ -400,6 +400,7 @@ Slots, all optional:
 | `:head` | Anything else that belongs in `<head>` |
 | `:mark` | The wordmark. No mark and no nav means no masthead at all |
 | `:nav` | The destinations |
+| `:subnav` | A second layer of destinations, inside the one you are in: a shaded band under the masthead |
 | `:main_class` | What the page's main region is, if it is a grid |
 | `:footer` | Whatever belongs after the page |
 
@@ -414,6 +415,7 @@ beyond the shell is the application's, for the same reason its grid is.
 | `its_swiss_stylesheet_tags` | The seven links, tracked for Turbo |
 | `its_swiss_typeface(regular:, bold:)` | The application's typeface, declared under the library's face names |
 | `nav_link_to(name, url, current:)` | A destination, with `aria-current` when you are at it |
+| `nav_menu(label, current:) { links }` | A destination that opens into destinations, with no script |
 | `copy_button(value)` | A value that copies itself |
 | `its_swiss_form_with(...)` | `form_with`, already holding the library's builder |
 | `its_swiss_page_numbers(page, pages)` | Which numbers a run of them shows, elided |

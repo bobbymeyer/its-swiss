@@ -57,6 +57,16 @@ class ShellTest < ActionDispatch::IntegrationTest
     assert_equal [ "A page" ], current.map(&:text)
   end
 
+  # A second layer of destinations, rendered only when the application has
+  # some: the other page fills no :subnav and gets no band.
+  test "renders the subnav the application filled, and none otherwise" do
+    assert_equal [ "Inside this page", "And its neighbour" ], html.css("nav.subnav a").map(&:text)
+    assert_equal [ "Inside this page" ], html.css("nav.subnav a[aria-current=page]").map(&:text)
+
+    get "/other"
+    assert_nil html.at("nav.subnav")
+  end
+
   test "renders no masthead for an application that asked for none" do
     get "/bare"
 

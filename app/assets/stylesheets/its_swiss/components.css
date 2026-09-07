@@ -70,6 +70,91 @@
     font-weight: 700;
   }
 
+  /* A menu in the nav: a destination that opens into destinations. A
+     details element, so it opens and closes with no script, and a summary
+     set like the other destinations with a small mark that says it opens.
+     The list floats under it on paper with a keyline, the one floating box
+     in the style — a menu that pushed the page down would not be a menu. */
+  .menu {
+    position: relative;
+  }
+
+  .menu > summary {
+    list-style: none;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .menu > summary::-webkit-details-marker { display: none; }
+
+  .menu > summary::after {
+    content: " \25BE";
+    color: var(--ink-quiet);
+  }
+
+  .menu > summary:hover,
+  .menu[open] > summary { color: var(--ink); }
+
+  /* Where you are, when where you are is inside the menu: said twice, the
+     way the nav says it. */
+  .menu--current > summary {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  /* Out of the flow, but still on the grid: a line of padding above and
+     below, and the keyline drawn inside, so every link in it sits on a
+     line of the page under it. */
+  .menu__list {
+    position: absolute;
+    inset-inline-start: calc(-1 * var(--space-2));
+    top: 100%;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: max-content;
+    padding: var(--line) var(--space-2);
+    background: var(--paper);
+    box-shadow: inset 0 0 0 var(--rule-hair) var(--rule);
+  }
+
+  .menu__list a {
+    display: block;
+    text-decoration: none;
+  }
+
+  .menu__list a:hover { color: var(--ink); }
+
+  /* --- Subnav -------------------------------------------------------------
+     A second layer of destinations, inside the one you are in: what a tool
+     has beside what the application has. A shaded band under the masthead,
+     three lines tall the way the masthead is, with the same run of links
+     the nav has and the same marking of where you are. Rendered by the
+     shell when the application fills :subnav, and not at all otherwise. */
+  /* The rule is drawn inside the band rather than under it, so the band and
+     the page inside it are both three whole lines. */
+  .subnav {
+    background: var(--paper-shaded);
+    box-shadow: inset 0 calc(-1 * var(--rule-hair)) 0 var(--rule);
+  }
+
+  .subnav > .page {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: var(--line) var(--space-3);
+    padding-block: var(--line);
+  }
+
+  .subnav a { text-decoration: none; }
+
+  .subnav a:hover { color: var(--ink); }
+
+  .subnav [aria-current="page"] {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
   /* --- Footer -------------------------------------------------------------
      A hairline, the micro register, and whatever the application has to say
      after the page. It carries no links of its own: what belongs down there

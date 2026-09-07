@@ -36,6 +36,22 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_includes fragment.at("script").text, "ascentOverride"
   end
 
+  # --- A menu in the nav ---------------------------------------------------
+
+  test "a menu is a details element: the label its summary, the block its list" do
+    html = Nokogiri::HTML5.fragment(nav_menu("Tools") { tag.a("Pandatone", href: "/pandatone") })
+
+    assert_equal "Tools", html.at("details.menu > summary").text
+    assert_equal "Pandatone", html.at("details.menu > .menu__list a").text
+    assert_nil html.at(".menu--current")
+  end
+
+  test "a menu says when where you are is inside it" do
+    html = Nokogiri::HTML5.fragment(nav_menu("Tools", current: true) { tag.a("Pandatone", href: "/pandatone", aria: { current: "page" }) })
+
+    assert html.at("details.menu.menu--current")
+  end
+
   # --- The page head -------------------------------------------------------
 
   test "a page head is the title, the lede and the actions, in that order" do
