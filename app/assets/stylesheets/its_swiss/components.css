@@ -117,7 +117,9 @@
     min-width: 0;
   }
 
-  .page-head__actions { flex: none; }
+  /* The actions shrink to their widest button and wrap inside it, rather
+     than holding their one-line width and pushing a phone's page sideways. */
+  .page-head__actions { flex: 0 1 auto; }
 
   /* --- Rules --------------------------------------------------------------
      The one horizontal mark in the style, at the two weights tokens.css
