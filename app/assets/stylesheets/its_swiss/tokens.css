@@ -1,45 +1,30 @@
 /* Tokens.
  *
  * Every measurement and every value in the library is declared here and
- * nowhere else. The four blocks below are the whole system: a value scale, an
- * accent slot, a type scale, and one ladder for everything vertical.
- *
- * A consuming application fills three slots — the accent, the typeface, and
- * how many fields its grid has. Everything else it inherits, and everything
- * else it can still override, because these are unlayered properties read
- * from inside a layer: setting --line in the application's own stylesheet
- * reproportions the library without touching it.
+ * nowhere else: a value scale, an accent slot, a type scale, and one ladder
+ * for everything vertical. An application fills three slots — the accent,
+ * the typeface, how many fields its grid has — and can override any of the
+ * rest from its own unlayered stylesheet. DESIGN.md says why each is what it
+ * is.
  */
 
 @layer its-swiss.tokens {
   :root {
     /* --- The value scale ---------------------------------------------------
-       Six steps of OKLCH lightness from paper to ink. OKLCH because the steps
-       have to be perceptually even to be read as a scale at all: the same
-       arithmetic in sRGB puts four of the six inside the top quarter of the
-       range and leaves the interface with two grays and a cliff.
-
-       The ladder is not evenly spaced, and that is the point. A hairline has
-       to be barely there, so the top of the scale is dense; the middle only
-       has to hold secondary text away from primary, so it is sparse. An even
-       ladder gives a usable mid-gray and no usable rule.
-
-       Neutral, because hue is the application's. Warmth arrives through the
-       two slots beneath: a consumer that wants Pandatone's warm grays sets
-       --value-chroma: 0.006 and --value-hue: 95 once, and the whole scale
-       turns together. */
+       Six steps of OKLCH lightness from paper to ink, dense at the top where
+       a hairline has to be barely there and sparse in the middle. Neutral;
+       a consumer warms the whole ladder at once through the two slots. */
     --value-chroma: 0;
     --value-hue: 0;
 
     --value-0: oklch(98% var(--value-chroma) var(--value-hue));  /* paper */
     --value-1: oklch(94% var(--value-chroma) var(--value-hue));  /* a shaded ground */
     --value-2: oklch(89% var(--value-chroma) var(--value-hue));  /* a hairline */
-    --value-3: oklch(72% var(--value-chroma) var(--value-hue));  /* a rule that has to be seen */
+    --value-3: oklch(72% var(--value-chroma) var(--value-hue));  /* a rule at rest under a control */
     --value-4: oklch(54% var(--value-chroma) var(--value-hue));  /* secondary text: 4.7:1 on paper */
     --value-5: oklch(18% var(--value-chroma) var(--value-hue));  /* ink */
 
-    /* The names the rest of the library uses. Aliases rather than values of
-       their own, so the day the ground is darkened the ladder still describes
+    /* Aliases, so the day the ground is darkened the ladder still describes
        the page. */
     --paper: var(--value-0);
     --paper-shaded: var(--value-1);
@@ -49,57 +34,28 @@
     --ink: var(--value-5);
 
     /* --- The accent --------------------------------------------------------
-       State and emphasis only: the current item, focus, a link, the one
-       primary action, the moment before something cannot be undone. Never a
-       filled area for its own sake.
-
-       Unset, it is ink. That is the library's argument in one line — if a
-       page reads correctly with the accent collapsed onto the value scale,
-       the values were doing the work. The specimen renders both ways for
-       exactly this reason. */
+       State and emphasis only. Unset, it is ink: a page that reads with the
+       accent collapsed onto the value scale is a page whose values were
+       doing the work. */
     --accent: var(--ink);
-    /* What is legible on top of the accent when it is filled. */
     --accent-ink: var(--paper);
 
     /* --- Rules -------------------------------------------------------------
-       Two weights. A hairline separates; a heavier one interrupts, and is
-       kept for the two or three places a page has something to insist on.
-
-       A rule is drawn inside the box it belongs to, never on top of it:
-       wherever one sits on a padded edge, its width comes out of that
-       padding — calc(var(--space-1) - var(--rule-hair)) — and wherever it is
-       the element, out of the margin above it. A pixel added instead of
-       taken is a box a pixel taller than the ladder says, which puts
-       everything below it off the baseline; and since every rule on the page
-       does it, the error accumulates down the column rather than showing up
-       once. */
+       Two weights. A rule is drawn inside the box it belongs to, never on
+       top of it: its width comes out of the padding or the margin beside
+       it, or the box is a pixel taller than the ladder says. */
     --rule-hair: 1px;
     --rule-heavy: 2px;
 
     /* What a trimmed block adds above its cap to reach its own leading. Zero
-       here and given a value in type.css where the browser can trim, so a
-       component that puts padding above its type writes the same arithmetic
-       in both directions. Deliberately not resolved here: a custom property
-       is substituted where it is used, so the cap and the line inside it are
-       the element's that reads it rather than the root's. */
+       here, given a value in type.css where the browser has to trim. */
     --cap-correction: 0px;
 
     /* --- Type --------------------------------------------------------------
        Five sizes on an alternating 1.33 / 1.5 ratio, every one a multiple of
-       four. Five is the count an interface actually uses: labels, body, a
-       section, a subhead, a page title. A sixth gets chosen for a page and
-       then used nowhere else.
-
-       The family is the application's, for the same reason the accent is. A
-       library that ships a typeface ships a voice, and ships a binary with
-       it. What the library does ship is the family declared again, three
-       times, in faces.css: once per ratio of leading to size the ladder
-       below produces, each with its ascent set to that ratio so the baseline
-       is the under edge of the line box. A register names the face for its
-       ratio through one of these three, and names --font-family after it
-       for the machine that has none of the local fonts the faces are drawn
-       from — which gets the grotesque stack, the font's own metrics, and a
-       page in step but not registered. */
+       four. The family is the application's; the faces are the family
+       declared again, once per ratio of leading to size, with that ratio as
+       its ascent (faces.css). */
     --face-150: "its-swiss-150";   /* 16 on 24, 32 on 48, 48 on 72 */
     --face-200: "its-swiss-200";   /* 12 on 24, 24 on 48 */
     --face-100: "its-swiss-100";   /* 12 on 12: the subgrid */
@@ -116,83 +72,64 @@
 
     /* --- The baseline -----------------------------------------------------
        The interval everything vertical registers to, and the leading of the
-       body text. In this style those are one number, because that is what a
-       baseline grid is: Müller-Brockmann's horizontal lines are one line of
-       text apart, and a field is a whole number of them.
-
-       0.1.0 called eight pixels the baseline. Eight pixels is a third of the
-       body line, so a block could be a whole number of them and still put
-       every line of type after it somewhere new — which is what a label at
-       sixteen and a section head at thirty-two did, all the way down a
-       column. A third of a line is a spacing unit. It is not a baseline. */
+       body text: one number, because that is what a baseline grid is. Every
+       leading, margin, padding and gap on the vertical axis is a whole
+       number of these. */
     --line: 1.5rem;                        /* 24 */
 
-    /* Whole lines, for the vertical axis. Anything that separates two blocks
-       is measured in these, or the block below it lands between lines. */
     --line-2: calc(var(--line) * 2);       /* 48 */
     --line-3: calc(var(--line) * 3);       /* 72 */
     --line-4: calc(var(--line) * 4);       /* 96 */
-    --line-6: calc(var(--line) * 6);       /* 144 */
 
-    /* The one subgrid. A block of small type may sit on a half-line — and
-       only a block: leading belongs to a text role, not to an inline element,
-       so a <small> inside a paragraph must not change that paragraph's
-       leading. Switched on with .subgrid, which redefines --line for its
-       subtree and moves the small register onto the face for its new ratio,
-       and everything measured in lines follows it down. */
+    /* The one subgrid: a block of small type may sit on a half-line. */
     --half-line: calc(var(--line) / 2);    /* 12 */
+
+    /* --- The module --------------------------------------------------------
+       A field's height, in lines. The columns divide the page across; the
+       module divides it down, and a picture or a block sized to whole
+       modules is what makes a column grid a modular one. */
+    --module: 6;
 
     /* --- Space -------------------------------------------------------------
        The horizontal step. An inline gap has no baseline to miss, so this is
-       the one axis a smaller unit belongs on. Named for what it is rather
-       than for what it was mistaken for. */
+       the one axis a smaller unit belongs on. */
     --space-unit: 0.5rem;
 
     --space-1: calc(var(--space-unit) * 1);    /* 8 */
     --space-2: calc(var(--space-unit) * 2);    /* 16 */
     --space-3: calc(var(--space-unit) * 3);    /* 24 */
     --space-4: calc(var(--space-unit) * 4);    /* 32 */
-    --space-5: calc(var(--space-unit) * 5);    /* 40 */
     --space-6: calc(var(--space-unit) * 6);    /* 48 */
     --space-8: calc(var(--space-unit) * 8);    /* 64 */
-    --space-13: calc(var(--space-unit) * 13);  /* 104 */
 
     /* --- The grid ----------------------------------------------------------
-       Primitives, not a grid. Six fields divide into halves and thirds and is
-       where an application starts; the point of declaring it here is that it
-       is one number to change, in the application's own stylesheet, once the
-       problem has said how many fields it has.
-
-       A field's width is derived rather than measured, and every width helper
-       in the library is built from it — which is what keeps a block of prose
-       stopping on a field line instead of three pixels short of one. */
+       Primitives, not a grid: an application declares how many fields its
+       problem has. A field is the page's actual width, less the gutters,
+       divided — measured from the .page container the fields are laid out
+       in, so a field on a phone is a phone's field. */
     --columns: 6;
     --gutter: 1.5rem;
     --page-max: 82rem;
     --page-inset: var(--space-3);
 
-    /* The page's own margin comes out before the fields are divided. Left in,
-       every helper built on --field is a gutter and a half too wide, and prose
-       that is supposed to stop on the third field line stops past it — which
-       is invisible on a page with nothing beside the prose and glaring on one
-       with a column next to it. */
-    --field: calc(
-      (var(--page-max) - var(--page-inset) * 2 - var(--gutter) * (var(--columns) - 1)) / var(--columns)
-    );
-    --measure: calc(var(--field) * 3 + var(--gutter) * 2);
+    --field: calc((100cqw - var(--gutter) * (var(--columns) - 1)) / var(--columns));
+
+    /* The measure is a count of characters, and the grid is what it stops
+       on: the count is taken up to the nearest whole run of fields, and
+       never past the page. Sixty-five, in the type's own font, because a
+       line of prose reads at sixty to seventy-five. */
+    --measure-characters: 65;
+    --measure: min(100%, calc(round(up, calc(var(--measure-characters) * 1ch), calc(var(--field) + var(--gutter))) - var(--gutter)));
 
     /* --- Lists -------------------------------------------------------------
-       Two more slots an index fills. How many fields a card takes, which is
-       the application's to say and to change at each width it cares about;
-       and the column a filter's label occupies, so the choices of every
-       register start on one line down the page. */
+       How many fields a card takes, and the column a filter's label occupies
+       so every register's choices start on one line. */
     --card: 1;
     --filter-label: var(--space-8);
 
     /* --- Transitions -------------------------------------------------------
-       The page crossfade is short enough to read as a replacement rather than
-       an animation. A morph runs longer, because the thing travelling has to
-       stay readable while it does. */
+       A crossfade short enough to read as a replacement; a morph longer,
+       because the thing travelling has to stay readable. */
     --transition-page: 180ms;
     --transition-morph: 240ms;
     --transition-ease: cubic-bezier(0.2, 0, 0.2, 1);

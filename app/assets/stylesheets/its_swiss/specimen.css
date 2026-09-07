@@ -17,7 +17,7 @@
      beside the token that names it. */
   .specimen__value {
     display: block;
-    width: var(--space-13);
+    width: calc(var(--space-unit) * 13);
     height: var(--line);
     box-shadow: inset 0 0 0 var(--rule-hair) color-mix(in oklch, var(--ink) 12%, transparent);
   }
@@ -34,6 +34,10 @@
     height: var(--half-line);
     background: var(--value-2);
   }
+
+  /* A block of whole modules: the height is the library's, the fill is
+     the page's. */
+  .specimen__module { display: block; background: var(--value-2); }
 
   .specimen__field[style*="--span: 2"],
   .specimen__field[style*="--span: 4"] { background: var(--value-3); }

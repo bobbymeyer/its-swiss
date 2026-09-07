@@ -32,6 +32,9 @@
 
     <%= its_swiss_stylesheet_tags %>
     <%= javascript_importmap_tags if respond_to?(:javascript_importmap_tags) %>
+    <%# The library's controllers, registered with the host's Stimulus
+        application; nothing for the host to write. %>
+    <%= javascript_import_module_tag "its_swiss" if respond_to?(:javascript_import_module_tag) %>
 
     <%# After the library, not before it. A layer takes its place in the order
         from where it is first named, so a page that adds a layered stylesheet

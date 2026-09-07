@@ -1,64 +1,65 @@
 /* Grid primitives.
  *
- * The library ships the machinery and never the grid: how many fields a page
- * has depends on what it lays out, and a library that answered that for every
- * application would be answering it for none of them. An application declares
- * --columns in its own stylesheet, and everything here re-proportions.
- *
- * Three primitives, and that is the whole file. A page, a field, and a way to
- * say how many fields something takes.
+ * The library ships the machinery and never the grid: an application
+ * declares --columns in its own stylesheet and everything here
+ * re-proportions. A page, a field, a way to say how many fields something
+ * takes, and the two arrangements nearly everything is one of.
  */
+
+/* How many fields a child takes. Registered so that it does not inherit: a
+   custom property inherits by default, and a grid inside a spanned item
+   would otherwise start every child of its own at the parent's span. No
+   initial value, so a child that says nothing still falls through to the
+   whole field below. */
+@property --span {
+  syntax: "*";
+  inherits: false;
+}
 
 @layer its-swiss.grid {
   /* The page: the one measured container, centred, with a margin that is a
-     step on the ladder rather than a number chosen for the look of it. */
+     step on the ladder. It is a size container as well, so that --field is
+     the width the fields are actually laid out in. */
   .page {
+    container-type: inline-size;
     max-width: var(--page-max);
     margin-inline: auto;
     padding-inline: var(--page-inset);
   }
 
   /* The field. Every list that has to line up with the page uses this same
-     track definition, which is the point of a modular grid and the thing
-     separate per-component grids can only manage by coincidence. */
+     track definition. */
   .grid {
     display: grid;
     grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
     column-gap: var(--gutter);
   }
 
-  /* Placement is the default and the exception is what gets written down. A
-     child says how many fields it wants by setting --span; a child that says
-     nothing runs the whole field, because that is what nearly everything on a
-     page does, and because an unplaced item silently taking one column is the
-     bug this replaces — a frame, a panel and a line of prose each took a
-     sixth of the page in turn before it was written this way round. */
+  /* A child says how many fields it wants with --span; a child that says
+     nothing runs the whole field, because that is what nearly everything on
+     a page does. */
   .grid > * { grid-column: span var(--span, var(--columns)); }
 
-  /* A custom element has no default display, so it arrives on the field as an
-     unplaced inline box and takes whatever it wraps down with it. */
+  /* A custom element has no default display, so it arrives on the field as
+     an unplaced inline box. */
   turbo-frame { display: block; }
 
-  /* Field-width helpers. An application sizes something to a run of fields
-     with these rather than with a measured rem value that lands between two
-     field lines. */
+  /* Field-width helpers, never wider than the box they are in. */
   .measure { max-width: var(--measure); }
 
-  .fields { width: calc(var(--field) * var(--span, 1) + var(--gutter) * (var(--span, 1) - 1)); }
+  .fields { width: min(100%, calc(var(--field) * var(--span, 1) + var(--gutter) * (var(--span, 1) - 1))); }
+
+  /* A block a whole number of modules tall: --modules of them, one when it
+     says nothing. */
+  .modules { block-size: calc(var(--line) * var(--module) * var(--modules, 1)); }
 
   /* --- Runs and columns ---------------------------------------------------
-     Almost every horizontal arrangement in an interface is one thing: items
-     on a shared baseline, a space apart, wrapping when they must. Said once
-     here the way the field's tracks are, so a component below says only how
-     it differs.
-
-     Aligned on the over edge, and the baselines follow. Every item starts on
-     the line the row does, every item's baselines are whole lines below its
-     own top, so every item's first baseline is the same line — a word beside
-     a button beside a field — and the row is as tall as its tallest item,
-     which is whole lines. Asking for `baseline` instead asks the browser to
-     find one in each item, and a button, a form and a block of text are
-     three answers. */
+     Items on a shared baseline, a space apart, wrapping when they must; and
+     the same turned ninety degrees. Aligned on the over edge: every item's
+     baselines are whole lines below its own top, so starting the items on
+     one line puts their baselines on one line, without asking the browser
+     to find a baseline that a button, a form and a block of text would each
+     answer differently. */
   .run {
     display: flex;
     flex-wrap: wrap;
@@ -66,7 +67,6 @@
     gap: var(--line) var(--space-2);
   }
 
-  /* The same idea turned ninety degrees. */
   .stack {
     display: flex;
     flex-direction: column;

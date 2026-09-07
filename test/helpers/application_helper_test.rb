@@ -72,13 +72,26 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_equal "/patterns/1?section=dress", sections.css("a").last["href"]
   end
 
-  test "an explanation is closed, one mark on the line, the text in the hint register under it" do
+  # The mark that opens the metric-override script is inline, and an
+  # application with a content security policy needs its nonce on it.
+  test "the metric-override script carries the page's nonce" do
+    def content_security_policy_nonce = "n0nce"
+
+    assert_equal "n0nce", Nokogiri::HTML5.fragment(its_swiss_stylesheet_tags).at("script")["nonce"]
+  end
+
+  test "a form is at the measure unless told otherwise" do
+    assert_match(/class="form measure"/, its_swiss_form_with(url: "/") { })
+    assert_match(/class="form form--dense"/, its_swiss_form_with(url: "/", class: "form form--dense") { })
+  end
+
+  test "an explanation is closed, one word on the line, the text in the hint register under it" do
     html = Nokogiri::HTML5.fragment(explain("The repeat, in order."))
 
     details = html.at("details.explain")
     assert_nil details["open"]
-    assert_equal "?", details.at("summary").text
-    assert_equal "Explain", details.at("summary")["aria-label"]
+    assert_equal "About", details.at("summary").text
+    assert_equal "Why", Nokogiri::HTML5.fragment(explain("Because.", label: "Why")).at("summary").text
     assert_equal "The repeat, in order.", details.at(".explain__body p.hint").text
 
     block = Nokogiri::HTML5.fragment(explain { tag.p("Written out.", class: "hint") })

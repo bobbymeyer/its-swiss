@@ -22,6 +22,17 @@ module ItsSwiss
       end
     end
 
+    # As many lines tall as it was asked for. rows: is what the browser
+    # reads; --rows is what the stylesheet reads, and a textarea is measured
+    # in lines rather than in rows of the font's own height.
+    def text_area(method, options = {})
+      options = options.symbolize_keys
+      if options[:rows]
+        options[:style] = [ options[:style], "--rows: #{Integer(options[:rows])}" ].compact.join("; ")
+      end
+      field(method, options) { |opts| super(method, opts) }
+    end
+
     def select(method, choices = nil, options = {}, html_options = {}, &block)
       field(method, html_options) do |opts|
         super(method, choices, options, opts, &block)
