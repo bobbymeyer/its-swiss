@@ -41,6 +41,16 @@ class FormBuilderTest < ActionView::TestCase
     end
   end
 
+  # A textarea is measured in lines: rows: is what the browser reads, --rows
+  # what the stylesheet reads.
+  test "a textarea says how many lines it is in a property the stylesheet reads" do
+    node = field(@builder.text_area(:body, rows: 8))
+
+    assert_equal "8", node.at("textarea")["rows"]
+    assert_includes node.at("textarea")["style"], "--rows: 8"
+    assert_nil field(@builder.text_area(:body)).at("textarea")["style"], "no rows, no property: the stylesheet's four"
+  end
+
   test "a hint is attached to the control rather than left floating beside it" do
     node = field(@builder.text_field(:title, hint: "As it appears in the nav."))
 

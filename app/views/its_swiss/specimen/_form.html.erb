@@ -2,7 +2,7 @@
   <h3>Form</h3>
   <%= its_swiss_form_with url: "#form", method: :get do |form| %>
     <%= form.text_field :name, value: "Brand Core", hint: "As it appears in the nav." %>
-    <%= form.text_area :notes, value: "" %>
+    <%= form.text_area :notes, value: "", rows: 3 %>
     <%= form.select :kind, [ %w[ Note note ], %w[ Essay essay ] ] %>
     <%= form.check_box :published %>
     <div class="field field--invalid">
@@ -14,6 +14,18 @@
       <%= form.submit "Save" %>
       <button type="button" class="button button--quiet">Cancel</button>
     </div>
+  <% end %>
+
+  <h4>Dense</h4>
+  <p class="hint">
+    The label on the control's line of air, directly above the text on its
+    rule: a field is two lines, three with the gap, for a form of many fields
+    or a panel. The focus is the rule going heavy in the accent, not a box.
+  </p>
+  <%= its_swiss_form_with url: "#form", method: :get, class: "form form--dense measure" do |form| %>
+    <%= form.text_field :width, value: "782" %>
+    <%= form.text_field :height, value: "952" %>
+    <%= form.select :shape, [ %w[ Superellipse superellipse ], %w[ Lozenge lozenge ] ] %>
   <% end %>
 
   <h4>Inline</h4>

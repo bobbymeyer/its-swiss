@@ -12,7 +12,7 @@ module ItsSwiss
   # tags: an application that loads type before tokens should still get the
   # cascade the library was designed with.
   #
-  # Every file states its own layer, so linking these seven individually and
+  # Every file states its own layer, so linking these individually and
   # linking the single its-swiss.css that imports them resolve identically.
   STYLESHEETS = %w[ tokens faces reset type grid components transitions ].freeze
 

@@ -255,8 +255,85 @@ class SpecimenSystemTest < ApplicationSystemTestCase
   test "the measure stops on a field line" do
     fields = "[data-specimen-take=monochrome] .specimen__grid > *"
     first = rect_of("#{fields}:first-child")
-    third = rect_of("#{fields}:nth-child(3)")
+    second = rect_of("#{fields}:nth-child(2)")
+    field = first["width"]
+    gutter = second["left"] - (first["left"] + first["width"])
+    # The computed value keeps its min(); the used width is the measure.
+    measure = rect_of("[data-specimen=type] .hint")["width"]
 
-    assert_in_delta third["left"] + third["width"] - first["left"], computed(".hint", "max-width").to_f, 1.0
+    assert_operator measure, :>, field, "a measure of one field is not a measure"
+    assert_in_delta 0, (measure + gutter) % (field + gutter), 1.0,
+      "the measure is #{measure}px, which is #{((measure + gutter) / (field + gutter)).round(2)} fields"
+    characters = evaluate_script("parseFloat(getComputedStyle(document.querySelector('.hint')).fontSize)") * 0.5
+    assert_operator measure, :>=, 60 * characters, "a measure under sixty characters is a column of fragments"
+  end
+
+  # The one thing the trimmed page is asked in a browser rather than in
+  # the source: that a token inside a line gives the line back to the strut,
+  # and that a padded cell carries the correction where the trim is on.
+  test "a token inside a line does not grow the line" do
+    assert_equal "0px", computed("[data-specimen=type] code", "line-height")
+    assert_equal baseline, rect_of("[data-specimen=type] p[data-size='2']")["height"].round(2), "a line with a token in it is still one line"
+  end
+
+  test "a cell's padding above its type is nothing on the faces, and the correction when trimmed" do
+    assert_equal "0px", computed(".table tbody td", "padding-top")
+    without_metric_overrides do
+      assert_equal "trim-both", computed(".table tbody td", "text-box-trim")
+      assert_operator computed(".table tbody td", "padding-top").to_f, :>, 0, "a trimmed cell is padded back up to its line"
+    end
+  end
+
+  # A custom property inherits, so a grid inside a spanned item would start
+  # every child at the parent's span; --span is registered not to.
+  test "a grid inside a spanned item starts its children on the whole field" do
+    execute_script(<<~JS)
+      const outer = document.createElement("div"); outer.className = "grid"; outer.id = "span-probe"
+      const item = document.createElement("div"); item.style.setProperty("--span", "2")
+      const inner = document.createElement("div"); inner.className = "grid"
+      const child = document.createElement("p"); child.textContent = "x"
+      inner.append(child); item.append(inner); outer.append(item); document.querySelector("main").append(outer)
+    JS
+    outer = rect_of("#span-probe")
+    item = rect_of("#span-probe > div")
+    child = rect_of("#span-probe .grid > p")
+    gutter = computed("#span-probe", "column-gap").to_f
+    two_fields = (outer["width"] - 5 * gutter) / 6 * 2 + gutter
+
+    assert_in_delta two_fields, item["width"], 1.0, "the item spans two of six fields"
+    assert_in_delta item["width"], child["width"], 1.0, "the child of the inner grid runs its whole field, not two of its parent's"
+  end
+
+  # The focus on a control is the rule going heavy in the accent, not a box
+  # around a field whose only visible part is that rule.
+  test "a control's focus is its rule, and the box stays two lines" do
+    execute_script("document.querySelector('[data-specimen=form] .field input').focus()")
+    focused = "[data-specimen=form] .field input:focus-visible"
+
+    assert_equal "none", computed(focused, "outline-style")
+    assert_equal "2px", computed(focused, "border-bottom-width")
+    assert_equal 2 * baseline, rect_of(focused)["height"].round(2)
+  end
+
+  test "a textarea is as many lines as it asked for" do
+    assert_equal 3 * baseline, rect_of("[data-specimen=form] textarea[rows='3']")["height"].round(2)
+  end
+
+  # The dense form: a field is two lines, the label on the control's line of
+  # air, and the column is still on the grid.
+  test "a dense form's field is two lines with the label above the text" do
+    field = rect_of("[data-specimen=form] .form--dense .field")
+    label = rect_of("[data-specimen=form] .form--dense .field > label")
+    input = rect_of("[data-specimen=form] .form--dense .field input")
+
+    assert_equal 2 * baseline, field["height"].round(2)
+    assert_in_delta input["top"], label["top"], 0.05, "the label sits on the control's first line"
+  end
+
+  test "a picture in a modular figure is whole modules tall" do
+    module_lines = computed(":root", "--module").to_i
+    height = rect_of("[data-specimen=figure] .figure--modular > svg")["height"]
+
+    assert_equal 0, (height % (baseline * module_lines)).round(2), "#{height}px is not whole modules of #{module_lines} lines"
   end
 end

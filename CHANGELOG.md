@@ -1,6 +1,86 @@
 # Changelog
 
-Semver. Consumers pin `~> 0.1`.
+Semver. Consumers pin `~> 1.0`.
+
+## 1.0.0 — 2026-09-08
+
+The surface three applications settled on, reviewed as a whole: what a tech
+lead found and what Müller-Brockmann would have said. The library's
+arguments now live in `DESIGN.md`, once.
+
+### Fixed
+
+- **`--span` no longer inherits.** A custom property inherits by default, so
+  a grid inside a spanned item started every child of its own at the parent's
+  span. `--span` is a registered property with `inherits: false` and no
+  initial value, so a child that says nothing still runs the whole field.
+- **The metric-override script carries the page's nonce.** The shell renders
+  `csp_meta_tag`, and a content security policy blocked the one inline script
+  the library writes, which left Safari in step and not registered with
+  nobody seeing why.
+- **A field is the page's field.** `--field` was derived from `--page-max`,
+  so below 82rem `.fields` was wider than the viewport and the measure was
+  600px on a phone. It is measured in container units from the `.page` the
+  fields are laid out in; `.fields` never exceeds its box.
+- **A control's focus is its rule.** The focus ring was a box drawn 3px
+  outside a two-line control whose only visible part is a rule, and it
+  crossed the label above it. The focus is the rule going heavy, in the
+  accent, with the box still two lines.
+
+### Added
+
+- **The measure is a count of characters.** `--measure-characters` (65) in
+  the type's own font, taken up to the nearest whole run of fields with
+  `round()`, and never past the page. Three fields whatever the count was a
+  proportion: a quarter of a twelve-column page, and wider than a phone.
+- **The module.** `--module` (6) is a field's height in lines: the columns
+  divide the page across and the module divides it down. `.modules` is a
+  block of whole modules and `.figure--modular` a picture in one, which is
+  the grid's proportion rather than the window's.
+- **The dense form.** `.form--dense` puts each label on its control's line of
+  air, directly above the text on its rule: three lines a field rather than
+  four, for a form of many fields or a panel.
+- **A textarea is measured in lines.** `rows:` on the builder's `text_area`
+  writes `--rows`, which the stylesheet reads; four when it is not given.
+- **The library registers its own controllers.** `its_swiss.js` registers
+  the clipboard and the live search with the host's Stimulus application,
+  and the shell imports it. A host has nothing to write; the two lines it
+  wrote before are harmless.
+- **`DESIGN.md`.** The arguments, moved out of the stylesheets and stated
+  once; the stylesheets say what a rule is for in a sentence.
+
+### Changed
+
+- **A form has no width of its own.** `.form` was at the measure and started
+  its children on the left; a form laid out on the fields had to undo both.
+  `its_swiss_form_with` writes `class="form measure"`, so a form written
+  through the helper is where it was. A form written with `form_with` and
+  `class: "form"` is full width now: add `measure`.
+- **One filled button.** `.button--accent` is gone: the primary action is in
+  ink, and a second filled box was a standing temptation against the one red
+  a page has.
+- **The explanation's mark is a word.** `explain` writes "About" in the
+  small register rather than a question mark; `label:` says another word.
+- **The control's rule at rest is the strong rule**, `--rule-strong`, which
+  the library had declared and never used; ink under the hand, the accent
+  when refused or focused.
+- **Tokens nothing used are gone**: `--space-5`, `--space-13`, `--line-6`.
+  `--space-6`, `--space-8` and `--line-4` remain. Pandatone read two of them
+  and will move to the ladder when it takes 1.0.
+- **The tests that pinned formatting pin behaviour.** Three assertions that
+  matched exact runs of CSS text are computed-style assertions in the
+  browser suite; the guards that are about the source stay.
+
+### Migration
+
+- `gem "its-swiss", "~> 1.0"`.
+- A `form_with(..., class: "form")` that wants the measure adds `measure`.
+- `.button--accent` becomes `.button--primary`.
+- `--space-5` becomes `--space-6` or a line; `--space-13` becomes
+  `calc(var(--space-unit) * 13)` if it is truly wanted; `--line-6` becomes
+  `calc(var(--line) * 6)`.
+- The two Stimulus registrations in the host's `controllers/index.js` can go.
+- A test that read the explanation's `?` reads "About".
 
 ## 0.9.1 — 2026-09-07
 

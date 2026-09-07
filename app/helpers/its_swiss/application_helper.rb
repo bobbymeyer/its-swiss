@@ -19,9 +19,13 @@ module ItsSwiss
     # is marked and the trim in type.css that does the same job the long way
     # steps in. Inline and first, because it has to have run before the first
     # layout, and a class added after paint is a page that moves.
+    #
+    # With the page's nonce, where the application has a content security
+    # policy: an inline script the policy blocks is a page that is in step
+    # and, in Safari, not registered, and nobody would see why.
     def its_swiss_stylesheet_tags(**options)
       safe_join([
-        tag.script(ItsSwiss::METRIC_OVERRIDES_SCRIPT.html_safe), # rubocop:disable Rails/OutputSafety -- a constant
+        tag.script(ItsSwiss::METRIC_OVERRIDES_SCRIPT.html_safe, nonce: (content_security_policy_nonce if respond_to?(:content_security_policy_nonce))), # rubocop:disable Rails/OutputSafety -- a constant
         stylesheet_link_tag(*ItsSwiss::STYLESHEETS.map { |name| "its_swiss/#{name}" },
           **{ "data-turbo-track": "reload" }.merge(options))
       ], "\n")
@@ -185,17 +189,18 @@ module ItsSwiss
       end
     end
 
-    # What a section means, behind one mark. The explanation is written in
+    # What a section means, behind one word. The explanation is written in
     # the hint register and closed: a page used daily is read on every day
-    # but the first, and a sentence over every table is for the first.
+    # but the first, and a sentence over every table is for the first. The
+    # word is "About", in the small register, and label: says another.
     #
     #   <%= explain "The repeat, in order along the stripe normal." %>
     #   <%= explain do %><p class="hint">…</p><% end %>
-    def explain(text = nil, label: "Explain", &block)
+    def explain(text = nil, label: "About", &block)
       body = block ? capture(&block) : tag.p(text, class: "hint")
 
       tag.details(class: "explain") do
-        safe_join([ tag.summary("?", aria: { label: label }), tag.div(body, class: "explain__body") ])
+        safe_join([ tag.summary(label), tag.div(body, class: "explain__body") ])
       end
     end
 
@@ -247,11 +252,12 @@ module ItsSwiss
       end
     end
 
-    # form_with, already holding the library's builder. An application that
-    # wants its own builder still can; this is the shorthand for the case
-    # where it does not.
+    # form_with, already holding the library's builder, at the measure: a
+    # form is a column with no width of its own, and this is the one that
+    # nearly every form wants. An application that wants its own builder or
+    # its own width still can.
     def its_swiss_form_with(**options, &block)
-      form_with(**{ builder: ItsSwiss::FormBuilder, class: "form" }.merge(options), &block)
+      form_with(**{ builder: ItsSwiss::FormBuilder, class: "form measure" }.merge(options), &block)
     end
   end
 end

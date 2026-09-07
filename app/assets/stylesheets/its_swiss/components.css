@@ -1,31 +1,18 @@
 /* Components.
  *
- * Separation is done with hairlines and whitespace. There are no cards, no
- * rounded corners and no shadows in this file, and nothing is set in
- * capitals. A component here says only how it differs from the registers and
- * the two arrangements already declared in type.css and grid.css.
- *
- * Every one of these is laid out on its own, in flex, and never on the page's
- * field. The field is the application's — a component that placed itself on
- * it would be a component that broke the moment the application decided its
- * problem had eight fields rather than six.
+ * Separation is hairlines and whitespace: no boxes, no rounded corners, no
+ * shadows, nothing in capitals. A component says only how it differs from
+ * the registers in type.css and the two arrangements in grid.css, and lays
+ * itself out in flex, never on the page's field, which is the application's.
+ * The arguments are in DESIGN.md; the comments here say what a rule is for.
  */
 
 @layer its-swiss.components {
   /* --- Masthead and navigation -------------------------------------------
-     A band, a mark at one end, the destinations at the other, and a hairline
-     underneath. The mark is the application's to fill; the library only knows
-     that it does not break and that the nav sits beside it. */
-
-  /* Aligned on the under edge rather than on a baseline. Every child of this
-     row is a block of one line, and a block's under edge is the baseline of
-     its last line — so aligning the edges aligns the baselines, and does it
-     by construction rather than by asking the browser where the baseline is.
-     That question has more than one answer: the mark is a block and the nav
-     is a flex container, browsers synthesize a flex container's baseline
-     differently from a block's, and one that put the two a few pixels apart
-     grew this row past its three lines and carried the error down the rest
-     of the page. Nothing here needs the answer. */
+     A band, a mark at one end, the destinations beside it, a hairline under.
+     Aligned on the under edge: every child is a block of one line, and a
+     block's under edge is its last baseline, so the edges aligning is the
+     baselines aligning. */
   .masthead {
     display: flex;
     flex-wrap: wrap;
@@ -35,8 +22,7 @@
     border-bottom: var(--rule-hair) solid var(--rule);
   }
 
-  /* A wordmark is not free text and may not be broken, either inside itself
-     or away from whatever leads it. */
+  /* A wordmark may not be broken. */
   .masthead__mark {
     font-weight: 700;
     letter-spacing: -0.015em;
@@ -47,10 +33,7 @@
 
   .masthead__mark a:hover { text-decoration: underline; text-underline-offset: 0.2em; }
 
-  /* Off the left edge rather than pushed to the right: the asymmetry is the
-     point, and it lines the nav up with the body column below it. An
-     application that wants it flush right sets margin-inline-start: auto,
-     which is one line in its own stylesheet. */
+  /* Beside the mark, not pushed to the right: the asymmetry is the point. */
   .nav {
     display: flex;
     flex-wrap: wrap;
@@ -62,19 +45,14 @@
 
   .nav a:hover { color: var(--ink); }
 
-  /* Where you are, said twice. Colour alone is not a signal — a reader who
-     cannot separate the accent from the quiet gray would have no current
-     state at all — so the weight says it as well. */
+  /* Where you are, said twice: colour alone is not a signal. */
   .nav [aria-current="page"] {
     color: var(--accent);
     font-weight: 700;
   }
 
-  /* A menu in the nav: a destination that opens into destinations. A
-     details element, so it opens and closes with no script, and a summary
-     set like the other destinations with a small mark that says it opens.
-     The list floats under it on paper with a keyline, the one floating box
-     in the style — a menu that pushed the page down would not be a menu. */
+  /* A menu: a destination that opens into destinations, with no script. Its
+     list is the one floating box in the style. */
   .menu {
     position: relative;
   }
@@ -95,17 +73,15 @@
   .menu > summary:hover,
   .menu[open] > summary { color: var(--ink); }
 
-  /* Where you are, when where you are is inside the menu: the weight, in
-     ink. Not the accent — a page has one red, and the subnav under a menu
-     that is current already names the place in it. */
+  /* Where you are, when it is inside the menu: the weight, in ink. The
+     subnav under a current menu already carries the page's one red. */
   .menu--current > summary {
     color: var(--ink);
     font-weight: 700;
   }
 
-  /* Out of the flow, but still on the grid: a line of padding above and
-     below, and the keyline drawn inside, so every link in it sits on a
-     line of the page under it. */
+  /* Out of the flow and still on the grid: a line above and below, the
+     keyline drawn inside. */
   .menu__list {
     position: absolute;
     inset-inline-start: calc(-1 * var(--space-2));
@@ -127,13 +103,8 @@
   .menu__list a:hover { color: var(--ink); }
 
   /* --- Subnav -------------------------------------------------------------
-     A second layer of destinations, inside the one you are in: what a tool
-     has beside what the application has. A shaded band under the masthead,
-     three lines tall the way the masthead is, with the same run of links
-     the nav has and the same marking of where you are. Rendered by the
-     shell when the application fills :subnav, and not at all otherwise. */
-  /* The rule is drawn inside the band rather than under it, so the band and
-     the page inside it are both three whole lines. */
+     A second layer of destinations, inside the one you are in: a shaded
+     band under the masthead, three lines tall, the rule drawn inside it. */
   .subnav {
     background: var(--paper-shaded);
     box-shadow: inset 0 calc(-1 * var(--rule-hair)) 0 var(--rule);
@@ -157,15 +128,8 @@
   }
 
   /* --- Footer -------------------------------------------------------------
-     A hairline, the micro register, and whatever the application has to say
-     after the page. It carries no links of its own: what belongs down there
-     is not something a library can know.
-
-     A container, not a text block: what it holds goes in a paragraph, which
-     the shell writes when it is handed plain text. Trimmed text has to be in
-     an element that is trimmed, and a footer that held text directly would
-     be in step and off the baseline in a browser that ignores the faces. */
-
+     A hairline, the small register, and whatever the application has to say.
+     A container: what it holds goes in a paragraph, which the shell writes. */
   .footer {
     margin-top: var(--line-4);
     padding-block: calc(var(--line) - var(--rule-hair)) var(--line);
@@ -176,16 +140,9 @@
   }
 
   /* --- Page head ----------------------------------------------------------
-     What a page is and what can be done to it. The title and, when it has
-     one, its lede on the left; the actions on the right, wrapping under
-     the title when the page is narrow. Everything after it starts two
-     lines down, which is the gap a section gets.
-
-     One shape for every page, so a reader arriving from another application
-     set in this style already knows where the name is and where the buttons
-     are. The title is the page-title register: a page has one, and it is
-     the largest thing on it. */
-
+     What a page is and what can be done to it: the title and its lede on
+     the left, the actions on the right, wrapping under when the page is
+     narrow. Everything after it starts two lines down. */
   .page-head {
     display: flex;
     flex-wrap: wrap;
@@ -195,32 +152,24 @@
     margin-block-end: var(--line-2);
   }
 
-  /* The title takes the measure and the actions take what they need. A
-     basis rather than a share, so a long name wraps inside the measure
-     instead of pushing the actions off the line. */
+  /* The title takes the measure as a basis, so a long name wraps inside it
+     rather than pushing the actions off the line. */
   .page-head__title {
     flex: 1 1 var(--measure);
     min-width: 0;
   }
 
-  /* The actions shrink to their widest button and wrap inside it, rather
-     than holding their one-line width and pushing a phone's page sideways. */
   .page-head__actions { flex: 0 1 auto; }
 
   /* --- Sections -----------------------------------------------------------
-     One page, several surfaces: what a thing is made of, what it wears,
-     how it leaves. A run of names under the title, the one you are on in
-     the weight, and the surface below it the only thing on the page. A
-     working page must not scroll: what is done every day is reached from
-     the head, in the same position on every page, and never by scrolling
-     past what was done yesterday. */
+     The surfaces of one page, named under the title, the one shown in the
+     weight. In ink: the accent is for where you are on the site. */
   .sections {
     display: flex;
     flex-wrap: wrap;
     gap: var(--line) var(--space-3);
   }
 
-  /* Its own row in the head, under the title and the actions. */
   .page-head > .sections { flex-basis: 100%; }
 
   .sections a {
@@ -231,22 +180,14 @@
 
   .sections a:hover { color: var(--ink); }
 
-  /* Where you are, in the weight. Ink, not the accent: the accent is for
-     where you are on the site, and this is where you are on the page. */
   .sections [aria-current] {
     color: var(--ink);
     font-weight: 700;
   }
 
   /* --- Explanations -------------------------------------------------------
-     What a section means, behind one mark, for the day it is first read.
-     A sentence over every table is needed on the first day and never
-     again, and a tool used daily is read on every other day. So the
-     explanation is there, in the hint register, and closed: a question
-     mark on the line, and the text under it when it is asked for. A
-     details element, so it opens with no script. */
-  /* A block as wide as its one character, so the line it sits on is whole
-     and the target is the mark and not the row. */
+     What a section means, behind one word in the small register, closed
+     until it is asked for. A details element, so it opens with no script. */
   .explain > summary {
     list-style: none;
     display: block;
@@ -264,17 +205,9 @@
   .explain__body { margin-block-start: var(--line); }
 
   /* --- Rules --------------------------------------------------------------
-     The one horizontal mark in the style, at the two weights tokens.css
-     declares. */
-
-  /* The rule is drawn on the top edge of a box one baseline tall rather than
-     on a box of no height at all, so its width is inside the box and both
-     margins stay whole baselines. Compensating in a margin instead looks
-     right until the margin collapses — a rule leading a section loses its
-     top margin to the section's, a rule before one loses its bottom margin to
-     the same — and a compensation that has collapsed away is a pixel back on
-     the page. Both weights fit the same box, which is why the heavy one only
-     changes the drawing. */
+     The one horizontal mark in the style. Drawn on the top edge of a box one
+     line tall, so its width is inside the box and the margins either side
+     stay whole lines even when they collapse. */
   hr {
     height: var(--line);
     border: 0;
@@ -285,26 +218,12 @@
   hr.rule--heavy { border-top-width: var(--rule-heavy); border-color: var(--ink); }
 
   /* --- Pictures -----------------------------------------------------------
-     The hard case, and the one place the convention nearly does not transfer.
-     In print a picture is cropped to a field, and a field is a whole number
-     of lines — Müller-Brockmann sized photographs exactly that way. On screen
-     the width is fluid, so the height is a fraction of a moving number and
-     lands wherever it lands, and the column below it is off the grid for the
-     rest of the page.
-
-     round() closes that: the box is the picture's natural height taken up to
-     the next whole line, recomputed as the container resizes. The picture is
-     then fitted inside it — contain by default, because a library must not
-     crop an image it did not choose, and the leftover is at most a line of
-     space. .figure--cover crops instead, which is the Müller-Brockmann move
-     and yours to make where you own the picture.
-
-     --ratio is the application's to declare. An intrinsic ratio cannot be
-     read in CSS, and guessing one is how a picture ends up letterboxed
-     against nothing.
-
-     No @supports: where round() is unknown the declaration drops and the
-     picture takes its natural height, which is what it would have done. */
+     A picture's height is its fluid width over its ratio, which lands
+     wherever it lands; round() takes the box up to the next whole line, or
+     the next whole module, as the container resizes. Fitted by default,
+     because a library must not crop an image it did not choose; cropped
+     with .figure--cover, which is yours to do where you own the picture.
+     --ratio is the application's to declare. */
   .figure {
     container-type: inline-size;
     margin-block: var(--line);
@@ -316,9 +235,16 @@
     inline-size: 100%;
     block-size: round(up, calc(100cqw / var(--ratio, 1.5)), var(--line));
     object-fit: contain;
-    /* The space the rounding adds falls under the picture, where the grid
-       wants it, rather than being split above and below it. */
+    /* The space the rounding adds falls under the picture. */
     object-position: left top;
+  }
+
+  /* Sized to whole modules rather than whole lines: a modular grid's
+     picture, whose proportion is the grid's and not the window's. */
+  .figure--modular > img,
+  .figure--modular > svg,
+  .figure--modular > video {
+    block-size: round(up, calc(100cqw / var(--ratio, 1.5)), calc(var(--line) * var(--module)));
   }
 
   .figure--cover > img,
@@ -327,13 +253,10 @@
   .figure figcaption { margin-block-start: var(--line); }
 
   /* --- Table --------------------------------------------------------------
-     A grid of values, ruled horizontally and not vertically: the columns are
-     already held apart by the type, and a vertical rule between them draws a
-     box, which this style does not do. No zebra striping for the same reason
-     — a filled row is a filled area, and filled areas are the accent's alone.
-
-     Figures are tabular, because a column of numbers is read down. */
-
+     Ruled horizontally and never vertically, and never striped. Figures are
+     tabular. A cell is one line the type is set on and a rule that closes
+     it, its width taken out of the padding; aligned to the top, so every
+     cell's first baseline is one line down and a row is whole lines. */
   .table { width: 100%; }
 
   .table caption {
@@ -341,15 +264,6 @@
     margin-bottom: var(--line);
   }
 
-  /* A cell is the shape a control is: a line the type is set on, and a line
-     the rule closes, with the rule's width taken out of the second. Nothing
-     above the type but the cap correction, which is nothing where the faces
-     work: the type's baseline is the under edge of its line and the cell's
-     over edge is on the grid, and anything else put between the two moves
-     the baseline off it. Aligned to the top for the same reason:
-     every cell in a row starts where the row does, so every cell's first
-     baseline is one line down, and a row is as tall as its tallest cell,
-     which is whole lines. */
   .table th,
   .table td {
     padding-block: var(--cap-correction) calc(var(--line) - var(--rule-hair));
@@ -358,8 +272,7 @@
     vertical-align: top;
   }
 
-  /* A heading is a label: the label register, bold, on the line. Body size
-     made it a second row of values. */
+  /* A heading is a label: the label register, bold, on the line. */
   .table th {
     font-family: var(--face-200), var(--font-family);
     font-size: var(--size-1);
@@ -374,19 +287,13 @@
   .table td:last-child,
   .table th:last-child { padding-inline-end: 0; }
 
-  /* A column of numbers reads right-aligned against its own heading. The
-     space moves to the start, where the previous column's text now ends —
-     but only the start: written as the padding-inline shorthand this also set
-     the end to zero on every numeric cell, which is right for one in the
-     final column, already covered by the rule above, and wrong anywhere else,
-     because the next column then begins exactly where the number ends. */
+  /* A column of numbers reads right-aligned; only the start padding moves,
+     so the next column does not begin where the number ends. */
   .table .numeric { text-align: right; padding-inline-start: var(--space-3); }
 
   /* --- Definition list ----------------------------------------------------
-     Term and value in two columns, the term set in the quiet register and the
-     value in ink. The weight tells them apart at a glance rather than making
-     a reader count characters. */
-
+     Term and value in two columns, the term in the quiet register and the
+     weight. */
   .pairs {
     display: grid;
     grid-template-columns: max-content 1fr;
@@ -396,8 +303,6 @@
 
   .pairs dt { font-weight: 700; }
 
-  /* When the terms are long enough that a two-column set leaves the values
-     stranded across the page. */
   .pairs--stacked {
     grid-template-columns: 1fr;
     row-gap: 0;
@@ -410,15 +315,14 @@
   /* --- Forms --------------------------------------------------------------
      A field is a label, a control and, when there is something to say, a
      hint or the reason it was refused. The control is a rule under the text
-     rather than a box around it: the box is a border drawn for its own sake,
-     and this style does not draw them. */
-
+     rather than a box around it. A form is a column with a line between its
+     fields and no width of its own: the measure is the page's to give it,
+     with .measure, and its_swiss_form_with does. */
   .form {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
     gap: var(--line);
-    max-width: var(--measure);
   }
 
   .form--inline {
@@ -435,63 +339,66 @@
     width: 100%;
   }
 
-  /* On the over edge. The label is a line and the control is two, and both
-     put their baseline one line below their own top — so starting them on
-     the same line puts the label's baseline on the control's, without the
-     browser being asked where either baseline is. */
+  /* A label beside its control, both starting on one line: the label is a
+     line and the control is two, and each puts its baseline one line down. */
   .field--inline {
     flex-direction: row;
     align-items: flex-start;
     gap: var(--line) var(--space-2);
   }
 
+  /* A control is two lines: a line of air under the label, then the line
+     the type stands on, which the rule closes with its width taken out of
+     the first. The text is set in the typeface itself, with the font's own
+     metrics, because a browser centres a control's text in a box of its own
+     and clips it there — the one run of type in the library deliberately off
+     the faces. At rest the rule is the strong rule; it goes to ink under the
+     hand and to the accent, heavy, when the control has the focus or has
+     been refused. */
   .field input,
   .field select,
   .field textarea {
     width: 100%;
     border: 0;
-    border-bottom: var(--rule-hair) solid var(--ink);
+    border-bottom: var(--rule-hair) solid var(--rule-strong);
     background: transparent;
     color: inherit;
-    /* The one run of type in the library that is taken off the baseline on
-       purpose. A control's text is not in the document: the browser sets it
-       in a box of its own, centres it there and clips it there, and on a
-       face with no descent — the faces are what put every other baseline on
-       the under edge of its line — every descender was cut off at the rule.
-       So the type is set in the typeface itself, with the font's own
-       metrics, on one line. The line is the ladder's and so is the box; only
-       where the baseline falls inside the line is the font's. */
     font-family: var(--font-family);
     font-size: inherit;
     font-weight: inherit;
     line-height: var(--line);
-    /* A control is two lines of box, and the text sits on the second: the
-       line the rule closes, so the type stands on its rule the way a line of
-       handwriting stands on a ruled page, and the rule is on the grid. The
-       first line is air between the label and the text — the rule's width
-       comes out of it, so the box stays two lines exactly. */
     block-size: var(--line-2);
     padding-block: calc(var(--line) - var(--rule-hair)) 0;
   }
 
+  .field input:hover,
+  .field select:hover,
+  .field textarea:hover { border-bottom-color: var(--ink); }
+
+  /* The focus is the rule, not a box around the field: heavy, in the
+     accent, its extra width taken out of the air above the text so the
+     box stays two lines. */
+  .field :is(input, select, textarea):not([type="checkbox"], [type="radio"]):focus-visible {
+    outline: none;
+    border-bottom: var(--rule-heavy) solid var(--accent);
+    padding-block-start: calc(var(--line) - var(--rule-heavy));
+  }
+
+  /* As many lines as it was asked for: the builder writes --rows from rows:,
+     four when it was not. */
   .field textarea {
-    block-size: var(--line-4);
+    block-size: calc(var(--line) * var(--rows, 4));
     resize: vertical;
   }
 
-  /* A checkbox or a radio is the one control whose label sits beside it. On
-     the under edge: the label's under edge is its baseline, and the box the
-     browser draws then stands on that baseline the way a glyph does, at
-     whatever size the browser drew it. */
+  /* A checkbox or a radio is the one control whose label sits beside it, on
+     the under edge, so the browser's box stands on the label's baseline. */
   .choice {
     display: inline-flex;
     align-items: flex-end;
     gap: var(--line) var(--space-1);
   }
 
-  /* The browser draws this one at a size of its own, so it takes none of the
-     box a text control is given — including the two lines of height, which
-     it would otherwise wear as a 48px checkbox. */
   .choice input {
     inline-size: auto;
     block-size: auto;
@@ -499,8 +406,7 @@
     padding-block: 0;
   }
 
-  /* Refused. The accent is the whole signal here and it is a rule, not a
-     fill: the field is still the field. */
+  /* Refused: the rule, in the accent. */
   .field--invalid input,
   .field--invalid select,
   .field--invalid textarea { border-bottom-color: var(--accent); }
@@ -512,32 +418,25 @@
     line-height: var(--line);
   }
 
+  /* The dense form: the label sits on the control's line of air, directly
+     above the text on its rule, so a field is two lines and three with the
+     gap rather than four. For a form of many fields, or a panel. */
+  .form--dense .field:not(:has(> .choice)) { position: relative; }
+
+  .form--dense .field:not(:has(> .choice)) > label {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    pointer-events: none;
+  }
+
   /* --- Buttons ------------------------------------------------------------
-     A button is a block; a link is underlined text. Both at once leaves the
-     page saying "follow me" and "press me" in the same breath.
-
-     Every one of them is the same box, so a row of them sits on one line and
-     the only difference between them is what fills it. No radius, no shadow,
-     and the keyline is the hairline drawn everywhere else.
-
-     A button is a box, not a line of type: two lines tall, on the grid, with
-     its label centred in it. The label's baseline is the one baseline in the
-     library that is not on a line, and on purpose — a button is read as a
-     shape, and a label set on the second line of a two-line box reads as a
-     field with a rule under it, which is the one thing a button must not be
-     mistaken for.
-
-     Centred by cap: a face puts the label's baseline on the under edge of
-     its line, so the line is let down by half the cap height and the cap
-     sits across the middle. Half a cap on a 64th of a pixel, because the
-     browser lays out in 64ths and snaps each padding on its own, and two
-     halves of a fraction each snapped down are a box a 64th short; rounded
-     up to the unit first, the two paddings sum to the line exactly. Where
-     the faces are not honoured the font's own metrics put the cap near the
-     middle of its line already, and the paddings are simply equal. The
-     keyline is drawn inside the box rather than laid out around it, so the
-     arithmetic is the label's line and two paddings, and nothing else. */
-
+     A button is a box and a link is underlined text. Every button is the
+     same box, two lines tall on the grid, its label centred by cap: the one
+     baseline in the library not on a line, on purpose, since a label on the
+     second line of a two-line box reads as a field. Half a cap on a 64th of
+     a pixel, so the two paddings sum to the line exactly. The keyline is an
+     inset shadow, so the box is the line and two paddings and nothing else. */
   .button {
     --keyline: var(--rule);
     --lift: round(up, 1cap / 2, 0.015625px);
@@ -553,14 +452,16 @@
     text-decoration: none;
   }
 
+  /* Where the faces are not honoured the font's own metrics put the cap
+     near the middle already. */
   html.no-metric-overrides .button,
   html.no-metric-overrides .skip-link { padding-block: var(--half-line); }
 
   .button:hover { --keyline: var(--ink); }
 
-  /* A solid block, the way a Swiss poster sets a call to action. Ink rather
-     than the accent: the primary action is the one you were going to take,
-     and the accent is for the one you have to be told about. */
+  /* The one filled button: the action a page exists to offer, in ink. The
+     accent is for what you have to be told about, not for what you came to
+     do. */
   .button--primary {
     --keyline: var(--ink);
     background: var(--ink);
@@ -569,37 +470,20 @@
 
   .button--primary:hover { --keyline: var(--ink-quiet); background: var(--ink-quiet); }
 
-  /* The one filled area the accent gets, for the action a page exists to
-     offer. Used once per page or not at all. */
-  .button--accent {
-    --keyline: var(--accent);
-    background: var(--accent);
-    color: var(--accent-ink);
-  }
-
   .button--quiet:hover { color: var(--ink); }
 
-  /* Destroying and reordering are one shape apart from each other otherwise.
-     The page stays monochrome at rest; the accent arrives at the moment you
-     reach for the one thing that cannot be undone. Focus as well as hover,
-     because a keyboard reaches this button and touch never hovers at all. */
+  /* Destroying: monochrome at rest, the accent the moment you reach for it.
+     Focus as well as hover, because a keyboard reaches this and touch never
+     hovers. */
   .button--danger:hover,
   .button--danger:focus-visible {
     --keyline: var(--accent);
     color: var(--accent);
   }
 
-  /* Set apart before it is coloured: in a row of actions, destroying and
-     reordering are the same gray word otherwise, and a gap is read before a
-     word is.
-
-     A step on the ladder rather than an auto margin. Auto puts the gap at
-     whatever is left over, which in a narrow row is right and across a whole
-     page is most of a page — and an action a page away from the actions it
-     belongs with reads as a different control, not a separated one.
-
-     :has, because button_to wraps its button in a form, so the flex child is
-     the form and the margin belongs to the child. */
+  /* Set apart before it is coloured, by a step on the ladder rather than an
+     auto margin, which across a page is most of a page. :has, because
+     button_to wraps its button in a form. */
   .run > :has(> .button--danger),
   .run > .button--danger { margin-inline-start: var(--space-6); }
 
@@ -610,10 +494,8 @@
   .link-quiet:hover { color: var(--ink); }
 
   /* --- Copy ---------------------------------------------------------------
-     A value on screen to be taken somewhere else is a button that copies
-     itself. The value stays visible text inside it, which is what keeps it
-     usable when the clipboard is not available. */
-
+     A value to be taken somewhere else is a button that copies itself, and
+     stays visible text inside it. */
   .copy {
     border: 0;
     padding: var(--cap-correction) 0 0;
@@ -633,17 +515,12 @@
   .copy:hover::after,
   .copy:focus-visible::after { content: " copy"; }
 
-  /* Says it worked, in the one place you are already looking. */
   .copy[data-copied]::after,
   .copy[data-copied]:hover::after { content: " copied"; color: var(--accent); }
 
   /* --- Pagination ---------------------------------------------------------
-     A run of numbers under a hairline. The current page carries weight as
-     well as the accent, for the same reason the current nav item does. */
-
-  /* On the under edge, for the reason the masthead is: a run of one-line
-     blocks has a shared baseline already, and asking for one is asking a
-     question two browsers answer differently. */
+     A run of numbers under a hairline, the current one in the accent and
+     the weight. */
   .pagination {
     display: flex;
     flex-wrap: wrap;
@@ -654,8 +531,7 @@
     border-top: var(--rule-hair) solid var(--rule);
   }
 
-  /* inline-block so the line box is the tap target: an inline box takes its
-     height from the font's metrics and ignores the leading set for it. */
+  /* inline-block, so the line box is the tap target. */
   .pagination a,
   .pagination [aria-current] { display: inline-block; }
 
@@ -671,22 +547,14 @@
   .pagination__gap { color: var(--ink-quiet); }
 
   /* --- Filters ------------------------------------------------------------
-     What narrows a list. One shape for every way of narrowing it — a
-     search, a tag, an order, a size — because they are the same kind of
-     control: pick one of a handful. A register is a quiet label and then
-     the choices, in the same two positions every time, so filtering and
-     ordering read as the registers they are rather than as two rows of
-     identical words. Ruled below, once: the block belongs to the list
-     under it, and the space above it is the page head's. A second rule
-     above it was a third rule in ten lines, and the rule is the one mark
-     this style draws, so it has to be rare. */
-
+     What narrows a list: one shape for every way of narrowing it, a quiet
+     label and then the choices, in the same two positions every time. Ruled
+     once, below. */
   .filters {
     display: flex;
     flex-wrap: wrap;
     align-items: flex-start;
     gap: var(--line) var(--space-3);
-    /* The rule is drawn inside the box, so the block stays whole lines. */
     padding-block-end: calc(var(--line) - var(--rule-hair));
     border-block-end: var(--rule-hair) solid var(--rule);
     margin-block-end: var(--line);
@@ -700,10 +568,7 @@
     gap: var(--line) var(--space-2);
   }
 
-  /* The label column. A width off the ladder, so every register's choices
-     start on the same line down the page rather than a few pixels apart
-     because one word is longer than another. An application with longer
-     labels sets --filter-label once. */
+  /* The label column, one width for every register. */
   .filter__label,
   .filters .form--inline label { min-width: var(--filter-label); }
 
@@ -713,10 +578,6 @@
     gap: var(--line) var(--space-2);
   }
 
-  /* The choices are the flex items themselves, the way the nav's
-     destinations are: blockified, so each is a line box that is the tap
-     target and can be trimmed where the faces are not honoured. A list
-     item between them would be a second box to correct. */
   .filter__choices a {
     color: var(--ink-quiet);
     text-decoration: none;
@@ -724,22 +585,15 @@
 
   .filter__choices a:hover { color: var(--ink); }
 
-  /* Which one is chosen: the weight, in ink. The accent is for where you
-     are on the site and for the one thing that cannot be undone; a page
-     with four registers each saying "this one" in red has no signal left. */
+  /* Which one is chosen: the weight, in ink. */
   .filter__choices [aria-current] {
     color: var(--ink);
     font-weight: 700;
   }
 
-  /* The search is the first register, built like the others rather than as
-     a stacked field above them: the label in the label column, the control
-     where the choices start. Label and control meet on the under edge — the
-     label's baseline is its under edge, and the control's text stands on
-     the rule that closes it — so the two read as one line. The button is
-     there for a browser that runs no script and wraps under the field at a
-     phone's width; it goes when the live search connects, because from then
-     on typing has already done what it does. */
+  /* The search is the first register, built like the others: the label in
+     the label column, the control where the choices start, the two meeting
+     on the under edge. */
   .filters .form--inline {
     flex: 1 1 var(--measure);
     max-width: var(--measure);
@@ -751,8 +605,6 @@
     min-width: 0;
   }
 
-  /* A basis of nothing, so the control takes what the row has left rather
-     than the twenty characters a browser gives a text control by default. */
   .filters .form--inline .field--inline input {
     flex: 1 1 0;
     width: auto;
@@ -760,14 +612,8 @@
   }
 
   /* --- Cards --------------------------------------------------------------
-     A list of things, each a picture over its name and a line about it,
-     laid out on the page's own fields: a card is --card fields wide, and
-     the application says how many, once, at each width it cares about. Two
-     lines between the rows, because a row of cards is a row of sections.
-
-     No box. A card is the thing itself, and the picture is the only filled
-     area it has; what separates one from the next is the gutter. */
-
+     A list of things on the page's own fields, each --card fields wide, two
+     lines between the rows. No box: the picture is the only filled area. */
   .cards { row-gap: var(--line-2); }
 
   .cards > * {
@@ -775,8 +621,7 @@
     min-width: 0;
   }
 
-  /* The picture and the name are one link, so a card costs one tab stop and
-     announces its destination once. */
+  /* The picture and the name are one link, so a card costs one tab stop. */
   .card__link {
     display: block;
     color: inherit;
@@ -788,13 +633,8 @@
     text-underline-offset: 0.2em;
   }
 
-  /* The picture is a .figure with its --ratio declared, so its box is a
-     whole number of lines at any width and the name under it stays on the
-     grid; what this adds is the line between them. */
   .card__figure { margin-block-end: var(--line); }
 
-  /* Blocks, so each is a line of its own and can be trimmed where the faces
-     are not honoured. */
   .card__name,
   .card__meta { display: block; }
 
@@ -806,10 +646,8 @@
   }
 
   /* --- What a page has to say --------------------------------------------
-     Three registers: it worked, it was refused, there is nothing here. The
-     refusal is the only one that interrupts, and it interrupts with a rule
-     rather than a filled panel. */
-
+     It worked, it was refused, there is nothing here. Only the refusal
+     interrupts, with a rule rather than a filled panel. */
   .errors {
     width: 100%;
     padding-top: calc(var(--line) - var(--rule-heavy));
@@ -826,11 +664,8 @@
   .empty { color: var(--ink-quiet); }
 
   /* --- Off screen ---------------------------------------------------------
-     For text that has to exist without being seen. Clipped rather than hidden
-     with display or visibility, because both of those take the element out of
-     the accessibility tree as well as off the page, which is the one thing
-     this must not do. */
-
+     Text that has to exist without being seen: clipped, not hidden, so it
+     stays in the accessibility tree. */
   .visually-hidden {
     position: absolute;
     width: 1px;
@@ -842,8 +677,7 @@
     white-space: nowrap;
   }
 
-  /* The way past the masthead for a keyboard. Off screen until it is focused,
-     at which point it has to be somewhere you can read it. */
+  /* The way past the masthead for a keyboard. */
   .skip-link {
     position: absolute;
     left: var(--space-2);
