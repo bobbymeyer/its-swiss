@@ -106,9 +106,12 @@
   .button--danger,
   .link-quiet { color: var(--ink-quiet); }
 
+  /* A hint is prose — a sentence about the thing beside it — and prose is
+     read at body size. The small size is for labels and metadata, and a
+     hint set in it read as a list of afterthoughts. */
   .hint {
-    font-family: var(--face-200), var(--font-family);
-    font-size: var(--size-1);
+    font-family: var(--face-150), var(--font-family);
+    font-size: var(--size-2);
     line-height: var(--line);
     max-width: var(--measure);
   }
@@ -232,8 +235,10 @@
       dd:not(:has(> :is(p, ul, ol, dl, div, figure, table, pre, blockquote))),
       .micro, .hint, .lede, .empty, .masthead__mark, .field__error, .errors__title,
       .filter__label, .card__name, .card__meta,
+      .explain > summary,
       /* Flex items are blockified, so the text in a row is trimmable too. */
       .nav a,
+      .sections a,
       .menu > summary,
       .menu__list a,
       .subnav a,

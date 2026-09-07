@@ -12,4 +12,22 @@
     <a href="#page-head" class="button">New from this</a>
     <a href="#page-head" class="button button--danger">Delete palette</a>
   <% end %>
+
+  <h4>Sections</h4>
+  <p class="hint">
+    A page with several surfaces names them under the title, the one shown
+    in the weight, and shows that one alone. What is done daily is reached
+    from the head, never by scrolling past what was done yesterday.
+  </p>
+  <%= page_head "Deck Chair", sections: [ [ "Compose", "#page-head", true ], [ "Dress", "#page-head", false ], [ "Export", "#page-head", false ] ] do %>
+    <a href="#page-head" class="button button--primary">Dress this pattern</a>
+    <a href="#page-head" class="button button--quiet">Rename</a>
+  <% end %>
+
+  <h4>Explanations</h4>
+  <p class="hint">
+    What a section means, behind one mark, for the day it is first read.
+    Closed, in the hint register, and there when it is asked for.
+  </p>
+  <%= explain "The repeat, in order along the stripe normal. Widths sum to one." %>
 </section>

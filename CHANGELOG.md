@@ -2,6 +2,40 @@
 
 Semver. Consumers pin `~> 0.1`.
 
+## 0.9.0 — 2026-09-07
+
+A day of use, and what a day asks of a style: less talk and one red.
+
+### Added
+
+- **Sections.** `page_head(title, sections:)` names the surfaces of one
+  page under its title — what a thing is made of, what it wears, how it
+  leaves — the one shown in the weight, and a page shows that one alone.
+  A working page must not scroll: what is done daily is reached from the
+  head, in the same position on every page, never by scrolling past what
+  was done yesterday. `page_sections(sections)` writes the nav on its own.
+
+- **Explanations.** `explain(text)` puts what a section means behind one
+  mark: a question mark on the line, closed, and the text in the hint
+  register under it when it is asked for. A sentence over every table is
+  needed on the first day and never again.
+
+### Changed
+
+- **One red per page.** The chosen filter and a current menu are in the
+  weight, in ink. The accent is for where you are on the site — the nav,
+  the subnav, the page numbers — and for the one thing that cannot be
+  undone. A page that said "this one" in red five times above the fold
+  had no signal left.
+
+- **Hints are prose.** `.hint` is set at body size. The small size is for
+  labels and metadata, and a hint set in it at a body line's leading read
+  as a list of afterthoughts. Table headings go the other way: the label
+  register, bold, on the line.
+
+- **The filter block is ruled once, below.** The rule above it was a third
+  rule in ten lines, and the rule is the one mark this style draws.
+
 ## 0.8.0 — 2026-09-07
 
 The third consumer, and what it and the second found in common.

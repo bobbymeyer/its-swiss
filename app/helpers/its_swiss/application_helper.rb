@@ -155,7 +155,13 @@ module ItsSwiss
     #   <%= page_head "Palettes", lede: "Every palette in the library." do %>
     #     <%= link_to "New palette", new_palette_path, class: "button button--primary" %>
     #   <% end %>
-    def page_head(title, lede: nil, &block)
+    #
+    # A page with several surfaces names them under the title, and the one
+    # you are on carries the weight:
+    #
+    #   <%= page_head @pattern.name, sections: [ [ "Compose", pattern_path(@pattern), true ],
+    #                                            [ "Dress", pattern_path(@pattern, section: "dress"), false ] ] do %>
+    def page_head(title, lede: nil, sections: nil, &block)
       content_for(:title, strip_tags(title.to_s)) unless content_for?(:title)
       actions = capture(&block) if block
 
@@ -164,8 +170,32 @@ module ItsSwiss
           tag.div(class: "page-head__title") do
             safe_join([ tag.h1(title, class: "page-title"), (tag.p(lede, class: "lede") if lede) ].compact)
           end,
-          (tag.div(actions, class: "page-head__actions run") if actions.present?)
+          (tag.div(actions, class: "page-head__actions run") if actions.present?),
+          (page_sections(sections) if sections.present?)
         ].compact)
+      end
+    end
+
+    # The surfaces of one page: a name, a URL and whether it is the one
+    # shown, each a whole navigation so it survives a reload and can be
+    # sent to somebody. The page head places it; on its own it is a nav.
+    def page_sections(sections, label: "Sections")
+      tag.nav(class: "sections", aria: { label: label }) do
+        safe_join(sections.map { |text, url, current| link_to(text, url, aria: { current: ("page" if current) }) })
+      end
+    end
+
+    # What a section means, behind one mark. The explanation is written in
+    # the hint register and closed: a page used daily is read on every day
+    # but the first, and a sentence over every table is for the first.
+    #
+    #   <%= explain "The repeat, in order along the stripe normal." %>
+    #   <%= explain do %><p class="hint">…</p><% end %>
+    def explain(text = nil, label: "Explain", &block)
+      body = block ? capture(&block) : tag.p(text, class: "hint")
+
+      tag.details(class: "explain") do
+        safe_join([ tag.summary("?", aria: { label: label }), tag.div(body, class: "explain__body") ])
       end
     end
 
