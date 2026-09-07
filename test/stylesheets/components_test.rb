@@ -7,12 +7,28 @@ class ComponentsTest < ActiveSupport::TestCase
   # current state at all. Every signal the library gives carries a second one.
   test "no signal rests on colour alone" do
     [ '.nav [aria-current="page"]', ".pagination [aria-current]", ".filter__choices [aria-current]",
-      '.subnav [aria-current="page"]', ".menu--current > summary" ].each do |selector|
+      '.subnav [aria-current="page"]', ".menu--current > summary", ".sections [aria-current]" ].each do |selector|
       declarations = declarations_for(selector)
 
       assert_not_empty declarations, "expected #{selector} to say where you are"
-      assert_match(/color: var\(--accent\)/, declarations)
       assert_match(/font-weight: 700/, declarations, "#{selector} says it in colour and nothing else")
+    end
+  end
+
+  # One red per page. The accent says where you are on the site — the nav,
+  # the subnav, the page numbers — and marks the one thing that cannot be
+  # undone. Where you are on a page, in a menu or in a filter is the weight,
+  # in ink: a page that said "this one" in red five times had no signal left.
+  test "the accent is for the site, not the page" do
+    [ '.nav [aria-current="page"]', '.subnav [aria-current="page"]', ".pagination [aria-current]" ].each do |selector|
+      assert_match(/color: var\(--accent\)/, declarations_for(selector), "#{selector} is wayfinding, and carries the accent")
+    end
+
+    [ ".filter__choices [aria-current]", ".menu--current > summary", ".sections [aria-current]" ].each do |selector|
+      declarations = declarations_for(selector)
+
+      assert_match(/color: var\(--ink\)/, declarations, "#{selector} is where you are on the page, and is in ink")
+      assert_no_match(/--accent/, declarations, "#{selector} spends the page's one red")
     end
   end
 

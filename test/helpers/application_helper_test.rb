@@ -62,6 +62,29 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_equal "New", html.at(".page-head__actions.run a.button").text
   end
 
+  test "a page head names its sections under the title, the one shown marked" do
+    html = Nokogiri::HTML5.fragment(page_head("Deck Chair", sections: [ [ "Compose", "/patterns/1", true ], [ "Dress", "/patterns/1?section=dress", false ] ]))
+
+    sections = html.at("header.page-head > nav.sections")
+    assert_equal "Sections", sections["aria-label"]
+    assert_equal %w[ Compose Dress ], sections.css("a").map(&:text)
+    assert_equal [ "Compose" ], sections.css("a[aria-current=page]").map(&:text)
+    assert_equal "/patterns/1?section=dress", sections.css("a").last["href"]
+  end
+
+  test "an explanation is closed, one mark on the line, the text in the hint register under it" do
+    html = Nokogiri::HTML5.fragment(explain("The repeat, in order."))
+
+    details = html.at("details.explain")
+    assert_nil details["open"]
+    assert_equal "?", details.at("summary").text
+    assert_equal "Explain", details.at("summary")["aria-label"]
+    assert_equal "The repeat, in order.", details.at(".explain__body p.hint").text
+
+    block = Nokogiri::HTML5.fragment(explain { tag.p("Written out.", class: "hint") })
+    assert_equal "Written out.", block.at(".explain__body p").text
+  end
+
   test "a page head with nothing to do has no actions and no lede" do
     html = Nokogiri::HTML5.fragment(page_head("Palettes"))
 

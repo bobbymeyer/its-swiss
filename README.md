@@ -329,12 +329,36 @@ a run beside them, wrapping under the title when the page is narrow.
 
 The document is titled from it unless the view has already set `:title`.
 
+A page with several surfaces — what a thing is made of, what it wears, how it
+leaves — names them under the title with `sections:`, each a name, a URL and
+whether it is the one shown, and shows that one alone. A working page must
+not scroll: what is done daily is reached from the head, in the same position
+on every page.
+
+```erb
+<%= page_head @pattern.name, sections: [ [ "Compose", pattern_path(@pattern), @section == "compose" ],
+                                         [ "Dress", pattern_path(@pattern, section: "dress"), @section == "dress" ] ] do %>
+```
+
+### Explanations
+
+What a section means, behind one mark. A sentence over every table is needed
+on the first day and never again, and a tool used daily is read on every
+other day; so `explain` writes it in the hint register, closed, and a
+question mark on the line opens it.
+
+```erb
+<%= explain "The repeat, in order along the stripe normal." %>
+```
+
 ### Filters and cards
 
 What narrows a list, and the list. A search that filters as you type, and a
 register for each other way of narrowing it — a tag, an order, a size — in the
 same two positions every time: a quiet label, then the choices, the one in
-force carrying `aria-current`, which the CSS colours and weights.
+force carrying `aria-current`, which the CSS sets in the weight. In ink, not
+the accent: the accent is for where you are on the site and for the one
+thing that cannot be undone, and a page has one red.
 
 ```erb
 <div class="filters">
@@ -419,7 +443,9 @@ beyond the shell is the application's, for the same reason its grid is.
 | `copy_button(value)` | A value that copies itself |
 | `its_swiss_form_with(...)` | `form_with`, already holding the library's builder |
 | `its_swiss_page_numbers(page, pages)` | Which numbers a run of them shows, elided |
-| `page_head(title, lede:) { actions }` | The one shape every page opens with |
+| `page_head(title, lede:, sections:) { actions }` | The one shape every page opens with |
+| `page_sections(sections)` | The surfaces of one page, the one shown in the weight |
+| `explain(text) { }` | What a section means, behind one mark |
 | `filter_register(label, choices, name:)` | One register of a filter block |
 | `search_form(url, frame:, keep:)` | A search that narrows a list as you type |
 

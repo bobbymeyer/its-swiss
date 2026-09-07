@@ -95,10 +95,11 @@
   .menu > summary:hover,
   .menu[open] > summary { color: var(--ink); }
 
-  /* Where you are, when where you are is inside the menu: said twice, the
-     way the nav says it. */
+  /* Where you are, when where you are is inside the menu: the weight, in
+     ink. Not the accent — a page has one red, and the subnav under a menu
+     that is current already names the place in it. */
   .menu--current > summary {
-    color: var(--accent);
+    color: var(--ink);
     font-weight: 700;
   }
 
@@ -206,6 +207,62 @@
      than holding their one-line width and pushing a phone's page sideways. */
   .page-head__actions { flex: 0 1 auto; }
 
+  /* --- Sections -----------------------------------------------------------
+     One page, several surfaces: what a thing is made of, what it wears,
+     how it leaves. A run of names under the title, the one you are on in
+     the weight, and the surface below it the only thing on the page. A
+     working page must not scroll: what is done every day is reached from
+     the head, in the same position on every page, and never by scrolling
+     past what was done yesterday. */
+  .sections {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--line) var(--space-3);
+  }
+
+  /* Its own row in the head, under the title and the actions. */
+  .page-head > .sections { flex-basis: 100%; }
+
+  .sections a {
+    display: inline-block;
+    color: var(--ink-quiet);
+    text-decoration: none;
+  }
+
+  .sections a:hover { color: var(--ink); }
+
+  /* Where you are, in the weight. Ink, not the accent: the accent is for
+     where you are on the site, and this is where you are on the page. */
+  .sections [aria-current] {
+    color: var(--ink);
+    font-weight: 700;
+  }
+
+  /* --- Explanations -------------------------------------------------------
+     What a section means, behind one mark, for the day it is first read.
+     A sentence over every table is needed on the first day and never
+     again, and a tool used daily is read on every other day. So the
+     explanation is there, in the hint register, and closed: a question
+     mark on the line, and the text under it when it is asked for. A
+     details element, so it opens with no script. */
+  /* A block as wide as its one character, so the line it sits on is whole
+     and the target is the mark and not the row. */
+  .explain > summary {
+    list-style: none;
+    display: block;
+    width: max-content;
+    cursor: pointer;
+    color: var(--ink-quiet);
+    font-weight: 700;
+  }
+
+  .explain > summary::-webkit-details-marker { display: none; }
+
+  .explain > summary:hover,
+  .explain[open] > summary { color: var(--ink); }
+
+  .explain__body { margin-block-start: var(--line); }
+
   /* --- Rules --------------------------------------------------------------
      The one horizontal mark in the style, at the two weights tokens.css
      declares. */
@@ -301,9 +358,15 @@
     vertical-align: top;
   }
 
+  /* A heading is a label: the label register, bold, on the line. Body size
+     made it a second row of values. */
   .table th {
+    font-family: var(--face-200), var(--font-family);
+    font-size: var(--size-1);
+    line-height: var(--line);
     color: var(--ink-quiet);
     font-weight: 700;
+    letter-spacing: 0.01em;
   }
 
   .table thead th { border-bottom-color: var(--ink); }
@@ -613,17 +676,19 @@
      control: pick one of a handful. A register is a quiet label and then
      the choices, in the same two positions every time, so filtering and
      ordering read as the registers they are rather than as two rows of
-     identical words. Ruled above and below: the block belongs to the list
-     under it, not to the page head above. */
+     identical words. Ruled below, once: the block belongs to the list
+     under it, and the space above it is the page head's. A second rule
+     above it was a third rule in ten lines, and the rule is the one mark
+     this style draws, so it has to be rare. */
 
   .filters {
     display: flex;
     flex-wrap: wrap;
     align-items: flex-start;
     gap: var(--line) var(--space-3);
-    /* The rules are drawn inside the box, so the block stays whole lines. */
-    padding-block: calc(var(--line) - var(--rule-hair));
-    border-block: var(--rule-hair) solid var(--rule);
+    /* The rule is drawn inside the box, so the block stays whole lines. */
+    padding-block-end: calc(var(--line) - var(--rule-hair));
+    border-block-end: var(--rule-hair) solid var(--rule);
     margin-block-end: var(--line);
   }
 
@@ -659,9 +724,11 @@
 
   .filter__choices a:hover { color: var(--ink); }
 
-  /* Which one is chosen, said twice, for the reason the nav says it twice. */
+  /* Which one is chosen: the weight, in ink. The accent is for where you
+     are on the site and for the one thing that cannot be undone; a page
+     with four registers each saying "this one" in red has no signal left. */
   .filter__choices [aria-current] {
-    color: var(--accent);
+    color: var(--ink);
     font-weight: 700;
   }
 
