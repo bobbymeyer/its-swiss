@@ -25,7 +25,9 @@ class EngineTest < ActiveSupport::TestCase
   test "pins its JavaScript itself" do
     assert_includes Rails.application.config.importmap.paths.map(&:to_s),
       ItsSwiss::Engine.root.join("config/importmap.rb").to_s
-    assert_match %r{its_swiss/clipboard_controller}, Rails.application.importmap.to_json(resolver: ApplicationController.helpers)
+    pins = Rails.application.importmap.to_json(resolver: ApplicationController.helpers)
+    assert_match %r{its_swiss/clipboard_controller}, pins
+    assert_match %r{its_swiss/live_search_controller}, pins
   end
 
   test "the gem ships everything it needs at runtime" do
@@ -35,6 +37,7 @@ class EngineTest < ActiveSupport::TestCase
       app/assets/stylesheets/its-swiss.css
       app/assets/stylesheets/its_swiss/tokens.css
       app/assets/javascripts/its_swiss/clipboard_controller.js
+      app/assets/javascripts/its_swiss/live_search_controller.js
       app/views/layouts/its_swiss/shell.html.erb
       config/importmap.rb
       lib/generators/its_swiss/install/templates/theme.css

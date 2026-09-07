@@ -1,0 +1,38 @@
+<section data-specimen="filters">
+  <h3>Filters and cards</h3>
+  <p class="hint">
+    What narrows a list, and the list. A search that filters as you type, and
+    a register for each other way of narrowing it: the same two positions
+    every time, a quiet label and the choices, the one in force carrying the
+    accent and the weight. Under it, cards on the page's own fields — this
+    page says a card is two fields wide.
+  </p>
+
+  <div class="filters">
+    <%= search_form "#filters", frame: "specimen-results", value: "", keep: { tag: "print" } %>
+    <%= filter_register "Tagged",
+          [ [ "All", "#filters", false ], [ "print", "#filters", true ], [ "screen", "#filters", false ] ],
+          name: "tag" %>
+    <%= filter_register "Sort by",
+          [ [ "Name", "#filters", true ], [ "Newest", "#filters", false ], [ "Most used", "#filters", false ] ],
+          name: "sort" %>
+  </div>
+
+  <p class="hint">3 of 12 palettes</p>
+
+  <ul class="grid cards" style="--card: 2">
+    <% [ [ "Brand Core", "4 swatches", 1 ], [ "Press", "6 swatches", 2 ], [ "Screen", "3 swatches", 3 ] ].each do |name, meta, value| %>
+      <li class="card">
+        <a class="card__link" href="#filters">
+          <figure class="card__figure figure" style="--ratio: 1.5">
+            <svg viewBox="0 0 3 2" role="img" aria-label="A block of value <%= value %>">
+              <rect width="3" height="2" fill="var(--value-<%= value %>)"/>
+            </svg>
+          </figure>
+          <span class="card__name"><%= name %></span>
+        </a>
+        <span class="card__meta"><%= meta %></span>
+      </li>
+    <% end %>
+  </ul>
+</section>

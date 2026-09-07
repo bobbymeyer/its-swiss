@@ -36,6 +36,67 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_includes fragment.at("script").text, "ascentOverride"
   end
 
+  # --- The page head -------------------------------------------------------
+
+  test "a page head is the title, the lede and the actions, in that order" do
+    html = Nokogiri::HTML5.fragment(page_head("Palettes", lede: "Every one.") { tag.a("New", href: "#", class: "button") })
+
+    assert_equal "Palettes", html.at("header.page-head .page-head__title h1.page-title").text
+    assert_equal "Every one.", html.at(".page-head__title p.lede").text
+    assert_equal "New", html.at(".page-head__actions.run a.button").text
+  end
+
+  test "a page head with nothing to do has no actions and no lede" do
+    html = Nokogiri::HTML5.fragment(page_head("Palettes"))
+
+    assert_nil html.at(".page-head__actions")
+    assert_nil html.at(".lede")
+  end
+
+  # The document is titled from the page unless the view has said otherwise:
+  # a page that names itself twice is a page that will one day name itself
+  # two different things.
+  test "a page head titles the document unless the view already has" do
+    page_head("Palettes")
+    assert_equal "Palettes", content_for(:title)
+  end
+
+  test "a page head leaves a title the view set" do
+    content_for(:title, "Palettes — Pandatone")
+    page_head("Palettes")
+    assert_equal "Palettes — Pandatone", content_for(:title)
+  end
+
+  # --- Filters -------------------------------------------------------------
+
+  test "a filter register is a label and the choices, the one in force marked" do
+    html = Nokogiri::HTML5.fragment(filter_register("Tagged",
+      [ [ "All", "/colors", false ], [ "print", "/colors?tag=print", true ] ], name: "tag"))
+
+    assert_equal "tag", html.at(".filter")["data-filter"]
+    assert_equal "Tagged", html.at(".filter__label").text
+    assert_equal %w[ All print ], html.css(".filter__choices > a").map(&:text)
+    assert_equal [ "print" ], html.css(".filter__choices a[aria-current]").map(&:text),
+      "the choice in force carries aria-current, which the CSS colours and weights"
+  end
+
+  test "a search form is a GET into a frame, live, with its button there for a browser without script" do
+    html = Nokogiri::HTML5.fragment(search_form("/colors", frame: "colors", value: "red", keep: { tag: "print", sort: nil }))
+    form = html.at("form.form.form--inline")
+
+    assert_equal "get", form["method"]
+    assert_equal "/colors", form["action"]
+    assert_equal "its-swiss-live-search", form["data-controller"]
+    assert_equal "colors", form["data-turbo-frame"]
+    assert_equal "input->its-swiss-live-search#search", form["data-action"]
+
+    assert_equal "red", form.at(".field.field--inline input[type=search][name=q]")["value"]
+    assert_equal "q", form.at("label")["for"]
+    assert_equal "print", form.at("input[type=hidden][name=tag]")["value"]
+    assert_nil form.at("input[type=hidden][name=sort]"), "a choice not in force is not carried"
+    assert_equal "submit", form.at("input[type=submit]")["data-its-swiss-live-search-target"]
+  end
+
   # --- The typeface --------------------------------------------------------
 
   # The faces are what put every baseline on the under edge of its line, and

@@ -6,7 +6,7 @@ class ComponentsTest < ActiveSupport::TestCase
   # A reader who cannot separate the accent from the quiet gray would have no
   # current state at all. Every signal the library gives carries a second one.
   test "no signal rests on colour alone" do
-    [ '.nav [aria-current="page"]', ".pagination [aria-current]" ].each do |selector|
+    [ '.nav [aria-current="page"]', ".pagination [aria-current]", ".filter__choices [aria-current]" ].each do |selector|
       declarations = declarations_for(selector)
 
       assert_not_empty declarations, "expected #{selector} to say where you are"

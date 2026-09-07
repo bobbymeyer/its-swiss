@@ -2,6 +2,46 @@
 
 Semver. Consumers pin `~> 0.1`.
 
+## 0.8.0 — 2026-09-07
+
+The third consumer, and what it and the second found in common.
+
+### Added
+
+- **A page head.** `page_head(title, lede:) { actions }` writes the one
+  shape every page opens with: the title in the page-title register, its
+  lede when it has one, and the actions in a run beside them, wrapping
+  under the title when the page is narrow. Pandatone, Stripeclub and
+  Badger had each drawn their own, and no two agreed on the size of the
+  title or where the buttons went. The document is titled from it unless
+  the view has titled itself.
+
+- **Filters.** A block of registers that narrow a list, each a quiet label
+  and then the choices, in the same two positions every time — a search, a
+  tag, an order, a size are the same kind of control, and are built the
+  same way. `filter_register(label, choices, name:)` writes one; the choice
+  in force carries `aria-current`, which the CSS colours and weights, for
+  the reason the nav says it twice. `search_form(url, frame:, keep:)`
+  writes the first register: a search that narrows the list as you type,
+  into the Turbo Frame named, carrying the other choices so a search does
+  not drop them. Two slots go with it: `--filter-label`, the column the
+  labels occupy, and `--card`.
+
+- **Cards.** `.cards` on a `.grid` lays a list out on the page's own
+  fields, each item `--card` fields wide, two lines between the rows.
+  `.card__link`, `.card__figure`, `.card__name`, `.card__meta` are the
+  parts. No box: the picture is the only filled area a card has.
+
+- **A live search controller.** `its_swiss/live_search_controller.js`,
+  pinned by the engine like the clipboard, submits a search form as you
+  type and takes away the button it makes redundant. The host registers it
+  as `its-swiss-live-search`, beside the clipboard.
+
+### Changed
+
+- The micro register and the quiet colour take `.filter__label` and
+  `.card__meta`.
+
 ## 0.7.2 — 2026-09-04
 
 ### Changed

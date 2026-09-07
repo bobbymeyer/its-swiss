@@ -81,7 +81,9 @@
   caption,
   legend,
   label,
-  .field label {
+  .field label,
+  .filter__label,
+  .card__meta {
     font-family: var(--face-200), var(--font-family);
     font-size: var(--size-1);
     line-height: var(--line);
@@ -93,6 +95,8 @@
      picking a gray. */
   .quiet,
   .hint,
+  .filter__label,
+  .card__meta,
   .nav a,
   .footer,
   .pairs dt,
@@ -220,11 +224,13 @@
       .page-title,
       h1, h2, h3, h4,
       p, dt, th, td, figcaption, caption, legend, label,
-      li:not(:has(> :is(p, ul, ol, dl, div, figure, table, pre, blockquote))),
+      li:not(:has(> :is(p, ul, ol, dl, div, figure, table, pre, blockquote, .card__link))),
       dd:not(:has(> :is(p, ul, ol, dl, div, figure, table, pre, blockquote))),
       .micro, .hint, .lede, .empty, .masthead__mark, .field__error, .errors__title,
+      .filter__label, .card__name, .card__meta,
       /* Flex items are blockified, so the text in a row is trimmable too. */
       .nav a,
+      .filter__choices a,
       .pagination a,
       .pagination [aria-current],
       .pagination__gap,

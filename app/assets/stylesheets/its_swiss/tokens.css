@@ -181,6 +181,14 @@
     );
     --measure: calc(var(--field) * 3 + var(--gutter) * 2);
 
+    /* --- Lists -------------------------------------------------------------
+       Two more slots an index fills. How many fields a card takes, which is
+       the application's to say and to change at each width it cares about;
+       and the column a filter's label occupies, so the choices of every
+       register start on one line down the page. */
+    --card: 1;
+    --filter-label: var(--space-8);
+
     /* --- Transitions -------------------------------------------------------
        The page crossfade is short enough to read as a replacement rather than
        an animation. A morph runs longer, because the thing travelling has to
