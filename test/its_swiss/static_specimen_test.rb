@@ -25,7 +25,7 @@ class StaticSpecimenTest < ActiveSupport::TestCase
   test "shows every section the engine's specimen shows" do
     sections = Nokogiri::HTML5(@page).css("[data-specimen]").map { |s| s["data-specimen"] }
 
-    assert_equal %w[ values type grid masthead buttons form figure table pairs pagination messages footer ],
+    assert_equal %w[ values type grid masthead page-head buttons form figure table pairs filters pagination messages footer ],
       sections
   end
 

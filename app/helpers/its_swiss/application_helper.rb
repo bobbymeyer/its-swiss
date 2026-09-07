@@ -80,6 +80,21 @@ module ItsSwiss
       link_to(name, url, **options, &block)
     end
 
+    # A destination in the nav that opens into destinations: a details
+    # element with the label as its summary and the block as its list, so it
+    # opens and closes with no script. current: when one of the destinations
+    # inside is where you are, the summary carries the accent and the weight
+    # the way a current link does.
+    #
+    #   <%= nav_menu "Tools", current: in_a_tool? do %>
+    #     <%= nav_link_to "Pandatone", "/pandatone", current: in_engine?(pandatone) %>
+    #   <% end %>
+    def nav_menu(label, current: false, &block)
+      tag.details(class: token_list("menu", ("menu--current" if current))) do
+        safe_join([ tag.summary(label), tag.div(capture(&block), class: "menu__list") ])
+      end
+    end
+
     # A value on screen exists to be taken somewhere else, so it is a button
     # that copies itself. The value stays visible text inside it, which is
     # what keeps it usable when the clipboard is not available at all.
@@ -132,6 +147,75 @@ module ItsSwiss
         "}" ].compact.join("\n")
     end
     private :its_swiss_face
+
+    # What a page is and what can be done to it: the title, a lede when the
+    # page has one, and the actions in the block. One shape for every page,
+    # and the document is titled from it unless the view has titled itself.
+    #
+    #   <%= page_head "Palettes", lede: "Every palette in the library." do %>
+    #     <%= link_to "New palette", new_palette_path, class: "button button--primary" %>
+    #   <% end %>
+    def page_head(title, lede: nil, &block)
+      content_for(:title, strip_tags(title.to_s)) unless content_for?(:title)
+      actions = capture(&block) if block
+
+      tag.header(class: "page-head") do
+        safe_join([
+          tag.div(class: "page-head__title") do
+            safe_join([ tag.h1(title, class: "page-title"), (tag.p(lede, class: "lede") if lede) ].compact)
+          end,
+          (tag.div(actions, class: "page-head__actions run") if actions.present?)
+        ].compact)
+      end
+    end
+
+    # One register of a filter block: a quiet label, then the choices, each
+    # a name, a URL and whether it is the one in force. Filtering and
+    # ordering are the same kind of control — pick one of a handful — so
+    # they are built the same way and told apart by their label.
+    #
+    #   <%= filter_register "Tagged", [ [ "All", colors_path, params[:tag].blank? ],
+    #                                   *tags.map { |t| [ t, colors_path(tag: t), params[:tag] == t ] } ],
+    #         name: "tag" %>
+    #
+    # The one in force carries aria-current, which the CSS colours and
+    # weights, and a test can find without reading a class.
+    def filter_register(label, choices, name: nil)
+      tag.div(class: "filter", data: { filter: name }) do
+        safe_join([
+          tag.span(label, class: "filter__label"),
+          tag.div(class: "filter__choices") do
+            safe_join(choices.map { |text, url, current| link_to(text, url, aria: { current: ("true" if current) }) })
+          end
+        ])
+      end
+    end
+
+    # A search that narrows a list as you type, into the Turbo Frame named.
+    # The form belongs outside that frame, so only the results are replaced
+    # and the field keeps its cursor; the button is for a browser that runs
+    # no script, and the controller takes it away once it has connected.
+    #
+    #   <%= search_form palettes_path, frame: "palettes", keep: { tag: params[:tag], sort: params[:sort] } %>
+    #
+    # keep: the other choices on the page, carried as hidden fields so a
+    # search does not drop the tag or the order you were reading in. The
+    # host registers the controller as its-swiss-live-search.
+    def search_form(url, frame:, param: :q, label: "Search", value: nil, keep: {}, delay: nil, **options)
+      value = params[param] if value.nil? && respond_to?(:params)
+      data = { controller: "its-swiss-live-search", action: "input->its-swiss-live-search#search",
+               turbo_frame: frame, its_swiss_live_search_delay_value: delay }.compact
+
+      form_with(url: url, method: :get, class: token_list("form form--inline", options[:class]), data: data) do
+        safe_join([
+          *keep.compact_blank.map { |name, kept| hidden_field_tag(name, kept, id: nil) },
+          tag.div(class: "field field--inline") do
+            safe_join([ label_tag(param, label), search_field_tag(param, value, autocomplete: "off") ])
+          end,
+          submit_tag(label, name: nil, class: "button", data: { its_swiss_live_search_target: "submit" })
+        ])
+      end
+    end
 
     # form_with, already holding the library's builder. An application that
     # wants its own builder still can; this is the shorthand for the case

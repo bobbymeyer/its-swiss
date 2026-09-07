@@ -70,6 +70,91 @@
     font-weight: 700;
   }
 
+  /* A menu in the nav: a destination that opens into destinations. A
+     details element, so it opens and closes with no script, and a summary
+     set like the other destinations with a small mark that says it opens.
+     The list floats under it on paper with a keyline, the one floating box
+     in the style — a menu that pushed the page down would not be a menu. */
+  .menu {
+    position: relative;
+  }
+
+  .menu > summary {
+    list-style: none;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .menu > summary::-webkit-details-marker { display: none; }
+
+  .menu > summary::after {
+    content: " \25BE";
+    color: var(--ink-quiet);
+  }
+
+  .menu > summary:hover,
+  .menu[open] > summary { color: var(--ink); }
+
+  /* Where you are, when where you are is inside the menu: said twice, the
+     way the nav says it. */
+  .menu--current > summary {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  /* Out of the flow, but still on the grid: a line of padding above and
+     below, and the keyline drawn inside, so every link in it sits on a
+     line of the page under it. */
+  .menu__list {
+    position: absolute;
+    inset-inline-start: calc(-1 * var(--space-2));
+    top: 100%;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: max-content;
+    padding: var(--line) var(--space-2);
+    background: var(--paper);
+    box-shadow: inset 0 0 0 var(--rule-hair) var(--rule);
+  }
+
+  .menu__list a {
+    display: block;
+    text-decoration: none;
+  }
+
+  .menu__list a:hover { color: var(--ink); }
+
+  /* --- Subnav -------------------------------------------------------------
+     A second layer of destinations, inside the one you are in: what a tool
+     has beside what the application has. A shaded band under the masthead,
+     three lines tall the way the masthead is, with the same run of links
+     the nav has and the same marking of where you are. Rendered by the
+     shell when the application fills :subnav, and not at all otherwise. */
+  /* The rule is drawn inside the band rather than under it, so the band and
+     the page inside it are both three whole lines. */
+  .subnav {
+    background: var(--paper-shaded);
+    box-shadow: inset 0 calc(-1 * var(--rule-hair)) 0 var(--rule);
+  }
+
+  .subnav > .page {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: var(--line) var(--space-3);
+    padding-block: var(--line);
+  }
+
+  .subnav a { text-decoration: none; }
+
+  .subnav a:hover { color: var(--ink); }
+
+  .subnav [aria-current="page"] {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
   /* --- Footer -------------------------------------------------------------
      A hairline, the micro register, and whatever the application has to say
      after the page. It carries no links of its own: what belongs down there
@@ -88,6 +173,38 @@
     font-size: var(--size-1);
     line-height: var(--line);
   }
+
+  /* --- Page head ----------------------------------------------------------
+     What a page is and what can be done to it. The title and, when it has
+     one, its lede on the left; the actions on the right, wrapping under
+     the title when the page is narrow. Everything after it starts two
+     lines down, which is the gap a section gets.
+
+     One shape for every page, so a reader arriving from another application
+     set in this style already knows where the name is and where the buttons
+     are. The title is the page-title register: a page has one, and it is
+     the largest thing on it. */
+
+  .page-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--line) var(--space-3);
+    margin-block-end: var(--line-2);
+  }
+
+  /* The title takes the measure and the actions take what they need. A
+     basis rather than a share, so a long name wraps inside the measure
+     instead of pushing the actions off the line. */
+  .page-head__title {
+    flex: 1 1 var(--measure);
+    min-width: 0;
+  }
+
+  /* The actions shrink to their widest button and wrap inside it, rather
+     than holding their one-line width and pushing a phone's page sideways. */
+  .page-head__actions { flex: 0 1 auto; }
 
   /* --- Rules --------------------------------------------------------------
      The one horizontal mark in the style, at the two weights tokens.css
@@ -489,6 +606,137 @@
   }
 
   .pagination__gap { color: var(--ink-quiet); }
+
+  /* --- Filters ------------------------------------------------------------
+     What narrows a list. One shape for every way of narrowing it — a
+     search, a tag, an order, a size — because they are the same kind of
+     control: pick one of a handful. A register is a quiet label and then
+     the choices, in the same two positions every time, so filtering and
+     ordering read as the registers they are rather than as two rows of
+     identical words. Ruled above and below: the block belongs to the list
+     under it, not to the page head above. */
+
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: var(--line) var(--space-3);
+    /* The rules are drawn inside the box, so the block stays whole lines. */
+    padding-block: calc(var(--line) - var(--rule-hair));
+    border-block: var(--rule-hair) solid var(--rule);
+    margin-block-end: var(--line);
+  }
+
+  .filter {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    flex-basis: 100%;
+    gap: var(--line) var(--space-2);
+  }
+
+  /* The label column. A width off the ladder, so every register's choices
+     start on the same line down the page rather than a few pixels apart
+     because one word is longer than another. An application with longer
+     labels sets --filter-label once. */
+  .filter__label,
+  .filters .form--inline label { min-width: var(--filter-label); }
+
+  .filter__choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--line) var(--space-2);
+  }
+
+  /* The choices are the flex items themselves, the way the nav's
+     destinations are: blockified, so each is a line box that is the tap
+     target and can be trimmed where the faces are not honoured. A list
+     item between them would be a second box to correct. */
+  .filter__choices a {
+    color: var(--ink-quiet);
+    text-decoration: none;
+  }
+
+  .filter__choices a:hover { color: var(--ink); }
+
+  /* Which one is chosen, said twice, for the reason the nav says it twice. */
+  .filter__choices [aria-current] {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  /* The search is the first register, built like the others rather than as
+     a stacked field above them: the label in the label column, the control
+     where the choices start. Label and control meet on the under edge — the
+     label's baseline is its under edge, and the control's text stands on
+     the rule that closes it — so the two read as one line. The button is
+     there for a browser that runs no script and wraps under the field at a
+     phone's width; it goes when the live search connects, because from then
+     on typing has already done what it does. */
+  .filters .form--inline {
+    flex: 1 1 var(--measure);
+    max-width: var(--measure);
+  }
+
+  .filters .form--inline .field--inline {
+    flex: 1 1 auto;
+    align-items: flex-end;
+    min-width: 0;
+  }
+
+  /* A basis of nothing, so the control takes what the row has left rather
+     than the twenty characters a browser gives a text control by default. */
+  .filters .form--inline .field--inline input {
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+  }
+
+  /* --- Cards --------------------------------------------------------------
+     A list of things, each a picture over its name and a line about it,
+     laid out on the page's own fields: a card is --card fields wide, and
+     the application says how many, once, at each width it cares about. Two
+     lines between the rows, because a row of cards is a row of sections.
+
+     No box. A card is the thing itself, and the picture is the only filled
+     area it has; what separates one from the next is the gutter. */
+
+  .cards { row-gap: var(--line-2); }
+
+  .cards > * {
+    --span: var(--card);
+    min-width: 0;
+  }
+
+  /* The picture and the name are one link, so a card costs one tab stop and
+     announces its destination once. */
+  .card__link {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .card__link:hover .card__name {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  /* The picture is a .figure with its --ratio declared, so its box is a
+     whole number of lines at any width and the name under it stays on the
+     grid; what this adds is the line between them. */
+  .card__figure { margin-block-end: var(--line); }
+
+  /* Blocks, so each is a line of its own and can be trimmed where the faces
+     are not honoured. */
+  .card__name,
+  .card__meta { display: block; }
+
+  .card__name {
+    font-family: var(--face-150), var(--font-family);
+    font-size: var(--size-2);
+    line-height: var(--line);
+    font-weight: 700;
+  }
 
   /* --- What a page has to say --------------------------------------------
      Three registers: it worked, it was refused, there is nothing here. The

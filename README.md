@@ -34,7 +34,7 @@ current one at `/<version>.html` for anything that needs to pin.
 | In the gem | Stays in the application |
 | --- | --- |
 | Tokens, reset, base typography | The grid itself — which blocks span which fields |
-| Masthead, nav, footer, table, form, button, definition list, pagination | Domain components |
+| Masthead, nav, page head, footer, table, form, button, definition list, pagination, filters, cards | Domain components |
 | A base layout shell with `content_for` slots | Page layouts beyond the shell |
 | View transition names and durations | Which pages transition to which |
 | The value scale and the accent slot | Any hue, any palette knowledge |
@@ -71,6 +71,8 @@ holding all of them. Nothing here has a default the gem could pick honestly.
 | `--columns`, `--gutter` | How many fields this problem has |
 | `--line` | The baseline: the interval everything vertical registers to |
 | `--ratio` | A picture's aspect ratio, per figure — the library cannot read one |
+| `--card` | How many fields a card takes, and at which widths |
+| `--filter-label` | The column a filter's label occupies, so every register's choices start on one line |
 | `--face-150`, `--face-200`, `--face-100` | Read, not set: the face a register names for its ratio of leading to size |
 
 ### The baseline
@@ -313,6 +315,59 @@ it stops on a field line:
 --measure: calc(var(--field) * 3 + var(--gutter) * 2);
 ```
 
+### The page head
+
+What a page is and what can be done to it, in one shape on every page: the
+title in the page-title register, its lede when it has one, and the actions in
+a run beside them, wrapping under the title when the page is narrow.
+
+```erb
+<%= page_head "Palettes", lede: "Every palette in the library." do %>
+  <%= link_to "New palette", new_palette_path, class: "button button--primary" %>
+<% end %>
+```
+
+The document is titled from it unless the view has already set `:title`.
+
+### Filters and cards
+
+What narrows a list, and the list. A search that filters as you type, and a
+register for each other way of narrowing it — a tag, an order, a size — in the
+same two positions every time: a quiet label, then the choices, the one in
+force carrying `aria-current`, which the CSS colours and weights.
+
+```erb
+<div class="filters">
+  <%= search_form palettes_path, frame: "palettes", keep: { tag: params[:tag], sort: params[:sort] } %>
+  <%= filter_register "Tagged", [ [ "All", palettes_path, params[:tag].blank? ],
+                                  *tags.map { |t| [ t, palettes_path(tag: t), params[:tag] == t ] } ],
+        name: "tag" %>
+</div>
+
+<%= turbo_frame_tag "palettes", target: "_top" do %>
+  <ul class="grid cards">
+    <li class="card">
+      <a class="card__link" href="…">
+        <figure class="card__figure figure" style="--ratio: 1.5"><img src="…" alt=""></figure>
+        <span class="card__name">Brand Core</span>
+      </a>
+      <span class="card__meta">4 swatches</span>
+    </li>
+  </ul>
+<% end %>
+```
+
+The search form belongs outside the frame it fills, so only the results are
+replaced and the field keeps its cursor. `keep:` carries the other choices as
+hidden fields, so a search does not drop the tag or the order you were reading
+in. The button is there for a browser that runs no script; the controller
+takes it away once it has connected.
+
+A card is `--card` fields wide on the page's own grid — say how many once, and
+again at each width that changes it. The picture is a `.figure` with its
+`--ratio` declared, so its box is whole lines at any width and the name under
+it stays on the grid.
+
 ## The layout shell
 
 The installer writes `app/views/layouts/application.html.erb` as a layout
@@ -345,6 +400,7 @@ Slots, all optional:
 | `:head` | Anything else that belongs in `<head>` |
 | `:mark` | The wordmark. No mark and no nav means no masthead at all |
 | `:nav` | The destinations |
+| `:subnav` | A second layer of destinations, inside the one you are in: a shaded band under the masthead |
 | `:main_class` | What the page's main region is, if it is a grid |
 | `:footer` | Whatever belongs after the page |
 
@@ -359,9 +415,13 @@ beyond the shell is the application's, for the same reason its grid is.
 | `its_swiss_stylesheet_tags` | The seven links, tracked for Turbo |
 | `its_swiss_typeface(regular:, bold:)` | The application's typeface, declared under the library's face names |
 | `nav_link_to(name, url, current:)` | A destination, with `aria-current` when you are at it |
+| `nav_menu(label, current:) { links }` | A destination that opens into destinations, with no script |
 | `copy_button(value)` | A value that copies itself |
 | `its_swiss_form_with(...)` | `form_with`, already holding the library's builder |
 | `its_swiss_page_numbers(page, pages)` | Which numbers a run of them shows, elided |
+| `page_head(title, lede:) { actions }` | The one shape every page opens with |
+| `filter_register(label, choices, name:)` | One register of a filter block |
+| `search_form(url, frame:, keep:)` | A search that narrows a list as you type |
 
 ### Pagination
 
@@ -375,6 +435,24 @@ a page, a total, and something that turns a number into a URL:
 
 Long runs are elided around the current page. `window:` (default 2) sets how
 many neighbours show; `label:` names the `<nav>` for a screen reader.
+
+### JavaScript
+
+Two Stimulus controllers, pinned by the engine so an application that upgrades
+the gem gets the new file without touching its importmap. They are outside
+`controllers/`, so an application registers them by hand, once:
+
+```js
+// app/javascript/controllers/index.js
+import ItsSwissClipboardController from "its_swiss/clipboard_controller"
+import ItsSwissLiveSearchController from "its_swiss/live_search_controller"
+application.register("its-swiss-clipboard", ItsSwissClipboardController)
+application.register("its-swiss-live-search", ItsSwissLiveSearchController)
+```
+
+`copy_button` and `search_form` write the `data-controller` attributes; a page
+without the registrations still works, with the value selectable and the
+search's button on the page.
 
 ## The form builder
 
@@ -464,7 +542,8 @@ ladder; the names are the library's rather than the application's.
 | `.masthead__nav` | `.nav` |
 | `.channels` | `.pairs` |
 | `.form`, `.field`, `.button*`, `.copy`, `.errors`, `.hint`, `.empty` | unchanged |
-| `--columns-dense`, `--card`, `--card-wide`, `.swatch*`, `.tag*`, `.filter*` | stay in Pandatone |
+| `.tag*`, `.filter*`, `.page-head`, `live-search` | `.filter*`, `.page-head`, `.cards`, `its-swiss-live-search` — in the gem since 0.8.0 |
+| `--columns-dense`, `--card-wide`, `.swatch*` | stay in Pandatone |
 
 Two behavioural differences to know about:
 

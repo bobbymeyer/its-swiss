@@ -1,0 +1,15 @@
+<section data-specimen="page-head">
+  <h3>Page head</h3>
+  <p class="hint">
+    What a page is and what can be done to it: the title and its lede on the
+    left, the actions on the right, wrapping under when the page is narrow.
+    One shape for every page, so the name and the buttons are always where
+    they were on the last one.
+  </p>
+  <%= page_head "Palettes", lede: "Every palette in the library, including the ones no colour has claimed yet." do %>
+    <a href="#page-head" class="button button--primary">New palette</a>
+    <a href="#page-head" class="button">Import from a file</a>
+    <a href="#page-head" class="button">New from this</a>
+    <a href="#page-head" class="button button--danger">Delete palette</a>
+  <% end %>
+</section>

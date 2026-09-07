@@ -9,6 +9,7 @@
     :head        anything else that belongs in <head>
     :mark        the wordmark. No mark and no nav means no masthead at all
     :nav         the destinations
+    :subnav      a second layer of destinations, inside the one you are in
     :main_class  what the page's main region is, if it is a grid
     :footer      whatever belongs after the page
 
@@ -47,6 +48,10 @@
     <a class="skip-link" href="#main">Skip to content</a>
 
     <%= render "its_swiss/shared/masthead" %>
+
+    <% if content_for?(:subnav) %>
+      <nav class="subnav" aria-label="Inside this section"><div class="page"><%= content_for(:subnav) %></div></nav>
+    <% end %>
 
     <main id="main" class="page <%= content_for(:main_class) %>">
       <%= render "its_swiss/shared/flash" %>

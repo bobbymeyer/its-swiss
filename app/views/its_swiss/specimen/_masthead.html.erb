@@ -5,11 +5,30 @@
     <nav class="nav">
       <a href="#masthead" aria-current="page">Where you are</a>
       <a href="#masthead">Somewhere else</a>
-      <a href="#masthead">And another</a>
+      <%= nav_menu "A menu", current: false do %>
+        <a href="#masthead">One of several</a>
+        <a href="#masthead">Another of them</a>
+        <a href="#masthead">And a third</a>
+      <% end %>
+      <%= nav_menu "Where you also are", current: true do %>
+        <a href="#masthead" aria-current="page">Inside the menu</a>
+        <a href="#masthead">Beside it</a>
+      <% end %>
     </nav>
   </header>
+  <nav class="subnav" aria-label="Inside this section">
+    <div class="page">
+      <a href="#masthead">The section's mark</a>
+      <a href="#masthead" aria-current="page">Where you are in it</a>
+      <a href="#masthead">Elsewhere in it</a>
+    </div>
+  </nav>
   <p class="hint">
     The current destination carries the accent and the weight. Two signals,
-    because colour alone is not one.
+    because colour alone is not one. A menu is a destination that opens into
+    destinations, and carries both when where you are is inside it. The
+    subnav is a second layer, inside the one you are in: a shaded band under
+    the masthead, rendered by the shell when the application fills
+    <code>:subnav</code>.
   </p>
 </section>

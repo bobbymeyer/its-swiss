@@ -64,7 +64,8 @@ class SpecimenTest < ActionDispatch::IntegrationTest
   ].freeze
 
   test "shows every component the library ships" do
-    %w[ masthead nav footer table pairs form field button pagination errors figure ].each do |component|
+    %w[ masthead nav footer table pairs form field button pagination errors figure
+        page-head filters filter cards ].each do |component|
       assert html.at(".#{component}"), "the specimen does not show .#{component}"
     end
   end
