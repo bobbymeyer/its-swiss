@@ -143,7 +143,7 @@ the seven separately. Both resolve identically.
 
 ## tech
 
-Rails engine, v1.0.0. Ruby >= 3.2. 1,475 lines of CSS in seven files. No
+Rails engine, v1.1.0. Ruby >= 3.2. 1,457 lines of CSS in seven files. No
 build step and no CSS framework.
 
 ```sh
