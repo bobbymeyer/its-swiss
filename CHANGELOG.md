@@ -2,6 +2,25 @@
 
 Semver. Consumers pin `~> 1.0`.
 
+## 1.1.0 — 2026-09-24
+
+### Added
+
+- **A textarea is ruled.** A dotted rule on every line of the grid that type
+  can stand on, on the row of pixels a rule would take there, in
+  `--rule-strong`. None on the line of air under the label, which nothing is
+  written on, and none under the last line, which the control's own rule
+  closes. The dots are painted in the text's box and scroll with it, so a
+  long message keeps a rule under every line. `--ruled-dot` sets their
+  colour.
+
+### Changed
+
+- **A textarea's line of air is a border.** It was padding, so text scrolled
+  up ran on into the air, under a dense form's label. It is a transparent
+  border of the same width, so scrolled text is cut at the first line. The
+  box, and where its text sits, are unchanged.
+
 ## 1.0.0 — 2026-09-08
 
 The surface three applications settled on, reviewed as a whole: what a tech

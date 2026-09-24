@@ -155,6 +155,12 @@ the line the type stands on, which the rule closes, so the type stands on
 its rule the way a line of handwriting stands on a ruled page. The dense form
 puts the label on the line of air, for a form of many fields or a panel.
 
+A textarea is the ruled page itself. Every line it can be written on carries
+a dotted rule, on the same row of pixels a rule would take, and the last is
+the control's rule. The line of air carries none, because nothing is written
+on it. It is a border rather than a padding, so text scrolled up is cut at
+the first line rather than running on into the air.
+
 The rule at rest is the strong rule, ink under the hand, and the accent,
 heavy, when the control has the focus or has been refused. The focus is the
 rule and not a box: a box drawn round a field whose only visible part is a

@@ -171,6 +171,33 @@ class SpecimenSystemTest < ApplicationSystemTestCase
     assert_equal 0, geometry["below"], "the text sits on the rule, not a line above it"
   end
 
+  # A textarea is ruled on the grid, and the rules are painted in the text's
+  # own box: its line of air is a border, so that box holds exactly the lines
+  # under the air and a full one does not scroll by the pixel the rule takes.
+  test "a textarea is ruled in whole lines and a full one does not scroll" do
+    geometry = evaluate_script(<<~JS)
+      (() => {
+        const textarea = document.querySelector(".field textarea")
+        const style = getComputedStyle(textarea)
+        const lines = Math.round(textarea.getBoundingClientRect().height / parseFloat(style.lineHeight)) - 1
+        textarea.value = Array.from({ length: lines }, (_, i) => `line ${i + 1}`).join("\\n")
+        return {
+          height: textarea.getBoundingClientRect().height,
+          overflow: textarea.scrollHeight - textarea.clientHeight,
+          attachment: style.backgroundAttachment,
+          clip: style.backgroundClip,
+          air: parseFloat(style.borderTopWidth) + parseFloat(style.paddingTop)
+        }
+      })()
+    JS
+
+    assert_equal 0, (geometry["height"] % baseline).round(2), "the box is whole lines"
+    assert_equal 0, geometry["overflow"], "a textarea holding every line it shows scrolls"
+    assert_equal "local", geometry["attachment"], "the rules do not scroll with the text"
+    assert_equal "content-box", geometry["clip"], "the rules run outside the text's own box"
+    assert_equal baseline - 1, geometry["air"], "the line of air is not a line"
+  end
+
   # The masthead in particular, because it is where a page most often puts a
   # block of type beside a flex container, and because for as long as this
   # row aligned on a baseline nothing measured where its two halves actually

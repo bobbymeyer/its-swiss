@@ -381,14 +381,40 @@
   .field :is(input, select, textarea):not([type="checkbox"], [type="radio"]):focus-visible {
     outline: none;
     border-bottom: var(--rule-heavy) solid var(--accent);
+  }
+
+  .field :is(input, select):not([type="checkbox"], [type="radio"]):focus-visible {
     padding-block-start: calc(var(--line) - var(--rule-heavy));
   }
 
   /* As many lines as it was asked for: the builder writes --rows from rows:,
-     four when it was not. */
+     four when it was not.
+
+     A textarea is ruled like a page: a dotted rule on every line of the
+     baseline grid that type can stand on, on the same row of pixels a rule
+     would take, and none where it cannot. The line of air is a border rather
+     than a padding, so text scrolled up is cut at the first line and never
+     crosses the air, and a mask keeps the air clear of the one rule that
+     would fall there: the line under the label, which nothing is written on.
+     The last line is closed by the control's own rule, which is drawn over
+     its dots. The dots are painted in the text's own box and scroll with it,
+     so a long message keeps a rule under every line. */
   .field textarea {
+    --ruled-dot: var(--rule-strong);
     block-size: calc(var(--line) * var(--rows, 4));
     resize: vertical;
+    border-block-start: calc(var(--line) - var(--rule-hair)) solid transparent;
+    padding-block-start: 0;
+    background-image: conic-gradient(from 270deg at var(--rule-hair) var(--rule-hair), var(--ruled-dot) 25%, transparent 0);
+    background-size: var(--space-unit) var(--line);
+    background-origin: content-box;
+    background-clip: content-box;
+    background-attachment: local;
+    mask-image: linear-gradient(transparent var(--line), var(--ink) 0);
+  }
+
+  .field textarea:focus-visible {
+    border-block-start-width: calc(var(--line) - var(--rule-heavy));
   }
 
   /* A checkbox or a radio is the one control whose label sits beside it, on
